@@ -10,3 +10,4 @@
 - 2026-07-07: Apple/iCloud Calendar is implemented as a CalDAV preset (`https://caldav.icloud.com`) because the human must supply an Apple app-specific password for end-to-end testing.
 - 2026-07-07: Phase 2 keeps the legacy lowercase `Task.priority` field for existing task UI/sync compatibility and adds uppercase `Task.priorityLevel` for the new deterministic scheduler.
 - 2026-07-07: Phase 3 keeps the pure scheduler capable of returning split chunks, but the current Prisma `Task` shape can persist only one visible slot per task; the adapter writes the first chunk until a dedicated scheduled-block model is added.
+- 2026-07-07: Phase 4 keeps AI optional and advisory; provider `None` remains the default, brain-dump parsing has a local fallback, and AI schedule suggestions return an accept/reject-ready diff instead of silently moving tasks.

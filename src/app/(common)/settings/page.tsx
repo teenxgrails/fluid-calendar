@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { AIAssistantSettings } from "@/components/settings/AIAssistantSettings";
 import { AccountManager } from "@/components/settings/AccountManager";
 import { AutoScheduleSettings } from "@/components/settings/AutoScheduleSettings";
 import { CalendarSettings } from "@/components/settings/CalendarSettings";
@@ -26,6 +27,7 @@ type SettingsTab =
   | "calendar"
   | "auto-schedule"
   | "smart-scheduling"
+  | "ai-assistant"
   | "system"
   | "task-sync"
   | "logs"
@@ -49,6 +51,7 @@ export default function SettingsPage() {
       { id: "calendar", label: "Calendar" },
       { id: "auto-schedule", label: "Auto-Schedule" },
       { id: "smart-scheduling", label: "Smart Scheduling" },
+      { id: "ai-assistant", label: "AI Assistant" },
       { id: "task-sync", label: "Task Sync" },
       { id: "notifications", label: "Notifications" },
       { id: "import-export", label: "Import/Export" },
@@ -81,6 +84,7 @@ export default function SettingsPage() {
         "calendar",
         "auto-schedule",
         "smart-scheduling",
+        "ai-assistant",
         "task-sync",
         "system",
         "logs",
@@ -149,6 +153,8 @@ export default function SettingsPage() {
         return <AutoScheduleSettings />;
       case "smart-scheduling":
         return <SmartSchedulingSettings />;
+      case "ai-assistant":
+        return <AIAssistantSettings />;
       case "task-sync":
         return <TaskSyncSettings />;
       case "notifications":

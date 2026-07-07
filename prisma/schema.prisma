@@ -90,6 +90,7 @@ model User {
   dataSettings          DataSettings?
   schedulingPreferences SchedulingPreferences?
   energyProfileWindows  EnergyProfileWindow[]
+  aiSettings            AISettings?
   tasks                 Task[]
   projects              Project[]
   connectedAccounts     ConnectedAccount[]
@@ -337,6 +338,26 @@ model SchedulingPreferences {
   updatedAt            DateTime @updatedAt
 
   @@index([userId])
+}
+
+model AISettings {
+  id                    String     @id @default(cuid())
+  userId                String     @unique
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider              AIProvider @default(NONE)
+  encryptedApiKey       String?
+  customUrl             String?
+  model                 String?
+  allowParseTasks       Boolean    @default(true)
+  allowReorder          Boolean    @default(false)
+  allowSuggestEnergy    Boolean    @default(true)
+  allowFullAuto         Boolean    @default(false)
+  requestTimeoutSeconds Int        @default(20)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([provider])
 }
 
 model Tag {
@@ -710,6 +731,13 @@ enum SchedulingTaskPriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+enum AIProvider {
+  NONE
+  ANTHROPIC
+  OPENAI
+  CUSTOM
 }
 
 model Subscription {
