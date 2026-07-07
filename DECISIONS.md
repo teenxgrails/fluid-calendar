@@ -8,3 +8,4 @@
 - 2026-07-07: Phase 1 keeps the upstream GitHub attribution links and old package/storage identifiers intact, but all reachable app UI/email strings now use `APP_NAME`.
 - 2026-07-07: Public signup and registration are hard-disabled for single-user mode; first-run setup remains the path for creating the local planner account.
 - 2026-07-07: Apple/iCloud Calendar is implemented as a CalDAV preset (`https://caldav.icloud.com`) because the human must supply an Apple app-specific password for end-to-end testing.
+- 2026-07-07: Phase 2 keeps the legacy lowercase `Task.priority` field for existing task UI/sync compatibility and adds uppercase `Task.priorityLevel` for the new deterministic scheduler.

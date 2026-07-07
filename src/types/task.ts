@@ -27,6 +27,19 @@ export enum TimePreference {
   EVENING = "evening",
 }
 
+export enum SchedulingEnergyLevel {
+  HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
+}
+
+export enum SchedulingTaskPriority {
+  URGENT = "URGENT",
+  HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
+}
+
 export interface Tag {
   id: string;
   name: string;
@@ -44,6 +57,16 @@ export interface Task {
   priority?: Priority | null;
   energyLevel?: EnergyLevel | null;
   preferredTime?: TimePreference | null;
+  energyRequired?: SchedulingEnergyLevel;
+  estimatedMinutes?: number | null;
+  minChunkMinutes?: number | null;
+  maxChunkMinutes?: number | null;
+  deadline?: Date | null;
+  priorityLevel?: SchedulingTaskPriority;
+  contextTag?: string | null;
+  isFrozen?: boolean;
+  dependsOnId?: string | null;
+  autoScheduled?: boolean;
   tags: Tag[];
   projectId?: string | null;
   project?: Project | null;

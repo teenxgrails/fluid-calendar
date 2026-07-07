@@ -33,6 +33,8 @@ import {
   EnergyLevel,
   NewTask,
   Priority,
+  SchedulingEnergyLevel,
+  SchedulingTaskPriority,
   Tag,
   Task,
   TaskStatus,
@@ -95,7 +97,15 @@ export function TaskModal({
   const [dueDate, setDueDate] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   const [duration, setDuration] = useState<string>("");
+  const [estimatedMinutes, setEstimatedMinutes] = useState<string>("");
+  const [minChunkMinutes, setMinChunkMinutes] = useState<string>("");
+  const [maxChunkMinutes, setMaxChunkMinutes] = useState<string>("");
+  const [deadline, setDeadline] = useState<string>("");
+  const [contextTag, setContextTag] = useState("");
   const [energyLevel, setEnergyLevel] = useState<EnergyLevel | "">("");
+  const [energyRequired, setEnergyRequired] = useState<SchedulingEnergyLevel>(
+    SchedulingEnergyLevel.MEDIUM
+  );
   const [preferredTime, setPreferredTime] = useState<TimePreference | "">("");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState("");
@@ -112,8 +122,12 @@ export function TaskModal({
   const [scheduleLocked, setScheduleLocked] = useState(
     task?.scheduleLocked || false
   );
+  const [isFrozen, setIsFrozen] = useState(task?.isFrozen || false);
   const [priority, setPriority] = useState<Priority | null>(
     task?.priority || null
+  );
+  const [priorityLevel, setPriorityLevel] = useState<SchedulingTaskPriority>(
+    SchedulingTaskPriority.MEDIUM
   );
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -124,7 +138,13 @@ export function TaskModal({
     setDueDate("");
     setStartDate("");
     setDuration("");
+    setEstimatedMinutes("");
+    setMinChunkMinutes("");
+    setMaxChunkMinutes("");
+    setDeadline("");
+    setContextTag("");
     setEnergyLevel("");
+    setEnergyRequired(SchedulingEnergyLevel.MEDIUM);
     setPreferredTime("");
     setSelectedTagIds([]);
     setNewTagName("");
@@ -134,7 +154,9 @@ export function TaskModal({
     setRecurrenceRule(undefined);
     setIsAutoScheduled(true);
     setScheduleLocked(false);
+    setIsFrozen(false);
     setPriority(null);
+    setPriorityLevel(SchedulingTaskPriority.MEDIUM);
   }, [initialProjectId]);
 
   // Reset form when modal opens/closes
@@ -164,7 +186,20 @@ export function TaskModal({
         setStartDate("");
       }
       setDuration(task.duration?.toString() || "");
+      setEstimatedMinutes(
+        (task.estimatedMinutes ?? task.duration)?.toString() || ""
+      );
+      setMinChunkMinutes(task.minChunkMinutes?.toString() || "");
+      setMaxChunkMinutes(task.maxChunkMinutes?.toString() || "");
+      if (task.deadline) {
+        const date = newDate(task.deadline);
+        setDeadline(date.toISOString().slice(0, 16));
+      } else {
+        setDeadline("");
+      }
+      setContextTag(task.contextTag || "");
       setEnergyLevel(task.energyLevel || "");
+      setEnergyRequired(task.energyRequired || SchedulingEnergyLevel.MEDIUM);
       setPreferredTime(task.preferredTime || "");
       setSelectedTagIds(task.tags.map((t) => t.id));
       setProjectId(task.projectId || null);
@@ -172,7 +207,9 @@ export function TaskModal({
       setRecurrenceRule(task.recurrenceRule || undefined);
       setIsAutoScheduled(task.isAutoScheduled);
       setScheduleLocked(task.scheduleLocked);
+      setIsFrozen(task.isFrozen || false);
       setPriority(task.priority || null);
+      setPriorityLevel(task.priorityLevel || SchedulingTaskPriority.MEDIUM);
     } else if (!task && isOpen) {
       resetForm();
     }
@@ -198,14 +235,35 @@ export function TaskModal({
         dueDate: dueDate ? newDate(dueDate) : null,
         startDate: startDate ? newDate(startDate) : null,
         duration: duration ? parseInt(duration, 10) : undefined,
+        estimatedMinutes: estimatedMinutes
+          ? parseInt(estimatedMinutes, 10)
+          : duration
+            ? parseInt(duration, 10)
+            : undefined,
+        minChunkMinutes: minChunkMinutes
+          ? parseInt(minChunkMinutes, 10)
+          : undefined,
+        maxChunkMinutes: maxChunkMinutes
+          ? parseInt(maxChunkMinutes, 10)
+          : undefined,
+        deadline: deadline
+          ? newDate(deadline)
+          : dueDate
+            ? newDate(dueDate)
+            : null,
         energyLevel: energyLevel || undefined,
+        energyRequired,
         preferredTime: preferredTime || undefined,
+        priorityLevel,
+        contextTag: contextTag.trim() || undefined,
         tagIds: selectedTagIds,
         projectId: projectId,
         isRecurring,
         recurrenceRule: isRecurring ? recurrenceRule : undefined,
         isAutoScheduled,
+        autoScheduled: isAutoScheduled,
         scheduleLocked,
+        isFrozen,
         priority,
       });
       onClose();
@@ -315,6 +373,18 @@ export function TaskModal({
             </div>
 
             <div>
+              <Label htmlFor="estimatedMinutes">Planner Estimate</Label>
+              <Input
+                type="number"
+                id="estimatedMinutes"
+                value={estimatedMinutes}
+                onChange={(e) => setEstimatedMinutes(e.target.value)}
+                min="0"
+                placeholder={duration || "45"}
+              />
+            </div>
+
+            <div>
               <Label htmlFor="priority">Priority</Label>
               <Select
                 value={priority || Priority.NONE}
@@ -360,6 +430,48 @@ export function TaskModal({
             </div>
 
             <div>
+              <Label htmlFor="priorityLevel">Planner Priority</Label>
+              <Select
+                value={priorityLevel}
+                onValueChange={(value) =>
+                  setPriorityLevel(value as SchedulingTaskPriority)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue>{formatEnumValue(priorityLevel)}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(SchedulingTaskPriority).map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {formatEnumValue(level)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="energyRequired">Focus Required</Label>
+              <Select
+                value={energyRequired}
+                onValueChange={(value) =>
+                  setEnergyRequired(value as SchedulingEnergyLevel)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue>{formatEnumValue(energyRequired)}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(SchedulingEnergyLevel).map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {formatEnumValue(level)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <Label htmlFor="preferredTime">Preferred Time</Label>
               <Select
                 value={preferredTime || "none"}
@@ -383,6 +495,50 @@ export function TaskModal({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 border-t pt-4">
+            <div>
+              <Label htmlFor="deadline">Planner Deadline</Label>
+              <Input
+                type="datetime-local"
+                id="deadline"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contextTag">Context Tag</Label>
+              <Input
+                id="contextTag"
+                value={contextTag}
+                onChange={(e) => setContextTag(e.target.value)}
+                placeholder="deep work"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="minChunkMinutes">Min Chunk</Label>
+              <Input
+                type="number"
+                id="minChunkMinutes"
+                value={minChunkMinutes}
+                onChange={(e) => setMinChunkMinutes(e.target.value)}
+                min="0"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="maxChunkMinutes">Max Chunk</Label>
+              <Input
+                type="number"
+                id="maxChunkMinutes"
+                value={maxChunkMinutes}
+                onChange={(e) => setMaxChunkMinutes(e.target.value)}
+                min="0"
+              />
             </div>
           </div>
 
@@ -413,6 +569,16 @@ export function TaskModal({
                     checked={scheduleLocked}
                     onCheckedChange={setScheduleLocked}
                   />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Freeze Block</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Keep this block fixed when the smart scheduler reflows.
+                    </p>
+                  </div>
+                  <Switch checked={isFrozen} onCheckedChange={setIsFrozen} />
                 </div>
 
                 {task?.scheduledStart && task?.scheduledEnd && (

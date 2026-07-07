@@ -72,30 +72,32 @@ model Session {
 }
 
 model User {
-  id                   String                @id @default(cuid())
-  name                 String?
-  email                String?               @unique
-  emailVerified        DateTime?
-  image                String?
-  role                 String                @default("user") // Possible values: "user", "admin"
-  subscription         Subscription?
-  accounts             Account[]
-  sessions             Session[]
-  calendars            CalendarFeed[]
-  autoScheduleSettings AutoScheduleSettings?
-  userSettings         UserSettings?
-  calendarSettings     CalendarSettings?
-  notificationSettings NotificationSettings?
-  integrationSettings  IntegrationSettings?
-  dataSettings         DataSettings?
-  tasks                Task[]
-  projects             Project[]
-  connectedAccounts    ConnectedAccount[]
-  tags                 Tag[]
-  JobRecord            JobRecord[]
-  taskProviders        TaskProvider[]
-  TaskChange           TaskChange[]
-  PasswordReset        PasswordReset[]
+  id                    String                 @id @default(cuid())
+  name                  String?
+  email                 String?                @unique
+  emailVerified         DateTime?
+  image                 String?
+  role                  String                 @default("user") // Possible values: "user", "admin"
+  subscription          Subscription?
+  accounts              Account[]
+  sessions              Session[]
+  calendars             CalendarFeed[]
+  autoScheduleSettings  AutoScheduleSettings?
+  userSettings          UserSettings?
+  calendarSettings      CalendarSettings?
+  notificationSettings  NotificationSettings?
+  integrationSettings   IntegrationSettings?
+  dataSettings          DataSettings?
+  schedulingPreferences SchedulingPreferences?
+  energyProfileWindows  EnergyProfileWindow[]
+  tasks                 Task[]
+  projects              Project[]
+  connectedAccounts     ConnectedAccount[]
+  tags                  Tag[]
+  JobRecord             JobRecord[]
+  taskProviders         TaskProvider[]
+  TaskChange            TaskChange[]
+  PasswordReset         PasswordReset[]
 }
 
 model VerificationToken {
@@ -210,6 +212,20 @@ model Task {
   energyLevel   String? // enum: 'high', 'medium', 'low'
   preferredTime String? // enum: 'morning', 'afternoon', 'evening'
 
+  // Smart scheduling fields
+  energyRequired   SchedulingEnergyLevel  @default(MEDIUM)
+  estimatedMinutes Int?
+  minChunkMinutes  Int?
+  maxChunkMinutes  Int?
+  deadline         DateTime?
+  priorityLevel    SchedulingTaskPriority @default(MEDIUM)
+  contextTag       String?
+  isFrozen         Boolean                @default(false)
+  dependsOnId      String?
+  dependsOn        Task?                  @relation("TaskDependencies", fields: [dependsOnId], references: [id], onDelete: SetNull)
+  dependents       Task[]                 @relation("TaskDependencies")
+  autoScheduled    Boolean                @default(false)
+
   // Auto-scheduling
   isAutoScheduled Boolean   @default(false)
   scheduleLocked  Boolean   @default(false)
@@ -272,12 +288,55 @@ model Task {
   @@index([externalTaskId])
   @@index([source])
   @@index([postponedUntil])
+  @@index([deadline])
+  @@index([energyRequired])
+  @@index([priorityLevel])
+  @@index([contextTag])
+  @@index([isFrozen])
+  @@index([dependsOnId])
+  @@index([autoScheduled])
   @@index([userId])
   @@index([externalTaskId, source])
   @@index([syncStatus])
   @@index([externalListId])
   @@index([blockDirty, userId])
   @@index([blockFeedId])
+}
+
+model EnergyProfileWindow {
+  id          String                @id @default(cuid())
+  userId      String
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int // 0-6, where 0 is Sunday
+  startTime   String // HH:mm
+  endTime     String // HH:mm
+  energyLevel SchedulingEnergyLevel
+  sortOrder   Int                   @default(0)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@unique([userId, dayOfWeek, startTime, endTime])
+  @@index([userId, dayOfWeek, sortOrder])
+  @@index([energyLevel])
+}
+
+model SchedulingPreferences {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workHours            Json?
+  bufferMinutes        Int      @default(15)
+  maxDeepWorkPerDay    Int      @default(180)
+  minBreakMinutes      Int      @default(15)
+  autoRescheduleOnMiss Boolean  @default(true)
+  enableBodyDoubling   Boolean  @default(false)
+  enableTaskBatching   Boolean  @default(true)
+  hardStopTime         String   @default("18:00")
+  bufferMultiplier     Float    @default(1.3)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Tag {
@@ -321,7 +380,7 @@ model AutoScheduleSettings {
   groupByProject Boolean @default(false)
 
   // Calendar block push settings
-  pushTasksToCalendar Boolean  @default(false) // Enable pushing task blocks to calendar
+  pushTasksToCalendar Boolean @default(false) // Enable pushing task blocks to calendar
   pushTasksFeedId     String? // ID of target CalendarFeed (must be GOOGLE type)
 
   // Metadata
@@ -638,6 +697,19 @@ enum SubscriptionStatus {
   ACTIVE
   PAYMENT_PENDING
   PAYMENT_FAILED
+}
+
+enum SchedulingEnergyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SchedulingTaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
 model Subscription {
