@@ -17,6 +17,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
+import { APP_SLUG } from "@/lib/app-config";
+
 export function ImportExportSettings() {
   const [includeCompleted, setIncludeCompleted] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -45,7 +47,7 @@ export function ImportExportSettings() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `fluid-calendar-tasks-${
+      link.download = `${APP_SLUG}-tasks-${
         new Date().toISOString().split("T")[0]
       }.json`;
       document.body.appendChild(link);

@@ -1,12 +1,10 @@
 /**
- * Configuration system for feature flags
- * This allows toggling between open source and SAAS features
+ * Single-user planner feature flags.
+ *
+ * SaaS surfaces are intentionally disabled in this fork. Keep the exported
+ * shape so existing imports continue to compile while the UI is simplified.
  */
-
-// Environment-based configuration
-// Use NEXT_PUBLIC_ prefix to make it available on the client side
-export const isSaasEnabled =
-  process.env.NEXT_PUBLIC_ENABLE_SAAS_FEATURES === "true";
+export const isSaasEnabled = false;
 
 // Feature flags for specific SAAS features
 export const featureFlags = {
@@ -19,12 +17,12 @@ export const featureFlags = {
     caldavSync: true,
   },
 
-  // SAAS-only features (enabled only when SAAS mode is active)
+  // SaaS-only features are not part of the single-user planner.
   saas: {
-    billing: isSaasEnabled,
-    advancedAnalytics: isSaasEnabled,
-    aiScheduling: isSaasEnabled,
-    prioritySupport: isSaasEnabled,
+    billing: false,
+    advancedAnalytics: false,
+    aiScheduling: false,
+    prioritySupport: false,
   },
 };
 

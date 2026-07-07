@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/app-config";
+
 export const metadata: Metadata = {
-  title: "FluidCalendar",
-  description: "A modern calendar and task management application",
+  title: APP_NAME,
+  description: APP_DESCRIPTION,
   icons: {
     icon: [
       { url: "/logo.svg", type: "image/svg+xml", sizes: "any" },

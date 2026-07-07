@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Suspense } from "react";
-
-import dynamic from "next/dynamic";
 
 import { AccountManager } from "@/components/settings/AccountManager";
 import { AutoScheduleSettings } from "@/components/settings/AutoScheduleSettings";
@@ -13,32 +10,14 @@ import { LogViewer } from "@/components/settings/LogViewer";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { SystemSettings } from "@/components/settings/SystemSettings";
 import { TaskSyncSettings } from "@/components/settings/TaskSyncSettings";
-import { UserManagement } from "@/components/settings/UserManagement";
 import { UserSettings } from "@/components/settings/UserSettings";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-import { isSaasEnabled } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
 import { useAdmin } from "@/hooks/use-admin";
 
 import { useSettingsStore } from "@/store/settings";
-
-// Add dynamic import for the waitlist page
-const WaitlistPage = dynamic(
-  () =>
-    import(
-      `./waitlist/page${
-        process.env.NEXT_PUBLIC_ENABLE_SAAS_FEATURES === "true"
-          ? ".saas"
-          : ".open"
-      }`
-    ),
-  {
-    loading: () => <p>Loading...</p>,
-  }
-);
 
 type SettingsTab =
   | "accounts"
@@ -48,10 +27,7 @@ type SettingsTab =
   | "system"
   | "task-sync"
   | "logs"
-  | "user-management"
-  | "waitlist"
   | "import-export"
-  | "admin-dashboard"
   | "notifications";
 
 export default function SettingsPage() {
@@ -80,18 +56,7 @@ export default function SettingsPage() {
       const adminTabs = [
         { id: "system", label: "System" },
         { id: "logs", label: "Logs" },
-        { id: "user-management", label: "Users" },
       ] as const;
-
-      // Only add the waitlist tab if SAAS features are enabled
-      if (isSaasEnabled) {
-        return [
-          ...baseTabs,
-          ...adminTabs,
-          { id: "waitlist", label: "Beta Waitlist" },
-          { id: "admin-dashboard", label: "Admin Dashboard" },
-        ] as const;
-      }
 
       return [...baseTabs, ...adminTabs] as const;
     }
@@ -115,10 +80,7 @@ export default function SettingsPage() {
         "task-sync",
         "system",
         "logs",
-        "user-management",
-        "waitlist",
         "import-export",
-        "admin-dashboard",
         "notifications",
       ];
 
@@ -149,13 +111,7 @@ export default function SettingsPage() {
 
   const renderContent = () => {
     // Admin-only tabs
-    const adminOnlyTabs = [
-      "system",
-      "logs",
-      "user-management",
-      "waitlist",
-      "admin-dashboard",
-    ];
+    const adminOnlyTabs = ["system", "logs"];
 
     // If admin status is still loading and the active tab is admin-only, show loading state
     if (adminOnlyTabs.includes(activeTab) && isAdminLoading) {
@@ -195,28 +151,8 @@ export default function SettingsPage() {
         return <SystemSettings />;
       case "logs":
         return <LogViewer />;
-      case "user-management":
-        return <UserManagement />;
       case "import-export":
         return <ImportExportSettings />;
-      case "waitlist":
-        return (
-          <Suspense fallback={<div>Loading...</div>}>
-            <WaitlistPage />
-          </Suspense>
-        );
-      case "admin-dashboard":
-        return (
-          <div className="flex flex-col items-center justify-center p-8 text-center">
-            <h2 className="mb-4 text-2xl font-bold">Admin Dashboard</h2>
-            <p className="mb-4 text-muted-foreground">
-              Access the full admin dashboard to manage the application.
-            </p>
-            <Button asChild>
-              <a href="/admin">Go to Admin Dashboard</a>
-            </Button>
-          </div>
-        );
       default:
         return null;
     }

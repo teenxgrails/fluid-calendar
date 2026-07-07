@@ -5,3 +5,6 @@
 - 2026-07-07: Baseline auto-scheduler behavior is documented in `ARCHITECTURE.md` before changing scheduling logic.
 - 2026-07-07: The existing scheduler schedules only unlocked `isAutoScheduled` tasks, preserves locked tasks as conflicts, skips completed/in-progress tasks, scores one-week slots, writes scheduled timestamps directly to Prisma, and does not split tasks or report overflow reasons.
 - 2026-07-07: Added `DESIGN.md` via `getdesign@latest add framer`; later UI phases will use its dark-canvas, monochrome surface, sparse blue accent, and dense control guidance as reference while adapting it for a productivity app rather than a marketing page.
+- 2026-07-07: Phase 1 keeps the upstream GitHub attribution links and old package/storage identifiers intact, but all reachable app UI/email strings now use `APP_NAME`.
+- 2026-07-07: Public signup and registration are hard-disabled for single-user mode; first-run setup remains the path for creating the local planner account.
+- 2026-07-07: Apple/iCloud Calendar is implemented as a CalDAV preset (`https://caldav.icloud.com`) because the human must supply an Apple app-specific password for end-to-end testing.

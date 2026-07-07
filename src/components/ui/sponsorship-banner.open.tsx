@@ -1,6 +1,8 @@
 import { FaGithub } from "react-icons/fa";
 import { HiHeart } from "react-icons/hi";
 
+import { APP_NAME } from "@/lib/app-config";
+
 // Open source version of the sponsorship banner - shows GitHub sponsor link
 export default function SponsorshipBanner() {
   return (
@@ -8,7 +10,7 @@ export default function SponsorshipBanner() {
       <div className="mb-2 flex items-center gap-2">
         <FaGithub className="h-5 w-5 text-accent-foreground" />
         <span className="text-sm font-medium text-accent-foreground">
-          Support FluidCalendar
+          Support {APP_NAME}
         </span>
       </div>
       <p className="mb-3 text-sm text-accent-foreground/80">

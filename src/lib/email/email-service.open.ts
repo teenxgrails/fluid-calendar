@@ -1,9 +1,9 @@
 import { Resend } from "resend";
 
+import { APP_NAME } from "@/lib/app-config";
 import { logger } from "@/lib/logger";
 
 const LOG_SOURCE = "EmailService";
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface EmailJobData {
   from?: string;
@@ -43,7 +43,7 @@ export class EmailService {
         LOG_SOURCE
       );
 
-      const fromEmail = EmailService.formatSender("FluidCalendar");
+      const fromEmail = EmailService.formatSender(APP_NAME);
 
       const emailToSend = {
         from: fromEmail,
@@ -66,6 +66,12 @@ export class EmailService {
         Object.assign(emailToSend, { attachments: formattedAttachments });
       }
 
+      const resendApiKey = process.env.RESEND_API_KEY;
+      if (!resendApiKey) {
+        throw new Error("RESEND_API_KEY is required to send email");
+      }
+
+      const resend = new Resend(resendApiKey);
       const { data, error } = await resend.emails.send(emailToSend);
 
       if (error) {
@@ -105,7 +111,7 @@ export class EmailService {
    */
   static formatSender(displayName: string, email?: string): string {
     const fromEmail =
-      email || process.env.RESEND_FROM_EMAIL || "noreply@fluidcalendar.com";
+      email || process.env.RESEND_FROM_EMAIL || "noreply@localhost";
     return `${displayName} <${fromEmail}>`;
   }
 }

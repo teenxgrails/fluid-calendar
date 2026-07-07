@@ -103,8 +103,8 @@ export function AccountManager() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Missing Google Credentials</AlertTitle>
               <AlertDescription>
-                Please contact your administrator to configure Google Calendar
-                integration.
+                Add Google credentials in System settings to connect Google
+                Calendar.
               </AlertDescription>
             </Alert>
           )}
@@ -114,8 +114,8 @@ export function AccountManager() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Missing Outlook Credentials</AlertTitle>
               <AlertDescription>
-                Please contact your administrator to configure Outlook Calendar
-                integration.
+                Add Outlook credentials in System settings to connect Outlook
+                Calendar.
               </AlertDescription>
             </Alert>
           )}
@@ -134,7 +134,7 @@ export function AccountManager() {
               Connect Outlook Calendar
             </Button>
             <Button onClick={() => setShowCalDAVForm(true)} variant="outline">
-              Connect CalDAV Calendar
+              Connect Apple / iCloud Calendar
             </Button>
           </div>
 
@@ -171,15 +171,14 @@ export function AccountManager() {
                         <span className="text-sm font-medium">
                           {account.email}
                         </span>
-                        {account.provider === "CALDAV" &&
-                          account.caldavUrl && (
-                            <span
-                              className="text-muted-foreground max-w-full truncate text-xs"
-                              title={account.caldavUrl}
-                            >
-                              {account.caldavUrl}
-                            </span>
-                          )}
+                        {account.provider === "CALDAV" && account.caldavUrl && (
+                          <span
+                            className="text-muted-foreground max-w-full truncate text-xs"
+                            title={account.caldavUrl}
+                          >
+                            {account.caldavUrl}
+                          </span>
+                        )}
                         <Badge variant="outline" className="text-xs">
                           {account.calendars.length} calendars
                         </Badge>

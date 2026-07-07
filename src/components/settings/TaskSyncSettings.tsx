@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { APP_NAME } from "@/lib/app-config";
 import { format } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 
@@ -60,7 +61,7 @@ interface TaskProvider {
   settings?: {
     [key: string]: string | number | boolean | undefined;
   };
-} 
+}
 
 interface TaskList {
   id: string;
@@ -742,7 +743,7 @@ export function TaskSyncSettings() {
     return (
       <SettingRow
         label="Task Lists"
-        description="Map external task lists to FluidCalendar projects"
+        description={`Map external task lists to ${APP_NAME} projects`}
       >
         <div className="space-y-4">
           {error && (

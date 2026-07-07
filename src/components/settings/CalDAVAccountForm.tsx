@@ -48,7 +48,7 @@ export function CalDAVAccountForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [formData, setFormData] = useState({
-    serverUrl: "",
+    serverUrl: "https://caldav.icloud.com",
     username: "",
     password: "",
     path: "", // Optional path for some CalDAV servers
@@ -191,7 +191,9 @@ export function CalDAVAccountForm({
 
       await response.json();
 
-      alert(`Successfully connected to CalDAV server for ${formData.username}`);
+      alert(
+        `Successfully connected Apple / iCloud Calendar for ${formData.username}`
+      );
 
       if (onSuccess) {
         onSuccess();
@@ -284,10 +286,11 @@ export function CalDAVAccountForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Connect CalDAV Account</CardTitle>
+        <CardTitle>Connect Apple / iCloud Calendar</CardTitle>
         <CardDescription>
-          Add your CalDAV calendar account from services like Fastmail, iCloud,
-          or other CalDAV providers
+          Use your Apple ID email and an app-specific password. The CalDAV
+          server is preset to caldav.icloud.com, but you can edit it for another
+          CalDAV provider.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -314,7 +317,7 @@ export function CalDAVAccountForm({
               required
             />
             <p className="mt-1 text-sm text-muted-foreground">
-              For Fastmail: https://caldav.fastmail.com
+              For Apple/iCloud: https://caldav.icloud.com
             </p>
           </fieldset>
 
@@ -334,7 +337,7 @@ export function CalDAVAccountForm({
               required
             />
             <p className="mt-1 text-sm text-muted-foreground">
-              For Fastmail: Use your full email address
+              For Apple/iCloud: use your Apple ID email address
             </p>
           </fieldset>
 
@@ -355,8 +358,8 @@ export function CalDAVAccountForm({
               required
             />
             <p className="mt-1 text-sm text-muted-foreground">
-              For Fastmail: Use an app-specific password from Settings →
-              Password & Security
+              For Apple/iCloud: create an app-specific password in Apple Account
+              settings under Sign-In and Security.
             </p>
           </fieldset>
 
@@ -372,7 +375,7 @@ export function CalDAVAccountForm({
               onChange={handleChange}
             />
             <p className="mt-1 text-sm text-muted-foreground">
-              For Fastmail: /dav/calendars/user/youremail@fastmail.com
+              Leave blank for Apple/iCloud unless you have a custom CalDAV path.
             </p>
           </fieldset>
 

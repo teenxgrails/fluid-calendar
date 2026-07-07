@@ -19,6 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { APP_NAME } from "@/lib/app-config";
+
 import { useSetupStore } from "@/store/setup";
 
 export function SetupForm() {
@@ -98,9 +100,9 @@ export function SetupForm() {
   return (
     <Card className="mx-auto w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-2xl">Welcome to FluidCalendar</CardTitle>
+        <CardTitle className="text-2xl">Welcome to {APP_NAME}</CardTitle>
         <CardDescription>
-          Set up your admin account to get started with the multi-user version.
+          Set up your single local account to get started.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -183,12 +185,12 @@ export function SetupForm() {
             className="mt-6 w-full"
             disabled={isLoading || success}
           >
-            {isLoading ? "Setting up..." : "Create Admin Account"}
+            {isLoading ? "Setting up..." : "Create Account"}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="flex justify-center text-sm text-gray-500">
-        This will set up the initial admin user and migrate existing data.
+        This will set up your local planner user and migrate existing data.
       </CardFooter>
     </Card>
   );

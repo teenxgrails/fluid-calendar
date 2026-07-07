@@ -1,22 +1,24 @@
+import { APP_NAME } from "@/lib/app-config";
+
 export const getTitleFromPathname = (pathname: string) => {
   switch (pathname) {
     case "/calendar":
-      return "Calendar | FluidCalendar";
+      return `Calendar | ${APP_NAME}`;
     case "/tasks":
-      return "Tasks | FluidCalendar";
+      return `Tasks | ${APP_NAME}`;
     case "/focus":
-      return "Focus | FluidCalendar";
+      return `Focus | ${APP_NAME}`;
     case "/settings":
-      return "Settings | FluidCalendar";
+      return `Settings | ${APP_NAME}`;
     case "/setup":
-      return "Setup | FluidCalendar";
+      return `Setup | ${APP_NAME}`;
     case "/auth/signin":
-      return "Sign In | FluidCalendar";
+      return `Sign In | ${APP_NAME}`;
     case "/auth/signup":
-      return "Sign Up | FluidCalendar";
+      return `Sign Up | ${APP_NAME}`;
     case "/auth/reset-password":
-      return "Reset Password | FluidCalendar";
+      return `Reset Password | ${APP_NAME}`;
     default:
-      return "FluidCalendar";
+      return APP_NAME;
   }
 };

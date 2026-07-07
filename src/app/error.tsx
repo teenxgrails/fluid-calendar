@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
+import { APP_NAME } from "@/lib/app-config";
 import { inter } from "@/lib/fonts";
 import { getAppVersion, getVersionGithubUrl } from "@/lib/version";
 
@@ -22,7 +23,7 @@ export default function Error({
   useEffect(() => {
     setMounted(true);
     // Set document title on the client side
-    document.title = "Error - FluidCalendar";
+    document.title = `Error - ${APP_NAME}`;
     // Log the error to an error reporting service
     console.error(error);
   }, [error]);

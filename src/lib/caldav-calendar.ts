@@ -2,6 +2,7 @@ import { CalendarEvent, ConnectedAccount, Prisma } from "@prisma/client";
 import ICAL from "ical.js";
 import { DAVDepth, DAVResponse, createDAVClient } from "tsdav";
 
+import { APP_NAME } from "@/lib/app-config";
 import { newDate, newDateFromYMD } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
@@ -605,7 +606,8 @@ export class CalDAVCalendarService {
 
       // Resolve the user's timezone so timed events serialize with a TZID
       // (keeps wall-clock time across DST for recurring events; issue #135).
-      const timeZone = event.timeZone ?? (await this.resolveUserTimeZone(userId));
+      const timeZone =
+        event.timeZone ?? (await this.resolveUserTimeZone(userId));
 
       // Generate the iCalendar data
       const icalData = this.convertToICalendar({
@@ -1020,7 +1022,7 @@ export class CalDAVCalendarService {
   private convertToICalendar(event: CalendarEventInput): string {
     // Create a new iCalendar component
     const calendar = new ICAL.Component(["vcalendar", [], []]);
-    calendar.updatePropertyWithValue("prodid", "-//FluidCalendar//EN");
+    calendar.updatePropertyWithValue("prodid", `-//${APP_NAME}//EN`);
     calendar.updatePropertyWithValue("version", "2.0");
 
     // Create the event component
@@ -1145,7 +1147,8 @@ export class CalDAVCalendarService {
 
       // Resolve the user's timezone so timed events serialize with a TZID
       // (keeps wall-clock time across DST for recurring events; issue #135).
-      const timeZone = event.timeZone ?? (await this.resolveUserTimeZone(userId));
+      const timeZone =
+        event.timeZone ?? (await this.resolveUserTimeZone(userId));
 
       // Generate the iCalendar data
       const icalData = this.convertToICalendar({
