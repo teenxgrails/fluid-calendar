@@ -41,7 +41,7 @@ interface SettingsStore extends Settings {
 
 const defaultSettings: Settings & { accounts: ConnectedAccount[] } = {
   user: {
-    theme: "system",
+    theme: "dark",
     defaultView: "week",
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     weekStartDay: "sunday",

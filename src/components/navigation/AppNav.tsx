@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { BsListTask, BsCalendar } from "react-icons/bs";
+import { BsCalendar, BsListTask } from "react-icons/bs";
 import { HiOutlineLightBulb, HiOutlineSearch } from "react-icons/hi";
 import { RiKeyboardLine } from "react-icons/ri";
 
@@ -41,20 +41,17 @@ export function AppNav({ className }: AppNavProps) {
   ];
 
   return (
-    <nav
-      className={cn(
-        "z-10 h-16 flex-none border-b border-border bg-background",
-        className
-      )}
-    >
-      <div className="h-full px-4">
+    <nav className={cn("motion-shell z-10 h-14 flex-none border-b", className)}>
+      <div className="h-full px-3">
         <div className="flex h-full items-center justify-between">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
             <Link
               href="/calendar"
               className={cn(
-                "flex items-center mr-8",
-                pathname === "/calendar" ? "text-primary" : "text-foreground hover:text-primary"
+                "mr-3 flex items-center rounded-md p-1.5",
+                pathname === "/calendar"
+                  ? "bg-primary/10 text-primary"
+                  : "text-foreground hover:bg-muted hover:text-primary"
               )}
             >
               <Image
@@ -74,7 +71,7 @@ export function AppNav({ className }: AppNavProps) {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium",
+                    "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-foreground hover:bg-muted"
@@ -89,7 +86,7 @@ export function AppNav({ className }: AppNavProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={openCommandPalette}
-              className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="flex items-center gap-1 rounded-md border border-border/70 bg-secondary/40 px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
               title="Search or run a command (⌘K)"
             >
               <HiOutlineSearch className="h-4 w-4" />

@@ -12,3 +12,4 @@
 - 2026-07-07: Phase 3 keeps the pure scheduler capable of returning split chunks, but the current Prisma `Task` shape can persist only one visible slot per task; the adapter writes the first chunk until a dedicated scheduled-block model is added.
 - 2026-07-07: Phase 4 keeps AI optional and advisory; provider `None` remains the default, brain-dump parsing has a local fallback, and AI schedule suggestions return an accept/reject-ready diff instead of silently moving tasks.
 - 2026-07-07: Phase 5 ships ADHD planning affordances as a dense calendar sidebar panel first: brain dump, energy timeline, overcommitment, buffers, quick reschedule, and shutdown ritual remain visible without adding another route.
+- 2026-07-07: Phase 6 uses a restrained Motion-like dark shell with compact controls and sparse blue accent; the app defaults new users to dark while still allowing light/system in settings.

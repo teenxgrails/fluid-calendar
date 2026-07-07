@@ -51,26 +51,26 @@
 
   .dark {
     color-scheme: dark;
-    --background: 220 10% 12%;
-    --foreground: 0 0% 98%;
+    --background: 224 12% 7%;
+    --foreground: 210 17% 96%;
 
-    --card: 220 10% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 225 11% 10%;
+    --card-foreground: 210 17% 96%;
 
-    --popover: 220 10% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 225 11% 10%;
+    --popover-foreground: 210 17% 96%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 220 10% 12%;
+    --primary: 203 92% 64%;
+    --primary-foreground: 224 12% 7%;
 
-    --secondary: 220 10% 18%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 224 10% 15%;
+    --secondary-foreground: 210 17% 96%;
 
-    --muted: 220 10% 18%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 224 10% 14%;
+    --muted-foreground: 215 12% 68%;
 
-    --accent: 220 10% 18%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 203 35% 18%;
+    --accent-foreground: 203 92% 74%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
@@ -78,9 +78,9 @@
     --warning: 48 96% 89%;
     --warning-foreground: 38 92% 50%;
 
-    --border: 220 10% 20%;
-    --input: 220 10% 20%;
-    --ring: 0 0% 83.1%;
+    --border: 224 9% 18%;
+    --input: 224 9% 18%;
+    --ring: 203 92% 64%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -95,6 +95,22 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: 0;
+  }
+}
+
+@layer components {
+  .motion-shell {
+    @apply border-border/80 bg-background/95 shadow-[inset_0_1px_0_hsl(var(--foreground)/0.04)];
+  }
+
+  .motion-panel {
+    @apply border-border/80 bg-card/95 shadow-[inset_0_1px_0_hsl(var(--foreground)/0.04)];
+  }
+
+  .motion-button {
+    @apply rounded-md border border-border/70 bg-secondary/70 px-2.5 py-1.5 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground;
   }
 }
 
@@ -112,11 +128,11 @@
 }
 
 .fc .fc-button {
-  @apply bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply rounded-md border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
 }
 
 .fc .fc-button-primary {
-  @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700;
+  @apply border-blue-600 bg-blue-600 text-white hover:bg-blue-700;
 }
 
 .fc .fc-daygrid-day-frame {
@@ -132,7 +148,7 @@
 }
 
 .fc .fc-event {
-  @apply rounded shadow-sm border-none cursor-pointer;
+  @apply cursor-pointer rounded border-none shadow-sm;
 }
 
 .fc .fc-event-main {
@@ -164,7 +180,7 @@
 }
 
 .fc .fc-day-header {
-  @apply py-2 border-b border-gray-200;
+  @apply border-b border-gray-200 py-2;
 }
 
 .fc .fc-scrollgrid {
@@ -172,12 +188,12 @@
 }
 
 .fc .fc-col-header-cell {
-  @apply bg-white border-b border-gray-200;
+  @apply border-b border-gray-200 bg-white;
 }
 
 /* Dark mode styles for FullCalendar */
 .dark .fc {
-  --fc-small-font-size: .85em;
+  --fc-small-font-size: 0.85em;
   --fc-page-bg-color: hsl(var(--background));
   --fc-neutral-bg-color: hsl(var(--muted) / 0.2);
   --fc-neutral-text-color: hsl(var(--muted-foreground));
@@ -256,9 +272,10 @@
 [cmdk-root] {
   max-width: 640px;
   width: 100%;
-  background-color: hsl(var(--background));
+  background-color: hsl(var(--card));
   border-radius: 8px;
   border: 1px solid hsl(var(--border));
+  box-shadow: 0 24px 80px hsl(0 0% 0% / 0.45);
 }
 
 [cmdk-input] {
@@ -286,7 +303,7 @@
 [cmdk-item] {
   content-visibility: auto;
   cursor: pointer;
-  height: 40px;
+  height: 36px;
   border-radius: 8px;
   font-size: 14px;
   display: flex;
