@@ -85,9 +85,9 @@ export function FocusedTask({ task }: FocusedTaskProps) {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {task.dueDate && (
-          <div>
+          <div className="glass--subtle p-3">
             <h3 className="mb-1 text-sm font-medium">Due Date</h3>
             <p className="text-muted-foreground">
               {format(task.dueDate, "PPP")}
@@ -95,7 +95,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.completedAt && task.status === TaskStatus.COMPLETED && (
-          <div>
+          <div className="glass--subtle p-3">
             <h3 className="mb-1 text-sm font-medium">Completed On</h3>
             <p className="text-muted-foreground">
               {format(task.completedAt, "PPP p")}
@@ -103,13 +103,13 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.duration && (
-          <div>
+          <div className="glass--subtle p-3">
             <h3 className="mb-1 text-sm font-medium">Estimated Duration</h3>
             <p className="text-muted-foreground">{task.duration} minutes</p>
           </div>
         )}
         {task.scheduleScore && (
-          <div>
+          <div className="glass--subtle p-3">
             <h3 className="mb-1 text-sm font-medium">Focus Score</h3>
             <p className="text-muted-foreground">
               {task.scheduleScore.toFixed(2)}
@@ -117,7 +117,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.isRecurring && (
-          <div>
+          <div className="glass--subtle p-3">
             <h3 className="mb-1 text-sm font-medium">Recurring Task</h3>
             <p className="text-muted-foreground">This task repeats</p>
           </div>
@@ -135,7 +135,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
 
       {/* Task description with hyperlinks */}
       {task.description && (
-        <div className="border-t border-border pt-4">
+        <div className="border-t border-white/10 pt-4">
           <h3 className="mb-2 text-sm font-medium">Description</h3>
           <div className="task-description overflow-auto whitespace-pre-wrap text-muted-foreground">
             {linkifyText(task.description)}

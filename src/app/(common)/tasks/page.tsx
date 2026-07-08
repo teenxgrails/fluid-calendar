@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { BsKanban, BsListTask } from "react-icons/bs";
+import { Kanban, ListTodo } from "lucide-react";
 import { toast } from "sonner";
 
 import { ProjectSidebar } from "@/components/projects/ProjectSidebar";
@@ -111,36 +111,36 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full gap-3 bg-transparent p-3">
       <ProjectSidebar />
-      <div className="flex min-w-0 flex-1 flex-col" data-task-page>
-        <div className="border-b border-border px-6 py-4">
+      <div className="glass flex min-w-0 flex-1 flex-col" data-task-page>
+        <div className="border-b border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-foreground">Tasks</h1>
-              <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+              <div className="glass--subtle flex items-center gap-1 rounded-xl p-1">
                 <button
                   onClick={() => setViewMode("list")}
                   className={cn(
-                    "flex items-center gap-2 rounded-md p-2 text-sm font-medium",
+                    "flex items-center gap-2 rounded-lg p-2 text-sm font-medium transition-all",
                     viewMode === "list"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-white/10 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
                   )}
                 >
-                  <BsListTask className="h-4 w-4" />
+                  <ListTodo className="h-4 w-4" strokeWidth={1.75} />
                   List
                 </button>
                 <button
                   onClick={() => setViewMode("board")}
                   className={cn(
-                    "flex items-center gap-2 rounded-md p-2 text-sm font-medium",
+                    "flex items-center gap-2 rounded-lg p-2 text-sm font-medium transition-all",
                     viewMode === "board"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-white/10 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
                   )}
                 >
-                  <BsKanban className="h-4 w-4" />
+                  <Kanban className="h-4 w-4" strokeWidth={1.75} />
                   Board
                 </button>
               </div>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Headphones, Pause, Play, Square } from "lucide-react";
 
+import { GlowRing, StatBlock } from "@/components/liquid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -88,7 +89,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
     : 1;
   const ringStyle = useMemo(
     () => ({
-      background: `conic-gradient(rgb(59 130 246) ${progress * 360}deg, rgb(31 41 55) 0deg)`,
+      background: `conic-gradient(var(--acc-blue) ${progress * 220}deg, var(--acc-violet) ${progress * 315}deg, rgba(255,255,255,0.08) 0deg)`,
     }),
     [progress]
   );
@@ -157,10 +158,10 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
     : 10;
 
   return (
-    <section className="rounded-md border border-border bg-background p-4">
+    <section className="glass--strong overflow-visible p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold">Focus Timer</h2>
+          <h2 className="text-sm font-semibold text-white">Focus Timer</h2>
           <p className="text-xs text-muted-foreground">
             {task ? task.title : "Start with the selected task"}
           </p>
@@ -181,15 +182,26 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
         </Select>
       </div>
 
-      <div className="mt-4 flex items-center gap-4">
-        <div
-          className="grid h-28 w-28 place-items-center rounded-full p-2"
-          style={ringStyle}
-        >
-          <div className="grid h-full w-full place-items-center rounded-full bg-background text-xl font-semibold">
-            {mode === "FLOW" ? mmss(elapsedSeconds) : mmss(remainingSeconds)}
+      <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row">
+        <GlowRing tone={running ? "magenta" : "blue"} className="shrink-0">
+          <div
+            className="grid h-40 w-40 place-items-center rounded-full p-2 shadow-[0_0_54px_-18px_var(--acc-violet)]"
+            style={ringStyle}
+          >
+            <div className="grid h-full w-full place-items-center rounded-full border border-white/10 bg-[rgba(7,7,13,0.72)] text-center backdrop-blur-2xl">
+              <div>
+                <div className="stat-numeral text-4xl text-white">
+                  {mode === "FLOW"
+                    ? mmss(elapsedSeconds)
+                    : mmss(remainingSeconds)}
+                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-normal text-muted-foreground">
+                  {modeLabels[mode]}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </GlowRing>
         <div className="flex-1 space-y-3">
           {!running && (
             <div className="grid grid-cols-3 gap-2">
@@ -228,7 +240,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
               </label>
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {!running ? (
               <Button type="button" size="sm" onClick={start}>
                 <Play className="h-4 w-4" />
@@ -260,7 +272,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
               </>
             )}
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="glass--subtle flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
             <Headphones className="h-3.5 w-3.5" />
             Soundscape: rain, brown noise, or silence can plug in here.
           </div>
@@ -268,48 +280,30 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
       </div>
 
       {isDeepLocked && (
-        <div className="mt-3 rounded-md border border-blue-500/30 bg-blue-500/10 p-2 text-xs text-blue-100">
+        <div className="glass--subtle mt-3 border-blue-300/30 bg-blue-500/10 p-2 text-xs text-blue-100">
           Deep Focus is a commitment block. It completes when the timer ends.
         </div>
       )}
 
       {report && (
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-md bg-muted p-2">
-            <div className="text-muted-foreground">Focus Score</div>
-            <div className="text-lg font-semibold">
-              {report.stats.focusScore}
-            </div>
-          </div>
-          <div className="rounded-md bg-muted p-2">
-            <div className="text-muted-foreground">Streak</div>
-            <div className="text-lg font-semibold">
-              {report.stats.currentStreak}d
-            </div>
-          </div>
-          <div className="rounded-md bg-muted p-2">
-            <div className="text-muted-foreground">Focus Hours</div>
-            <div className="text-lg font-semibold">
-              {minutesLabel(report.stats.lifetimeMinutes)}
-            </div>
-            <div className="text-muted-foreground">Next: {milestone}h</div>
-          </div>
-          <div className="rounded-md bg-muted p-2">
-            <div className="text-muted-foreground">Weekly</div>
-            <div className="font-semibold">
-              {minutesLabel(report.weeklyReport.focusMinutes)} ·{" "}
-              {report.weeklyReport.sessionsCompleted} sessions
-            </div>
-            <div className="text-muted-foreground">
-              Best {report.weeklyReport.bestDay ?? "n/a"} ·{" "}
-              {report.weeklyReport.estimateAccuracyPercent ?? 0}% estimate fit
-            </div>
-          </div>
+          <StatBlock label="Focus Score" value={report.stats.focusScore} />
+          <StatBlock label="Streak" value={`${report.stats.currentStreak}d`} />
+          <StatBlock
+            label="Focus Hours"
+            value={minutesLabel(report.stats.lifetimeMinutes)}
+            detail={`Next: ${milestone}h`}
+          />
+          <StatBlock
+            label="Weekly"
+            value={`${minutesLabel(report.weeklyReport.focusMinutes)}`}
+            detail={`${report.weeklyReport.sessionsCompleted} sessions · ${report.weeklyReport.bestDay ?? "n/a"}`}
+          />
         </div>
       )}
 
       {report?.weeklyReport.streakStatus.atRisk && (
-        <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-100">
+        <div className="glass--subtle mt-3 border-amber-300/30 bg-amber-500/10 p-2 text-xs text-amber-100">
           One completed session today keeps your {report.stats.currentStreak}
           -day streak warm.
         </div>

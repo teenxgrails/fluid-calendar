@@ -149,8 +149,8 @@ export function ProjectSidebar() {
 
   return (
     <>
-      <div className="flex h-full w-64 flex-col border-r bg-background">
-        <div className="border-b p-4">
+      <div className="glass flex h-full w-64 flex-col">
+        <div className="border-b border-white/10 p-4">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Projects</h2>
             <Button
@@ -243,10 +243,10 @@ export function ProjectSidebar() {
               <div
                 {...removeProjectProps}
                 className={cn(
-                  "mt-4 rounded-md border-2 border-dashed p-4 text-center",
+                  "mt-4 rounded-2xl border border-dashed p-4 text-center",
                   isOverRemove
                     ? "border-destructive bg-destructive/10"
-                    : "border-muted hover:border-muted-foreground/50"
+                    : "border-white/10 bg-white/[0.025] hover:border-white/20"
                 )}
               >
                 <p className="text-sm text-muted-foreground">
@@ -304,8 +304,10 @@ function ProjectItem({
     <div
       {...droppableProps}
       className={cn(
-        "group flex w-full cursor-pointer items-center space-x-2 rounded-md px-3 py-2",
-        isActive ? "bg-secondary text-secondary-foreground" : "hover:bg-muted",
+        "group flex w-full cursor-pointer items-center space-x-2 rounded-xl px-3 py-2 transition-all",
+        isActive
+          ? "bg-white/10 text-secondary-foreground shadow-[0_0_24px_-18px_var(--acc-violet)]"
+          : "hover:bg-white/[0.06]",
         isOver && "ring-2 ring-ring"
       )}
       onClick={() => setActiveProject(project)}

@@ -99,9 +99,9 @@ export function TaskQueue() {
       variant="ghost"
       className={cn(
         "h-auto w-full justify-start px-3 py-2",
-        "hover:bg-accent hover:text-accent-foreground",
+        "hover:bg-white/[0.07] hover:text-foreground",
         task.id === currentTaskId &&
-          "bg-accent font-medium text-accent-foreground"
+          "bg-white/10 font-medium text-foreground shadow-[0_0_24px_-18px_var(--acc-blue)]"
       )}
       onClick={() => switchToTask(task.id)}
     >
@@ -110,7 +110,7 @@ export function TaskQueue() {
           <span
             className={cn(
               "truncate font-medium",
-              task.id === currentTaskId && "text-accent-foreground",
+              task.id === currentTaskId && "text-foreground",
               "task-title"
             )}
           >
@@ -160,7 +160,7 @@ export function TaskQueue() {
       <div className="mb-4">
         <h3
           className={cn(
-            "mb-1 rounded-md px-3 py-1 text-xs font-medium",
+            "mb-1 rounded-xl px-3 py-1 text-xs font-medium",
             accentColor
           )}
         >
@@ -218,7 +218,7 @@ export function TaskQueue() {
           pastDueTasks.length === 0 &&
           postponedTasks.length === 0 &&
           recentlyCompletedTasks.length === 0 && (
-            <div className="py-4 text-center text-sm text-muted-foreground">
+            <div className="glass--subtle py-4 text-center text-sm text-muted-foreground">
               No tasks available
             </div>
           )}

@@ -24,7 +24,7 @@ export function SettingsSection({
   children,
 }: SettingsSectionProps) {
   return (
-    <Card>
+    <Card className="glass--strong">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -36,7 +36,7 @@ export function SettingsSection({
 
 export function SettingRow({ label, description, children }: SettingRowProps) {
   return (
-    <div className="flex flex-col space-y-6 md:flex-row md:items-start md:space-x-6 md:space-y-0">
+    <div className="glass--subtle flex flex-col space-y-6 p-4 md:flex-row md:items-start md:space-x-6 md:space-y-0">
       <div className="flex-1 space-y-1">
         <div className="text-sm font-medium leading-none">{label}</div>
         <div className="text-sm text-muted-foreground">{description}</div>

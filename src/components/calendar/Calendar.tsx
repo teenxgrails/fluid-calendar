@@ -84,11 +84,11 @@ export function Calendar({
   };
 
   return (
-    <div className="flex h-full w-full bg-background">
+    <div className="flex h-full w-full gap-3 bg-transparent p-3">
       {/* Sidebar */}
       <aside
         className={cn(
-          "motion-panel h-full w-80 flex-none border-r",
+          "glass h-full w-80 flex-none",
           "transform transition-transform duration-300 ease-in-out",
           !isHydrated && "opacity-0 duration-0",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -99,7 +99,7 @@ export function Calendar({
           {/* Feed Manager */}
           <div className="flex-1 overflow-y-auto">
             <FeedManager />
-            <div className="border-t border-border">
+            <div className="border-t border-white/10">
               <SmartPlanningPanel />
             </div>
           </div>
@@ -107,12 +107,12 @@ export function Calendar({
       </aside>
 
       {/* Main Content */}
-      <main className="flex min-w-0 flex-1 flex-col bg-background">
+      <main className="glass flex min-w-0 flex-1 flex-col">
         {/* Header */}
-        <header className="motion-shell flex h-14 flex-none items-center border-b px-3">
+        <header className="flex h-14 flex-none items-center border-b border-white/10 px-3">
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className="rounded-md p-2 text-foreground hover:bg-muted"
+            className="rounded-xl p-2 text-foreground hover:bg-white/[0.07]"
             title="Toggle Sidebar (b)"
           >
             <HiMenu className="h-5 w-5" />
@@ -129,7 +129,7 @@ export function Calendar({
 
             <button
               onClick={handleAutoSchedule}
-              className="motion-button text-primary"
+              className="motion-button text-primary glow-blue"
             >
               Auto Schedule
             </button>
@@ -137,7 +137,7 @@ export function Calendar({
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePrevWeek}
-                className="rounded-md p-1.5 text-foreground hover:bg-muted"
+                className="rounded-xl p-1.5 text-foreground hover:bg-white/[0.07]"
                 data-testid="calendar-prev-week"
                 title="Previous Week (←)"
               >
@@ -145,7 +145,7 @@ export function Calendar({
               </button>
               <button
                 onClick={handleNextWeek}
-                className="rounded-md p-1.5 text-foreground hover:bg-muted"
+                className="rounded-xl p-1.5 text-foreground hover:bg-white/[0.07]"
                 data-testid="calendar-next-week"
                 title="Next Week (→)"
               >
@@ -163,10 +163,10 @@ export function Calendar({
             <button
               onClick={() => setView("day")}
               className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm font-medium",
+                "rounded-xl px-2.5 py-1.5 text-sm font-medium transition-all",
                 view === "day"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-white/10 text-white"
+                  : "text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
               )}
             >
               Day
@@ -174,10 +174,10 @@ export function Calendar({
             <button
               onClick={() => setView("week")}
               className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm font-medium",
+                "rounded-xl px-2.5 py-1.5 text-sm font-medium transition-all",
                 view === "week"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-white/10 text-white"
+                  : "text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
               )}
             >
               Week
@@ -185,10 +185,10 @@ export function Calendar({
             <button
               onClick={() => setView("month")}
               className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm font-medium",
+                "rounded-xl px-2.5 py-1.5 text-sm font-medium transition-all",
                 view === "month"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-white/10 text-white"
+                  : "text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
               )}
             >
               Month
@@ -196,10 +196,10 @@ export function Calendar({
             <button
               onClick={() => setView("multiMonth")}
               className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm font-medium",
+                "rounded-xl px-2.5 py-1.5 text-sm font-medium transition-all",
                 view === "multiMonth"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-white/10 text-white"
+                  : "text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
               )}
             >
               Year
@@ -208,7 +208,7 @@ export function Calendar({
         </header>
 
         {/* Calendar Grid */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden p-3 pt-0">
           {view === "day" ? (
             <DayView currentDate={currentDate} onDateClick={setDate} />
           ) : view === "week" ? (

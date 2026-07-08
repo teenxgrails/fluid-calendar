@@ -41,7 +41,7 @@ export function FocusMode() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-transparent p-3">
       {isProcessing && actionType && (
         <ActionOverlay
           type={actionType}
@@ -50,20 +50,20 @@ export function FocusMode() {
         />
       )}
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 gap-3 overflow-hidden">
         {/* Left sidebar with queued tasks */}
-        <aside className="h-full w-80 border-r border-border">
+        <aside className="glass hidden h-full w-80 lg:block">
           <TaskQueue />
         </aside>
 
         {/* Main content area */}
-        <main className="flex-1 space-y-6 overflow-y-auto p-8">
+        <main className="min-w-0 flex-1 space-y-6 overflow-y-auto p-1 sm:p-4">
           <FocusTimerPanel task={currentTask} />
           <FocusedTask task={currentTask} />
         </main>
 
         {/* Right sidebar with quick actions */}
-        <aside className="h-full w-64 border-l border-border">
+        <aside className="glass hidden h-full w-64 xl:block">
           <QuickActions />
         </aside>
       </div>

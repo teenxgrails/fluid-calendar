@@ -180,7 +180,7 @@ export default function SettingsPage() {
     <div className="container py-6">
       <div className="flex flex-col lg:flex-row lg:space-x-12 lg:space-y-0">
         <aside className="lg:w-1/5">
-          <Card>
+          <Card className="sticky top-20">
             <nav className="space-y-1 p-1">
               {tabs.map((tab) => (
                 <a
@@ -191,11 +191,11 @@ export default function SettingsPage() {
                     setActiveTab(tab.id as SettingsTab);
                   }}
                   className={cn(
-                    "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    "flex w-full items-center rounded-xl px-3 py-2 text-sm font-medium transition-colors",
                     !isHydrated && "duration-0",
                     activeTab === tab.id
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-white/10 text-foreground shadow-[0_0_24px_-18px_var(--acc-blue)]"
+                      : "text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
                   )}
                 >
                   {tab.label}

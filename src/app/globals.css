@@ -278,15 +278,49 @@
   }
 
   .motion-shell {
-    @apply border-border/80 bg-background/95 shadow-[inset_0_1px_0_hsl(var(--foreground)/0.04)];
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.055);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 8px 28px -18px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
   }
 
   .motion-panel {
-    @apply border-border/80 bg-card/95 shadow-[inset_0_1px_0_hsl(var(--foreground)/0.04)];
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 8px 32px -20px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
   }
 
   .motion-button {
-    @apply rounded-md border border-border/70 bg-secondary/70 px-2.5 py-1.5 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground;
+    @apply rounded-xl px-2.5 py-1.5 text-sm font-medium text-foreground;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  .motion-button:hover {
+    background: rgba(255, 255, 255, 0.085);
+  }
+
+  .table-glass tbody tr,
+  table tbody tr {
+    transition:
+      background-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .table-glass tbody tr:hover,
+  table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.055);
+    box-shadow: 0 0 32px -24px var(--acc-blue);
   }
 }
 
@@ -326,6 +360,13 @@
 /* FullCalendar Customization */
 .fc {
   @apply h-full;
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.035);
+  --fc-neutral-text-color: var(--text-lo);
+  --fc-border-color: rgba(255, 255, 255, 0.08);
+  --fc-today-bg-color: rgba(74, 123, 255, 0.1);
+  --fc-now-indicator-color: var(--acc-magenta);
+  color: var(--text-hi);
 }
 
 .fc .fc-toolbar {
@@ -334,14 +375,26 @@
 
 .fc .fc-toolbar-title {
   @apply text-xl font-semibold;
+  color: var(--text-hi);
 }
 
 .fc .fc-button {
-  @apply rounded-md border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+  color: var(--text-hi) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 
 .fc .fc-button-primary {
-  @apply border-blue-600 bg-blue-600 text-white hover:bg-blue-700;
+  background: linear-gradient(
+    135deg,
+    var(--acc-blue),
+    var(--acc-violet)
+  ) !important;
+  color: white !important;
 }
 
 .fc .fc-daygrid-day-frame {
@@ -353,11 +406,19 @@
 }
 
 .fc .fc-timegrid-slot-label {
-  @apply text-xs text-gray-500;
+  @apply text-xs;
+  color: var(--text-lo);
 }
 
 .fc .fc-event {
-  @apply cursor-pointer rounded border-none shadow-sm;
+  @apply cursor-pointer border-none shadow-sm;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(135deg, rgba(74, 123, 255, 0.24), rgba(139, 92, 246, 0.2)),
+    rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 0 30px -18px var(--acc-blue) !important;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 
 .fc .fc-event-main {
@@ -377,36 +438,39 @@
 }
 
 .fc .fc-timegrid-now-indicator-line {
-  @apply border-red-500;
+  border-color: var(--acc-magenta) !important;
+  box-shadow: 0 0 16px var(--acc-magenta);
 }
 
 .fc .fc-timegrid-now-indicator-arrow {
-  @apply border-red-500;
+  border-color: var(--acc-magenta) !important;
 }
 
 .fc .fc-day-today {
-  @apply bg-blue-50/30;
+  background: rgba(74, 123, 255, 0.1) !important;
 }
 
 .fc .fc-day-header {
-  @apply border-b border-gray-200 py-2;
+  @apply border-b py-2;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .fc .fc-scrollgrid {
-  @apply border-gray-200;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 .fc .fc-col-header-cell {
-  @apply border-b border-gray-200 bg-white;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
 }
 
 /* Dark mode styles for FullCalendar */
 .dark .fc {
   --fc-small-font-size: 0.85em;
-  --fc-page-bg-color: hsl(var(--background));
-  --fc-neutral-bg-color: hsl(var(--muted) / 0.2);
-  --fc-neutral-text-color: hsl(var(--muted-foreground));
-  --fc-border-color: hsl(var(--border));
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.035);
+  --fc-neutral-text-color: var(--text-lo);
+  --fc-border-color: rgba(255, 255, 255, 0.08);
 
   --fc-button-text-color: hsl(var(--primary-foreground));
   --fc-button-bg-color: hsl(var(--primary));
@@ -416,20 +480,20 @@
   --fc-button-active-bg-color: hsl(var(--primary) / 0.8);
   --fc-button-active-border-color: hsl(var(--primary) / 0.8);
 
-  --fc-event-bg-color: hsl(var(--primary));
-  --fc-event-border-color: hsl(var(--primary));
-  --fc-event-text-color: hsl(var(--primary-foreground));
+  --fc-event-bg-color: rgba(74, 123, 255, 0.24);
+  --fc-event-border-color: rgba(255, 255, 255, 0.1);
+  --fc-event-text-color: var(--text-hi);
   --fc-event-selected-overlay-color: rgba(0, 0, 0, 0.25);
 
   --fc-more-link-bg-color: hsl(var(--muted));
   --fc-more-link-text-color: hsl(var(--muted-foreground));
 
-  --fc-non-business-color: hsl(var(--muted) / 0.3);
-  --fc-bg-event-color: hsl(var(--primary) / 0.3);
+  --fc-non-business-color: rgba(255, 255, 255, 0.035);
+  --fc-bg-event-color: rgba(74, 123, 255, 0.18);
   --fc-bg-event-opacity: 0.3;
-  --fc-highlight-color: hsl(var(--accent) / 0.3);
-  --fc-today-bg-color: hsl(var(--primary) / 0.1);
-  --fc-now-indicator-color: hsl(var(--destructive));
+  --fc-highlight-color: rgba(45, 212, 191, 0.14);
+  --fc-today-bg-color: rgba(74, 123, 255, 0.1);
+  --fc-now-indicator-color: var(--acc-magenta);
 }
 
 .dark .fc .fc-toolbar-title {
@@ -455,16 +519,16 @@
 }
 
 .dark .fc .fc-scrollgrid-section-body {
-  background: var(--fc-page-bg-color);
+  background: transparent;
 }
 
 .dark .fc .fc-timegrid-slot-label,
 .dark .fc .fc-timegrid-axis-frame {
-  background-color: var(--fc-page-bg-color);
+  background-color: transparent;
 }
 
 .dark .fc .fc-col-header-cell {
-  background: var(--fc-page-bg-color);
+  background: rgba(255, 255, 255, 0.035);
   border-color: var(--fc-border-color);
 }
 
@@ -481,10 +545,14 @@
 [cmdk-root] {
   max-width: 640px;
   width: 100%;
-  background-color: hsl(var(--card));
-  border-radius: 8px;
-  border: 1px solid hsl(var(--border));
-  box-shadow: 0 24px 80px hsl(0 0% 0% / 0.45);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 24px 80px hsl(0 0% 0% / 0.45);
+  backdrop-filter: blur(40px) saturate(170%);
+  -webkit-backdrop-filter: blur(40px) saturate(170%);
 }
 
 [cmdk-input] {
@@ -527,7 +595,7 @@
 }
 
 [cmdk-item][aria-selected="true"] {
-  background: hsl(var(--muted));
+  background: rgba(255, 255, 255, 0.08);
   color: hsl(var(--foreground));
 }
 

@@ -52,9 +52,9 @@ export function TaskRow({
     <tr
       key={task.id}
       className={cn(
-        "transition-colors hover:bg-muted/50",
+        "transition-all hover:bg-white/[0.055]",
         isDragging ? "opacity-50" : "",
-        isFutureTask ? "bg-muted/25 text-muted-foreground" : ""
+        isFutureTask ? "bg-white/[0.025] text-muted-foreground" : ""
       )}
     >
       <td className="px-3 py-2">
@@ -151,7 +151,7 @@ export function TaskRow({
           />
 
           {isFutureTask && (
-            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+            <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-xs text-muted-foreground">
               Upcoming
             </span>
           )}

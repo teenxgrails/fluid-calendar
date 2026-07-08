@@ -58,7 +58,7 @@ export function QuickActions() {
     <div className="flex flex-col space-y-4 p-4">
       <h2 className="text-lg font-semibold">Quick Actions</h2>
 
-      <div className="flex flex-col space-y-2">
+      <div className="glass--subtle flex flex-col space-y-2 p-3">
         {/* Complete Task */}
         <Button
           variant="outline"
@@ -98,7 +98,7 @@ export function QuickActions() {
           </span>
         </Button>
 
-        <div className="my-2 h-px bg-border" />
+        <div className="my-2 h-px bg-white/10" />
         <h3 className="text-sm font-medium">Postpone Task</h3>
 
         {/* Postpone Actions */}

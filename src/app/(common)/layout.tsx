@@ -49,7 +49,7 @@ export default function RootLayout({
   }, [setShortcutsOpen]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
       <SessionProvider>
         <PrivacyProvider>
           <DndProvider>
@@ -68,7 +68,7 @@ export default function RootLayout({
             <main className="relative flex-1">
               <NotificationProvider>{children}</NotificationProvider>
             </main>
-            <footer className="flex-none border-t border-border bg-background px-4 py-2">
+            <footer className="glass--strong mx-3 mb-3 flex-none rounded-2xl px-4 py-2">
               <div className="flex justify-end">
                 <VersionBadge />
               </div>
