@@ -70,6 +70,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [report, setReport] = useState<FocusPayload | null>(null);
+  const [sessionBloom, setSessionBloom] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const plannedMinutes =
@@ -146,6 +147,10 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
       }),
     });
     if (response.ok) setReport(await response.json());
+    if (completed) {
+      setSessionBloom(true);
+      window.setTimeout(() => setSessionBloom(false), 900);
+    }
     setStartedAt(null);
     setElapsedSeconds(0);
   }
@@ -159,6 +164,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
 
   return (
     <section className="glass--strong overflow-visible p-5">
+      {sessionBloom && <div className="session-complete-bloom" />}
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-white">Focus Timer</h2>

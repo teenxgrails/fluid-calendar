@@ -1,4 +1,4 @@
-const CACHE_NAME = "mina-shell-v1";
+const CACHE_NAME = "mina-shell-v2";
 const API_CACHE_NAME = "mina-api-v1";
 const DB_NAME = "mina-offline-v1";
 const STORE_QUEUE = "mutationQueue";

@@ -267,13 +267,13 @@ export function TaskList({
         </div>
       </div>
 
-      <div className="flex-1 rounded-lg border bg-background">
+      <div className="glass flex-1">
         <div
           className="overflow-auto"
           style={{ maxHeight: "calc(100vh - 250px)" }}
         >
-          <table className="min-w-full divide-y divide-border">
-            <thead className="sticky top-0 bg-muted">
+          <table className="table-glass min-w-full divide-y divide-white/10">
+            <thead className="sticky top-0 bg-white/[0.06] backdrop-blur-xl">
               <tr>
                 <th
                   scope="col"
@@ -364,7 +364,7 @@ export function TaskList({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border bg-background">
+            <tbody className="divide-y divide-white/10 bg-transparent">
               {sortedTasks.map((task) => (
                 <TaskRow
                   key={task.id}
@@ -378,8 +378,14 @@ export function TaskList({
             </tbody>
           </table>
           {sortedTasks.length === 0 && (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              No tasks found. Try adjusting your filters or create a new task.
+            <div className="flex flex-col items-center py-10 text-center text-sm text-muted-foreground">
+              <div className="mina-orb mb-4 h-12 w-12 opacity-80" />
+              <div className="font-medium text-foreground">
+                Nothing in this view
+              </div>
+              <div className="mt-1 max-w-xs">
+                Adjust filters or create a task when you are ready to plan.
+              </div>
             </div>
           )}
         </div>

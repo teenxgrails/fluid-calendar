@@ -26,3 +26,4 @@
 - 2026-07-08: Design Part 3 defines Liquid Glass as CSS tokens/utilities plus React primitives; lucide-react remains the icon base with 1.75-style line treatment to avoid proprietary SF Symbols.
 - 2026-07-08: Design Part 3 uses CSS gradients for Mina glow/orb treatments rather than copied Opal assets; the provided reference file is `design-refs/opal-reference.jpg` despite the spec saying `.png`.
 - 2026-07-08: Design Part 4 applies Liquid Glass through shared controls, app chrome, FullCalendar CSS, focus mode, tasks, and settings so older feature screens inherit the redesign without changing scheduler or data logic.
+- 2026-07-08: Design Part 5 replaces the inherited calendar logo with an original SVG glass-orb/shard mark and reuses the same CSS orb language for loading, empty states, and the focus completion bloom.

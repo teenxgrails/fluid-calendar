@@ -1,8 +1,13 @@
 export function LoadingOverlay() {
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-      <div className="h-8 w-8 animate-spin text-blue-600">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xl">
+      <div className="glass--strong grid h-20 w-20 place-items-center">
+        <svg
+          className="h-8 w-8 animate-spin text-[var(--acc-blue)]"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <circle
             className="opacity-25"
             cx="12"

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { usePathname } from "next/navigation";
 
-import { inter } from "@/lib/fonts";
 import { getTitleFromPathname } from "@/lib/utils/page-title";
 
 import "../app/globals.css";
@@ -28,8 +27,17 @@ export default function Loading() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
-      <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
-      <p className={inter.className}>Loading...</p>
+      <div className="glass--strong flex w-full max-w-sm flex-col items-center p-8">
+        <div className="mina-orb mb-5 h-16 w-16 animate-pulse" />
+        <p className="text-sm font-medium text-[var(--text-hi)]">
+          Opening Mina
+        </p>
+        <div className="mt-5 grid w-full gap-2">
+          <div className="glass-skeleton h-3 w-full" />
+          <div className="glass-skeleton h-3 w-3/4" />
+          <div className="glass-skeleton h-3 w-1/2" />
+        </div>
+      </div>
     </div>
   );
 }

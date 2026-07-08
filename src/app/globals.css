@@ -277,6 +277,72 @@
     letter-spacing: 0;
   }
 
+  .mina-orb {
+    border-radius: 999px;
+    background:
+      radial-gradient(
+        circle at 36% 26%,
+        rgba(244, 245, 251, 0.9),
+        transparent 18%
+      ),
+      radial-gradient(
+        circle at 44% 40%,
+        rgba(45, 212, 191, 0.62),
+        transparent 26%
+      ),
+      radial-gradient(
+        circle at 55% 58%,
+        rgba(74, 123, 255, 0.64),
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at 64% 62%,
+        rgba(230, 75, 208, 0.52),
+        transparent 52%
+      ),
+      var(--bg-1);
+    box-shadow:
+      0 0 44px -12px var(--acc-violet),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+
+  .glass-skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  .glass-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.18),
+      transparent 56%
+    );
+    transform: translateX(-100%);
+    animation: glass-skeleton 2.4s ease-in-out infinite;
+  }
+
+  .session-complete-bloom {
+    pointer-events: none;
+    position: absolute;
+    inset: -20%;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle,
+      rgba(45, 212, 191, 0.22),
+      rgba(139, 92, 246, 0.12) 34%,
+      transparent 64%
+    );
+    animation: session-complete-bloom 900ms ease-out forwards;
+  }
+
   .motion-shell {
     border-color: rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.055);
@@ -334,9 +400,35 @@
   }
 }
 
+@keyframes glass-skeleton {
+  0%,
+  46% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes session-complete-bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .liquid-press,
-  .liquid-shimmer::after {
+  .liquid-shimmer::after,
+  .glass-skeleton::after,
+  .session-complete-bloom {
     animation: none;
     transition: none;
   }

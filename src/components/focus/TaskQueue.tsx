@@ -218,7 +218,8 @@ export function TaskQueue() {
           pastDueTasks.length === 0 &&
           postponedTasks.length === 0 &&
           recentlyCompletedTasks.length === 0 && (
-            <div className="glass--subtle py-4 text-center text-sm text-muted-foreground">
+            <div className="glass--subtle py-5 text-center text-sm text-muted-foreground">
+              <div className="mina-orb mx-auto mb-3 h-10 w-10 opacity-75" />
               No tasks available
             </div>
           )}
