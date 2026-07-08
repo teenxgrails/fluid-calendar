@@ -46,17 +46,18 @@ export function FeedManager() {
   );
 
   return (
-    <div className="flex h-full flex-col bg-background">
-      <div className="border-b border-border py-4">
+    <div className="glass--subtle flex h-full flex-col p-3">
+      <div className="glass--subtle border border-white/10 py-3">
         <MiniCalendar currentDate={currentDate} onDateClick={setDate} />
       </div>
-      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+      <div className="mt-3 flex-1 space-y-4 overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.025] p-4">
         <div className="space-y-2">
-          <h3 className="font-medium text-foreground">Your Calendars</h3>
+          <h3 className="text-sm font-medium text-foreground">Calendars</h3>
+          <div className="text-xs text-muted-foreground">My calendars</div>
           {feeds.map((feed) => (
             <div
               key={feed.id}
-              className="flex items-center justify-between rounded-md p-2 hover:bg-muted/50"
+              className="flex items-center justify-between rounded-xl p-2 hover:bg-white/[0.07]"
             >
               <div className="flex items-center gap-3">
                 <Checkbox
@@ -74,10 +75,16 @@ export function FeedManager() {
                   {feed.name}
                 </span>
                 {feed.type === "GOOGLE" && (
-                  <BsGoogle className="h-4 w-4 flex-shrink-0 text-muted-foreground" title={feed.url} />
+                  <BsGoogle
+                    className="h-4 w-4 flex-shrink-0 text-muted-foreground"
+                    title={feed.url}
+                  />
                 )}
                 {feed.type === "OUTLOOK" && (
-                  <BsMicrosoft className="h-4 w-4 flex-shrink-0 text-muted-foreground" title={feed.url} />
+                  <BsMicrosoft
+                    className="h-4 w-4 flex-shrink-0 text-muted-foreground"
+                    title={feed.url}
+                  />
                 )}
               </div>
               <div className="flex items-center gap-1">

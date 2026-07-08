@@ -11,6 +11,7 @@ import { MonthView } from "@/components/calendar/MonthView";
 import { MultiMonthView } from "@/components/calendar/MultiMonthView";
 import { SmartPlanningPanel } from "@/components/calendar/SmartPlanningPanel";
 import { WeekView } from "@/components/calendar/WeekView";
+import { AmbientBackdrop } from "@/components/liquid";
 
 import { addDays, formatDate, newDate, subDays } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
@@ -84,22 +85,66 @@ export function Calendar({
   };
 
   return (
-    <div className="flex h-full w-full gap-3 bg-transparent p-3">
+    <div className="relative flex h-full w-full gap-3 overflow-hidden bg-transparent p-3">
+      <AmbientBackdrop />
       {/* Sidebar */}
       <aside
         className={cn(
-          "glass h-full w-80 flex-none",
+          "glass--subtle h-full w-[230px] flex-none",
           "transform transition-transform duration-300 ease-in-out",
           !isHydrated && "opacity-0 duration-0",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        style={{ marginLeft: isSidebarOpen ? 0 : "-20rem" }}
+        style={{ marginLeft: isSidebarOpen ? 0 : "-230px" }}
       >
-        <div className="flex h-full flex-col">
-          {/* Feed Manager */}
-          <div className="flex-1 overflow-y-auto">
-            <FeedManager />
-            <div className="border-t border-white/10">
+        <div className="flex h-full flex-col p-3">
+          <div className="mb-4 flex items-center gap-2 px-1">
+            <span className="mina-orb h-8 w-8" />
+            <div>
+              <div className="text-sm font-semibold">Mina</div>
+              <div className="text-[11px] text-muted-foreground">
+                Private planner
+              </div>
+            </div>
+          </div>
+          <button className="mb-3 flex w-full items-center rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2 text-left text-sm text-muted-foreground hover:bg-white/[0.07]">
+            Search or command
+          </button>
+          <nav className="space-y-1 text-sm">
+            {["Inbox", "AI Agenda", "Calendar", "Projects & Tasks"].map(
+              (item) => (
+                <button
+                  key={item}
+                  className={cn(
+                    "flex w-full items-center rounded-xl px-3 py-2 text-left transition-colors",
+                    item === "Calendar"
+                      ? "bg-white/10 text-foreground shadow-[0_0_28px_-20px_var(--acc-blue)]"
+                      : "text-muted-foreground hover:bg-white/[0.07] hover:text-foreground"
+                  )}
+                >
+                  {item}
+                </button>
+              )
+            )}
+          </nav>
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <div className="px-3 text-xs uppercase text-muted-foreground">
+              Favorites
+            </div>
+            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+              <div className="rounded-xl px-3 py-2 hover:bg-white/[0.07]">
+                Deep work
+              </div>
+              <div className="rounded-xl px-3 py-2 hover:bg-white/[0.07]">
+                Admin
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 min-h-0 flex-1 overflow-y-auto border-t border-white/10 pt-4">
+            <div className="px-3 text-xs uppercase text-muted-foreground">
+              Workspaces
+            </div>
+            <div className="mt-2">
               <SmartPlanningPanel />
             </div>
           </div>
@@ -153,7 +198,7 @@ export function Calendar({
               </button>
             </div>
 
-            <h1 className="px-2 text-base font-semibold text-foreground">
+            <h1 className="px-2 text-sm font-medium text-foreground">
               {formatDate(currentDate)}
             </h1>
           </div>
@@ -220,6 +265,9 @@ export function Calendar({
           )}
         </div>
       </main>
+      <aside className="hidden h-full w-[300px] flex-none lg:block">
+        <FeedManager />
+      </aside>
     </div>
   );
 }

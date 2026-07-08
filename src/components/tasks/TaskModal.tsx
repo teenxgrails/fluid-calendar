@@ -50,6 +50,8 @@ interface TaskModalProps {
   tags: Tag[];
   onCreateTag: (name: string, color?: string) => Promise<Tag>;
   initialProjectId?: string | null;
+  initialStart?: Date;
+  initialEnd?: Date;
 }
 
 //TODO: move to utils
@@ -90,6 +92,8 @@ export function TaskModal({
   tags,
   onCreateTag,
   initialProjectId,
+  initialStart,
+  initialEnd,
 }: TaskModalProps) {
   const { projects } = useProjectStore();
   const [title, setTitle] = useState("");
@@ -231,8 +235,21 @@ export function TaskModal({
       setPriorityLevel(task.priorityLevel || SchedulingTaskPriority.MEDIUM);
     } else if (!task && isOpen) {
       resetForm();
+      if (initialStart) {
+        setStartDate(initialStart.toISOString().split("T")[0]);
+        setDeadline(initialStart.toISOString().slice(0, 16));
+      }
+      if (initialStart && initialEnd) {
+        const diffMinutes = Math.max(
+          15,
+          Math.round((initialEnd.getTime() - initialStart.getTime()) / 60000)
+        );
+        setDuration(String(diffMinutes));
+        setEstimatedMinutes(String(diffMinutes));
+        setEstLikely(String(diffMinutes));
+      }
     }
-  }, [task, isOpen, initialProjectId, resetForm]);
+  }, [task, isOpen, initialProjectId, initialStart, initialEnd, resetForm]);
 
   // Focus title input when modal opens
   useEffect(() => {

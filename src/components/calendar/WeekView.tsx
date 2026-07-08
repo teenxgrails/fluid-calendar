@@ -38,13 +38,20 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
   const { user: userSettings, calendar: calendarSettings } = useSettingsStore();
-  const { updateTask } = useTaskStore();
+  const { createTask, updateTask } = useTaskStore();
   const [selectedEvent, setSelectedEvent] = useState<Partial<CalendarEvent>>();
   const [selectedTask, setSelectedTask] = useState<Task>();
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedEndDate, setSelectedEndDate] = useState<Date>();
+  const [quickCreate, setQuickCreate] = useState<{
+    start: Date;
+    end: Date;
+    x: number;
+    y: number;
+  }>();
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [events, setEvents] = useState<
     Array<{
       id: string;
@@ -66,7 +73,9 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
   const [quickViewItem, setQuickViewItem] = useState<CalendarEvent | Task>();
   const [isTask, setIsTask] = useState(false);
   const eventModalStore = useEventModalStore();
-  const [clickedElement, setClickedElement] = useState<HTMLElement | null>(null);
+  const [clickedElement, setClickedElement] = useState<HTMLElement | null>(
+    null
+  );
   const { handleEventDrop, handleEventResize } = useCalendarDragHandlers();
 
   // Update events when the calendar view changes
@@ -189,11 +198,31 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
     setSelectedEvent({
       allDay,
     });
+    setQuickCreate(undefined);
     setIsEventModalOpen(true);
+  };
+
+  const handleSlotClick = (arg: {
+    date: Date;
+    allDay: boolean;
+    jsEvent: MouseEvent;
+  }) => {
+    onDateClick?.(arg.date);
+    const end = new Date(arg.date.getTime() + 30 * 60 * 1000);
+    setSelectedDate(arg.date);
+    setSelectedEndDate(end);
+    setSelectedEvent({ allDay: arg.allDay });
+    setQuickCreate({
+      start: arg.date,
+      end,
+      x: Math.min(arg.jsEvent.clientX, window.innerWidth - 240),
+      y: Math.min(arg.jsEvent.clientY, window.innerHeight - 140),
+    });
   };
 
   const handleEventModalClose = () => {
     setIsEventModalOpen(false);
+    setQuickCreate(undefined);
     eventModalStore.setOpen(false);
     setSelectedEvent(undefined);
     setSelectedDate(undefined);
@@ -204,7 +233,9 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
 
   const handleTaskModalClose = () => {
     setIsTaskModalOpen(false);
+    setIsNewTaskModalOpen(false);
     setSelectedTask(undefined);
+    setQuickCreate(undefined);
   };
 
   const handleQuickViewClose = () => {
@@ -319,7 +350,7 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
           omitCommas: true,
         }}
         height="100%"
-        dateClick={(arg) => onDateClick?.(arg.date)}
+        dateClick={handleSlotClick}
         eventClick={handleEventClick}
         select={handleDateSelect}
         selectable={true}
@@ -332,6 +363,37 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
         snapDuration="00:15:00"
         dragRevertDuration={250}
       />
+      {quickCreate && !isEventModalOpen && !isNewTaskModalOpen && (
+        <div
+          className="glass--strong fixed z-50 w-56 p-2 shadow-[0_20px_70px_-30px_rgba(0,0,0,0.85)]"
+          style={{ left: quickCreate.x, top: quickCreate.y }}
+        >
+          <div className="mb-1 px-2 py-1 text-xs text-muted-foreground">
+            {quickCreate.start.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </div>
+          <button
+            type="button"
+            className="flex w-full items-center rounded-xl px-3 py-2 text-left text-sm hover:bg-white/[0.08]"
+            onClick={() => {
+              setIsEventModalOpen(true);
+            }}
+          >
+            Create event
+          </button>
+          <button
+            type="button"
+            className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-left text-sm text-violet-100 hover:bg-violet-400/10"
+            onClick={() => {
+              setIsNewTaskModalOpen(true);
+            }}
+          >
+            Create task (fixed time)
+          </button>
+        </div>
+      )}
       {quickViewItem && (
         <EventQuickView
           isOpen={!!quickViewItem}
@@ -360,6 +422,22 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
           tags={useTaskStore.getState().tags}
           onSave={async (updates) => {
             await updateTask(selectedTask.id, updates);
+            handleTaskModalClose();
+          }}
+          onCreateTag={async (name: string, color?: string) => {
+            return useTaskStore.getState().createTag({ name, color });
+          }}
+        />
+      )}
+      {isNewTaskModalOpen && quickCreate && (
+        <TaskModal
+          isOpen={isNewTaskModalOpen}
+          onClose={handleTaskModalClose}
+          tags={useTaskStore.getState().tags}
+          initialStart={quickCreate.start}
+          initialEnd={quickCreate.end}
+          onSave={async (updates) => {
+            await createTask(updates);
             handleTaskModalClose();
           }}
           onCreateTag={async (name: string, color?: string) => {

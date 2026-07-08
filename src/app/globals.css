@@ -143,30 +143,25 @@
     content: "";
     position: absolute;
     left: 50%;
-    top: -18rem;
-    width: min(72rem, 120vw);
-    height: min(72rem, 120vw);
+    top: -30rem;
+    width: min(46rem, 80vw);
+    height: min(34rem, 60vw);
     transform: translateX(-50%);
     border-radius: 999px;
     background:
       radial-gradient(
-        circle at 42% 42%,
-        rgba(45, 212, 191, 0.18),
-        transparent 24%
+        circle at 46% 44%,
+        rgba(230, 75, 208, 0.16),
+        transparent 34%
       ),
       radial-gradient(
-        circle at 54% 42%,
-        rgba(230, 75, 208, 0.28),
-        transparent 30%
+        circle at 52% 54%,
+        rgba(74, 123, 255, 0.18),
+        transparent 42%
       ),
-      radial-gradient(
-        circle at 50% 58%,
-        rgba(74, 123, 255, 0.28),
-        transparent 38%
-      ),
-      radial-gradient(circle, rgba(139, 92, 246, 0.28), transparent 60%);
-    filter: blur(64px) saturate(145%);
-    opacity: 0.58;
+      radial-gradient(circle, rgba(139, 92, 246, 0.16), transparent 62%);
+    filter: blur(72px) saturate(130%);
+    opacity: 0.42;
   }
 
   .glass,
@@ -462,11 +457,11 @@
 }
 
 .fc .fc-toolbar {
-  @apply p-4;
+  @apply p-3;
 }
 
 .fc .fc-toolbar-title {
-  @apply text-xl font-semibold;
+  @apply text-base font-medium;
   color: var(--text-hi);
 }
 
@@ -494,27 +489,28 @@
 }
 
 .fc .fc-timegrid-slot {
-  @apply h-20;
+  @apply h-12;
 }
 
 .fc .fc-timegrid-slot-label {
-  @apply text-xs;
+  @apply text-[11px];
   color: var(--text-lo);
 }
 
 .fc .fc-event {
-  @apply cursor-pointer border-none shadow-sm;
+  @apply cursor-pointer border shadow-sm;
   border-radius: 12px !important;
   background:
-    linear-gradient(135deg, rgba(74, 123, 255, 0.24), rgba(139, 92, 246, 0.2)),
-    rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 0 30px -18px var(--acc-blue) !important;
+    linear-gradient(135deg, rgba(74, 123, 255, 0.18), rgba(139, 92, 246, 0.14)),
+    rgba(255, 255, 255, 0.055) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 0 26px -18px var(--acc-blue) !important;
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 
 .fc .fc-event-main {
-  @apply p-1;
+  @apply p-0;
 }
 
 .fc .fc-daygrid-day-events {
@@ -531,6 +527,7 @@
 
 .fc .fc-timegrid-now-indicator-line {
   border-color: var(--acc-magenta) !important;
+  border-width: 1px !important;
   box-shadow: 0 0 16px var(--acc-magenta);
 }
 
@@ -553,7 +550,22 @@
 
 .fc .fc-col-header-cell {
   border-color: rgba(255, 255, 255, 0.08) !important;
-  background: rgba(255, 255, 255, 0.035) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+  padding: 8px 4px !important;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-hi);
+}
+
+.fc .fc-timegrid-col-frame {
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.fc .fc-timegrid-slot-minor {
+  border-top-style: dotted;
 }
 
 /* Dark mode styles for FullCalendar */
