@@ -373,22 +373,8 @@ export const useTaskStore = create<TaskState>()(
             headers: { "Content-Type": "application/json" },
           });
           if (!response.ok) throw new Error("Failed to schedule tasks");
-          const updatedTasks = await response.json();
-
-          // Get current tasks from store
-          const currentTasks = get().tasks;
-
-          // Create a map of updated tasks by ID for efficient lookup
-          const updatedTasksMap = new Map(
-            updatedTasks.map((task: Task) => [task.id, task])
-          );
-
-          // Merge updated tasks with existing tasks
-          const mergedTasks = currentTasks.map((task) =>
-            updatedTasksMap.has(task.id) ? updatedTasksMap.get(task.id)! : task
-          ) as Task[];
-
-          set({ tasks: mergedTasks });
+          await response.json();
+          await get().fetchTasks();
         } catch (error) {
           set({ error: error as Error });
           throw error;

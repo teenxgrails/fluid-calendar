@@ -428,15 +428,15 @@ export async function scheduleAllTasksForUser(
 
     const updatedDbTasks = (await prisma.task.findMany({
       where: {
-        id: {
-          in: dbTasks.map((task) => task.id),
-        },
         userId,
       },
       include: {
         tags: true,
         project: true,
         scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     })) as DbTaskWithRelations[];
 

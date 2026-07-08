@@ -34,3 +34,4 @@
 - 2026-07-08: AGENTS_NEXT Phase C implements Mina MCP as a dependency-free stdio JSON-RPC server that wraps `/api/connect/*`; connector route aliases were added for the requested `GET /api/connect/tasks` and `POST /api/connect/schedule` contracts.
 - 2026-07-08: AGENTS_NEXT Phase D only records future Capacitor, Telegram/n8n, and extra-cron work in `TODO.md`; none of those integrations are implemented in this session.
 - 2026-07-08: AGENTS_NEXT Phase F does not tag `v0.3.0` because local DB, Neon/Vercel production, and live MCP task-creation checks are blocked by missing external infrastructure rather than passing green.
+- 2026-07-08: Schedule-all now returns all current user tasks after scheduling and the client refetches the filtered task list, so running auto-schedule with no eligible auto-scheduled tasks no longer blanks the UI.

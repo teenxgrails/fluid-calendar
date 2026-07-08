@@ -59,3 +59,12 @@ Date: 2026-07-08
 - PASS: `TODO.md` has the requested “После v0.3.0” section.
 - PASS: Human untracked files (`AGENTS*.md`, `.agents/`, design refs) were left uncommitted and unmodified.
 - NOT TAGGED: `v0.3.0` was not created because Phase F is not fully green.
+
+## Automation Continuation
+
+Date: 2026-07-08
+
+- FIXED: Auto-schedule no longer blanks the task list when the current account has no eligible auto-scheduled tasks. The schedule service now returns all current user tasks after scheduling, and the client refetches the canonical filtered task list after a successful schedule run.
+- PASS: `pnpm exec tsc --noEmit`.
+- PASS: `pnpm exec jest src/services/scheduling/__tests__/engine.test.ts --runInBand`: 1 suite passed, 7 tests passed.
+- PASS: `pnpm build`. Build completed with the same known unavailable-Postgres warnings for `localhost:5432` during static collection and the existing standalone trace warning for `/api/task-sync/sync`.
