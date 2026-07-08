@@ -33,3 +33,4 @@
 - 2026-07-08: AGENTS_NEXT Phase B cannot create Neon/Vercel resources from this workspace because no `neon`/`vercel` CLI config or account credentials are present; deploy docs were updated to the actual pnpm + Neon adapter flow and domain remains TODO until owned/configured.
 - 2026-07-08: AGENTS_NEXT Phase C implements Mina MCP as a dependency-free stdio JSON-RPC server that wraps `/api/connect/*`; connector route aliases were added for the requested `GET /api/connect/tasks` and `POST /api/connect/schedule` contracts.
 - 2026-07-08: AGENTS_NEXT Phase D only records future Capacitor, Telegram/n8n, and extra-cron work in `TODO.md`; none of those integrations are implemented in this session.
+- 2026-07-08: AGENTS_NEXT Phase F does not tag `v0.3.0` because local DB, Neon/Vercel production, and live MCP task-creation checks are blocked by missing external infrastructure rather than passing green.

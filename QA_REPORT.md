@@ -29,3 +29,33 @@ Date: 2026-07-08
 
 - `pnpm install --no-frozen-lockfile --ignore-scripts` was used to restore `node_modules` after `pnpm prisma validate` attempted an install and removed the old shims. Lifecycle scripts were disabled because Homebrew Node 26 cannot compile `better-sqlite3@11.10.0`; the QA toolchain itself ran cleanly under the bundled Node runtime.
 - A full end-to-end pass should be rerun on a machine/session with Docker or local Postgres available: `docker compose up -d db`, `pnpm prisma migrate deploy`, then the runtime checklist.
+
+## AGENTS_NEXT
+
+Date: 2026-07-08
+
+### Build, Type, Test
+
+- PASS: Phase 0 design gate. `v0.2.0` tag exists, `QA_REPORT.md` exists, and `/style` route exists.
+- PASS: `pnpm install` completed cleanly with pnpm v11.7.0.
+- PASS: `pnpm-lock.yaml` contains `@neondatabase/serverless` and `@prisma/adapter-neon`.
+- PASS: `pnpm prisma validate` with local `DATABASE_URL` and `DIRECT_URL`.
+- BLOCKED: `pnpm prisma migrate deploy` on fresh local DB. No Docker binary is available and no local Postgres is listening on `localhost:5432`.
+- PASS: `pnpm tsc --noEmit`.
+- PASS: full Jest suite via `pnpm jest --runInBand`: 39 suites passed, 1 skipped; 276 tests passed, 1 skipped.
+- PASS: `pnpm build`. Build completed with expected DB-unreachable warnings during static collection and the existing standalone trace warning for `/api/task-sync/sync`.
+
+### Runtime
+
+- BLOCKED: Local `/setup` account creation and chunked-task live smoke. These require a running local Postgres; `pnpm db:up` fails because `docker` is not installed/exposed.
+- BLOCKED: Neon migration and Vercel production smoke. This workspace has no `neon` or `vercel` CLI/config and no production credentials.
+- PASS: MCP server protocol smoke. `mcp/mina-mcp-server.mjs` responded to `initialize` and `tools/list`, including `mina_create_task` and `mina_reschedule`.
+- BLOCKED: MCP live `mina_create_task` against Mina. It requires a running Mina app, a database-backed connector token, and reachable Postgres.
+
+### Housekeeping
+
+- PASS: `DECISIONS.md` updated for Phase A-D choices and blockers.
+- PASS: `docs/deploy.md` updated for the actual pnpm + Neon adapter flow.
+- PASS: `TODO.md` has the requested “После v0.3.0” section.
+- PASS: Human untracked files (`AGENTS*.md`, `.agents/`, design refs) were left uncommitted and unmodified.
+- NOT TAGGED: `v0.3.0` was not created because Phase F is not fully green.
