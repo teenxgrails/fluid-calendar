@@ -46,18 +46,18 @@ export function FeedManager() {
   );
 
   return (
-    <div className="flex h-full flex-col rounded-md border border-[#323234] bg-[#1A1D1E] p-3 text-white">
-      <div className="rounded-md border border-[#323234] bg-[#262627] py-3">
+    <div className="flex h-full flex-col rounded-md border border-[#323234] bg-[#1A1D1E] p-2 text-white">
+      <div className="rounded-md border border-[#323234] bg-[#262627] py-2">
         <MiniCalendar currentDate={currentDate} onDateClick={setDate} />
       </div>
-      <div className="mt-3 flex-1 space-y-4 overflow-y-auto rounded-md border border-[#323234] bg-[#262627] p-4">
+      <div className="mt-2 flex-1 space-y-3 overflow-y-auto rounded-md border border-[#323234] bg-[#262627] p-3">
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-white">Calendars</h3>
           <div className="text-xs text-[#9AA0A6]">My calendars</div>
           {feeds.map((feed) => (
             <div
               key={feed.id}
-              className="flex items-center justify-between rounded-md p-2 hover:bg-[#2B2F31]"
+              className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-[#2B2F31]"
             >
               <div className="flex items-center gap-3">
                 <Checkbox

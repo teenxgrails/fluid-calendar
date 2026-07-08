@@ -374,11 +374,11 @@
 }
 
 .fc .fc-timegrid-slot {
-  @apply h-12;
+  @apply h-8;
 }
 
 .fc .fc-timegrid-slot-label {
-  @apply text-[11px];
+  @apply text-[11px] leading-none;
   color: #9aa0a6;
 }
 
@@ -435,8 +435,8 @@
 }
 
 .fc .fc-col-header-cell-cushion {
-  padding: 8px 4px !important;
-  font-size: 12px;
+  padding: 6px 4px !important;
+  font-size: 11px;
   font-weight: 500;
   color: #ffffff;
 }

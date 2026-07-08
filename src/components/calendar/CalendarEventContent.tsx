@@ -69,7 +69,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
     <div
       data-testid={isTask ? "calendar-task" : "calendar-event"}
       className={cn(
-        "flex h-full flex-col justify-start gap-1 overflow-hidden rounded-md border border-[#323234] bg-[#262627] px-1.5 py-1 text-[11px] text-white",
+        "flex h-full flex-col justify-start gap-0.5 overflow-hidden rounded-md border border-[#323234] bg-[#262627] px-1.5 py-0.5 text-[11px] text-white",
         isTask && "border-l-4",
         isTask && priority && priorityColors[priority as Priority],
         isTask &&
@@ -82,31 +82,31 @@ export const CalendarEventContent = memo(function CalendarEventContent({
         status === TaskStatus.COMPLETED && "text-[#9AA0A6] line-through"
       )}
     >
-      <div className="flex w-full items-center gap-1.5">
+      <div className="flex w-full items-center gap-1">
         {isTask ? (
-          <IoCheckmarkCircle className="h-3.5 w-3.5 flex-shrink-0 text-current opacity-75" />
+          <IoCheckmarkCircle className="h-3 w-3 flex-shrink-0 text-current opacity-75" />
         ) : showTimeChip ? (
           isRecurring ? (
             <IoRepeat
-              className="h-3.5 w-3.5 flex-shrink-0"
+              className="h-3 w-3 flex-shrink-0"
               style={{ color: eventColor }}
             />
           ) : (
             <span
               aria-hidden="true"
-              className="h-2 w-2 flex-shrink-0 rounded-full"
+              className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
               style={{ backgroundColor: eventColor }}
             />
           )
         ) : isRecurring ? (
-          <IoRepeat className="h-3.5 w-3.5 flex-shrink-0 text-current opacity-75" />
+          <IoRepeat className="h-3 w-3 flex-shrink-0 text-current opacity-75" />
         ) : (
-          <IoTimeOutline className="h-3.5 w-3.5 flex-shrink-0 text-current opacity-75" />
+          <IoTimeOutline className="h-3 w-3 flex-shrink-0 text-current opacity-75" />
         )}
         <div className="min-w-0 flex-1">
           <div
             className={cn(
-              "calendar-event-title font-medium leading-snug text-white",
+              "calendar-event-title font-medium leading-tight text-white",
               duration <= 1800000 ? "truncate" : "line-clamp-2 break-words"
             )}
           >
@@ -116,7 +116,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
             {title}
           </div>
           {timeText && (
-            <div className="mt-0.5 truncate text-[10px] font-normal tabular-nums text-[#9AA0A6]">
+            <div className="truncate text-[10px] font-normal leading-tight tabular-nums text-[#9AA0A6]">
               {timeText}
             </div>
           )}
