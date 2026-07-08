@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { motion, useReducedMotion } from "framer-motion";
+
 import { AIAssistantSettings } from "@/components/settings/AIAssistantSettings";
 import { AccountManager } from "@/components/settings/AccountManager";
 import { AutoScheduleSettings } from "@/components/settings/AutoScheduleSettings";
@@ -37,6 +39,7 @@ type SettingsTab =
 
 export default function SettingsPage() {
   const [isHydrated, setIsHydrated] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const { isAdmin, isLoading: isAdminLoading } = useAdmin();
   const { initializeSettings } = useSettingsStore();
 
@@ -197,9 +200,16 @@ export default function SettingsPage() {
                       (tab) => !["accounts", "system", "logs"].includes(tab.id)
                     )
                     .map((tab) => (
-                      <a
+                      <motion.a
                         key={tab.id}
                         href={`#${tab.id}`}
+                        initial={
+                          prefersReducedMotion ? false : { opacity: 0, y: 4 }
+                        }
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: prefersReducedMotion ? 0 : 0.16,
+                        }}
                         onClick={(e) => {
                           e.preventDefault();
                           setActiveTab(tab.id as SettingsTab);
@@ -213,7 +223,7 @@ export default function SettingsPage() {
                         )}
                       >
                         {tab.label}
-                      </a>
+                      </motion.a>
                     ))}
                 </nav>
               </div>
@@ -227,9 +237,16 @@ export default function SettingsPage() {
                       ["accounts", "system", "logs"].includes(tab.id)
                     )
                     .map((tab) => (
-                      <a
+                      <motion.a
                         key={tab.id}
                         href={`#${tab.id}`}
+                        initial={
+                          prefersReducedMotion ? false : { opacity: 0, y: 4 }
+                        }
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: prefersReducedMotion ? 0 : 0.16,
+                        }}
                         onClick={(e) => {
                           e.preventDefault();
                           setActiveTab(tab.id as SettingsTab);
@@ -243,7 +260,7 @@ export default function SettingsPage() {
                         )}
                       >
                         {tab.label}
-                      </a>
+                      </motion.a>
                     ))}
                 </nav>
               </div>
@@ -260,7 +277,14 @@ export default function SettingsPage() {
                 Configure Mina without leaving the planner flow.
               </p>
             </div>
-            {renderContent()}
+            <motion.div
+              key={activeTab}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
+            >
+              {renderContent()}
+            </motion.div>
           </div>
         </div>
       </div>

@@ -40,3 +40,4 @@
 - 2026-07-08: UI Part 2 maps the Motion "Hard deadline" toggle to Mina's existing `isFrozen` task field so the modal stays UI-only and does not introduce new scheduling schema or behavior.
 - 2026-07-08: UI Part 3 keeps existing settings components but relabels the left navigation to Motion-style sections; Smart Scheduling represents the requested Energy profile section because it already owns those controls.
 - 2026-07-09: Polish Part 1 flattens the existing glass/glow utility classes instead of deleting them because other screens still import those class names; this removes ambient visuals without changing component contracts.
+- 2026-07-09: Polish Part 3 uses Framer's `useReducedMotion` at each animated shell/chip/modal surface so animations can be disabled without adding app-level state or changing planner behavior.

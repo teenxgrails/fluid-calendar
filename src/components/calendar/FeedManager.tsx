@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { BsArrowRepeat, BsGoogle, BsMicrosoft, BsTrash } from "react-icons/bs";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,6 +14,7 @@ import { MiniCalendar } from "./MiniCalendar";
 
 export function FeedManager() {
   const [syncingFeeds, setSyncingFeeds] = useState<Set<string>>(new Set());
+  const prefersReducedMotion = useReducedMotion();
   const { feeds, removeFeed, toggleFeed, syncFeed } = useCalendarStore();
   const { date: currentDate, setDate } = useViewStore();
 
@@ -54,9 +56,15 @@ export function FeedManager() {
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-white">Calendars</h3>
           <div className="text-xs text-[#9AA0A6]">My calendars</div>
-          {feeds.map((feed) => (
-            <div
+          {feeds.map((feed, index) => (
+            <motion.div
               key={feed.id}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: prefersReducedMotion ? 0 : index * 0.03,
+                duration: prefersReducedMotion ? 0 : 0.16,
+              }}
               className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-[#2B2F31]"
             >
               <div className="flex items-center gap-3">
@@ -112,7 +120,7 @@ export function FeedManager() {
                   <BsTrash className="h-3.5 w-3.5" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))}
           {feeds.length === 0 && (
             <p className="py-4 text-center text-sm text-[#9AA0A6]">

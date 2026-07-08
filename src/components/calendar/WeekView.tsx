@@ -9,6 +9,7 @@ import type { DateSelectArg } from "@fullcalendar/core";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { TaskModal } from "@/components/tasks/TaskModal";
 
@@ -39,6 +40,7 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
     useCalendarStore();
   const { user: userSettings, calendar: calendarSettings } = useSettingsStore();
   const { createTask, updateTask } = useTaskStore();
+  const prefersReducedMotion = useReducedMotion();
   const [selectedEvent, setSelectedEvent] = useState<Partial<CalendarEvent>>();
   const [selectedTask, setSelectedTask] = useState<Task>();
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -364,9 +366,20 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
         dragRevertDuration={250}
       />
       {quickCreate && !isEventModalOpen && !isNewTaskModalOpen && (
-        <div
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{
+            duration: prefersReducedMotion ? 0 : 0.12,
+            ease: "easeOut",
+          }}
           className="fixed z-50 w-56 rounded-md border border-[#323234] bg-[#262627] p-2 text-white shadow-lg"
-          style={{ left: quickCreate.x, top: quickCreate.y }}
+          style={{
+            left: quickCreate.x,
+            top: quickCreate.y,
+            transformOrigin: "top left",
+          }}
         >
           <div className="mb-1 px-2 py-1 text-xs text-[#9AA0A6]">
             {quickCreate.start.toLocaleTimeString([], {
@@ -392,7 +405,7 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
           >
             Create task (fixed time)
           </button>
-        </div>
+        </motion.div>
       )}
       {quickViewItem && (
         <EventQuickView

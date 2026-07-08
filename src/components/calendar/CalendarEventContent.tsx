@@ -1,6 +1,7 @@
 import { memo } from "react";
 
 import type { EventContentArg } from "@fullcalendar/core";
+import { motion, useReducedMotion } from "framer-motion";
 import { IoCheckmarkCircle, IoRepeat, IoTimeOutline } from "react-icons/io5";
 
 import { getMonthEventDisplay } from "@/lib/calendar-event-display";
@@ -27,6 +28,7 @@ const priorityColors = {
 export const CalendarEventContent = memo(function CalendarEventContent({
   eventInfo,
 }: CalendarEventContentProps) {
+  const prefersReducedMotion = useReducedMotion();
   const { user: userSettings } = useSettingsStore();
   const isTask = eventInfo.event.extendedProps.isTask;
   const isRecurring = eventInfo.event.extendedProps.isRecurring;
@@ -66,7 +68,9 @@ export const CalendarEventContent = memo(function CalendarEventContent({
     DEFAULT_EVENT_COLOR;
 
   return (
-    <div
+    <motion.div
+      layout={!prefersReducedMotion}
+      whileHover={prefersReducedMotion ? undefined : { y: -1 }}
       data-testid={isTask ? "calendar-task" : "calendar-event"}
       className={cn(
         "flex h-full flex-col justify-start gap-0.5 overflow-hidden rounded-md border border-[#323234] bg-[#262627] px-1.5 py-0.5 text-[11px] text-white",
@@ -127,6 +131,6 @@ export const CalendarEventContent = memo(function CalendarEventContent({
           {location}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 });

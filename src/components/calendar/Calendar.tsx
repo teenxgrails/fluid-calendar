@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { HiMenu } from "react-icons/hi";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
@@ -37,6 +38,8 @@ export function Calendar({
   const { isSidebarOpen, setSidebarOpen, isHydrated } = useCalendarUIStore();
   const { scheduleAllTasks } = useTaskStore();
   const { setFeeds, setEvents } = useCalendarStore();
+  const prefersReducedMotion = useReducedMotion();
+  const [transitionDirection, setTransitionDirection] = useState(0);
 
   // Use initial data from server for hydration
   useEffect(() => {
@@ -58,6 +61,7 @@ export function Calendar({
   }, [initialFeeds, initialEvents, setFeeds, setEvents]);
 
   const handlePrevWeek = () => {
+    setTransitionDirection(-1);
     if (view === "month" || view === "multiMonth") {
       const newDate = new Date(currentDate);
       newDate.setMonth(newDate.getMonth() - 1);
@@ -69,6 +73,7 @@ export function Calendar({
   };
 
   const handleNextWeek = () => {
+    setTransitionDirection(1);
     if (view === "month" || view === "multiMonth") {
       const newDate = new Date(currentDate);
       newDate.setMonth(newDate.getMonth() + 1);
@@ -83,10 +88,20 @@ export function Calendar({
     await scheduleAllTasks();
   };
 
+  const handleViewChange = (nextView: typeof view) => {
+    setTransitionDirection(0);
+    setView(nextView);
+  };
+
+  const handleToday = () => {
+    setTransitionDirection(0);
+    setDate(newDate());
+  };
+
   return (
     <div className="flex h-full w-full gap-2 overflow-hidden bg-[#1A1D1E] p-2 text-white">
       {/* Sidebar */}
-      <aside
+      <motion.aside
         className={cn(
           "h-full w-[230px] flex-none rounded-md border border-[#323234] bg-[#1A1D1E]",
           "transform transition-transform duration-300 ease-in-out",
@@ -94,6 +109,12 @@ export function Calendar({
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
         style={{ marginLeft: isSidebarOpen ? 0 : "-230px" }}
+        initial={false}
+        animate={{
+          opacity: !isHydrated ? 0 : 1,
+          x: isSidebarOpen || prefersReducedMotion ? 0 : -12,
+        }}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
       >
         <div className="flex h-full flex-col p-2">
           <div className="mb-3 flex items-center gap-2 px-1">
@@ -147,7 +168,7 @@ export function Calendar({
             </div>
           </div>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
       <main className="flex min-w-0 flex-1 flex-col rounded-md border border-[#323234] bg-[#1A1D1E]">
@@ -162,38 +183,46 @@ export function Calendar({
           </button>
 
           <div className="ml-2 flex items-center gap-1.5">
-            <button
-              onClick={() => setDate(newDate())}
+            <motion.button
+              whileHover={prefersReducedMotion ? undefined : { y: -1 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              onClick={handleToday}
               className="rounded-md border border-[#323234] bg-[#262627] px-2 py-1 text-[13px] font-medium text-white hover:bg-[#2B2F31]"
               title="Go to Today (t)"
             >
               Today
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={prefersReducedMotion ? undefined : { y: -1 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
               onClick={handleAutoSchedule}
               className="rounded-md border border-[#323234] bg-[#262627] px-2 py-1 text-[13px] font-medium text-white hover:bg-[#2B2F31]"
             >
               Auto Schedule
-            </button>
+            </motion.button>
 
             <div className="flex items-center gap-1">
-              <button
+              <motion.button
+                whileHover={prefersReducedMotion ? undefined : { y: -1 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                 onClick={handlePrevWeek}
                 className="rounded-md p-1.5 text-white hover:bg-[#2B2F31]"
                 data-testid="calendar-prev-week"
                 title="Previous Week (←)"
               >
                 <IoChevronBack className="h-5 w-5" />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={prefersReducedMotion ? undefined : { y: -1 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                 onClick={handleNextWeek}
                 className="rounded-md p-1.5 text-white hover:bg-[#2B2F31]"
                 data-testid="calendar-next-week"
                 title="Next Week (→)"
               >
                 <IoChevronForward className="h-5 w-5" />
-              </button>
+              </motion.button>
             </div>
 
             <h1 className="px-1.5 text-sm font-medium text-white">
@@ -204,7 +233,7 @@ export function Calendar({
           {/* View Switching Buttons */}
           <div className="ml-auto flex items-center gap-1">
             <button
-              onClick={() => setView("day")}
+              onClick={() => handleViewChange("day")}
               className={cn(
                 "rounded-md px-2 py-1 text-[13px] font-medium transition-all",
                 view === "day"
@@ -215,7 +244,7 @@ export function Calendar({
               Day
             </button>
             <button
-              onClick={() => setView("week")}
+              onClick={() => handleViewChange("week")}
               className={cn(
                 "rounded-md px-2 py-1 text-[13px] font-medium transition-all",
                 view === "week"
@@ -226,7 +255,7 @@ export function Calendar({
               Week
             </button>
             <button
-              onClick={() => setView("month")}
+              onClick={() => handleViewChange("month")}
               className={cn(
                 "rounded-md px-2 py-1 text-[13px] font-medium transition-all",
                 view === "month"
@@ -237,7 +266,7 @@ export function Calendar({
               Month
             </button>
             <button
-              onClick={() => setView("multiMonth")}
+              onClick={() => handleViewChange("multiMonth")}
               className={cn(
                 "rounded-md px-2 py-1 text-[13px] font-medium transition-all",
                 view === "multiMonth"
@@ -252,15 +281,37 @@ export function Calendar({
 
         {/* Calendar Grid */}
         <div className="flex-1 overflow-hidden p-2 pt-0">
-          {view === "day" ? (
-            <DayView currentDate={currentDate} onDateClick={setDate} />
-          ) : view === "week" ? (
-            <WeekView currentDate={currentDate} onDateClick={setDate} />
-          ) : view === "month" ? (
-            <MonthView currentDate={currentDate} onDateClick={setDate} />
-          ) : (
-            <MultiMonthView currentDate={currentDate} onDateClick={setDate} />
-          )}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={`${view}-${currentDate.toISOString().slice(0, 10)}`}
+              className="h-full"
+              initial={
+                prefersReducedMotion
+                  ? false
+                  : { opacity: 0, x: transitionDirection * 12 }
+              }
+              animate={{ opacity: 1, x: 0 }}
+              exit={
+                prefersReducedMotion
+                  ? { opacity: 1, x: 0 }
+                  : { opacity: 0, x: -transitionDirection * 12 }
+              }
+              transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
+            >
+              {view === "day" ? (
+                <DayView currentDate={currentDate} onDateClick={setDate} />
+              ) : view === "week" ? (
+                <WeekView currentDate={currentDate} onDateClick={setDate} />
+              ) : view === "month" ? (
+                <MonthView currentDate={currentDate} onDateClick={setDate} />
+              ) : (
+                <MultiMonthView
+                  currentDate={currentDate}
+                  onDateClick={setDate}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
       <aside className="hidden h-full w-[300px] flex-none lg:block">
