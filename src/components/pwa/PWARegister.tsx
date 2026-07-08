@@ -18,14 +18,15 @@ export function PWARegister() {
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => undefined);
     }
 
     const updateOnline = () => {
+      if (typeof navigator === "undefined") return;
       const offline = !navigator.onLine;
       setIsOffline(offline);
-      if (!offline) {
+      if (!offline && navigator.serviceWorker) {
         navigator.serviceWorker.controller?.postMessage({
           type: "MINA_SYNC_NOW",
         });

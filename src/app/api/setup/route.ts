@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { Prisma } from "@prisma/client";
 import { hash } from "bcrypt";
 
 import { logger } from "@/lib/logger";
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
       prisma.userSettings.create({
         data: {
           userId: adminUser.id,
-          theme: "system",
+          theme: "dark",
           defaultView: "week",
           timeZone: "America/New_York", // Default timezone
           weekStartDay: "sunday",
@@ -135,31 +136,25 @@ export async function POST(request: Request) {
         },
       }),
 
-      // Check if SystemSettings record exists and fail if it does
-      prisma.$transaction(async (tx) => {
-        // Check if any SystemSettings record exists
-        const existingSettings = await tx.systemSettings.findFirst();
-
-        if (existingSettings) {
-          throw new Error("SystemSettings record already exists");
-        }
-
-        // Create a new record with default ID
-        return tx.systemSettings.create({
-          data: {
-            id: "default",
-            logLevel: "error",
-            logDestination: "db",
-            logRetention: {
-              error: 30,
-              warn: 14,
-              info: 7,
-              debug: 3,
-            },
-            publicSignup: false,
-            resendApiKey: process.env.RESEND_API_KEY || null,
+      prisma.systemSettings.upsert({
+        where: { id: "default" },
+        update: {
+          publicSignup: false,
+          resendApiKey: process.env.RESEND_API_KEY || null,
+        },
+        create: {
+          id: "default",
+          logLevel: "error",
+          logDestination: "db",
+          logRetention: {
+            error: 30,
+            warn: 14,
+            info: 7,
+            debug: 3,
           },
-        });
+          publicSignup: false,
+          resendApiKey: process.env.RESEND_API_KEY || null,
+        },
       }),
     ]);
 
@@ -178,22 +173,33 @@ export async function POST(request: Request) {
       LOG_SOURCE
     );
 
-    // Return a more specific error message if it's about existing SystemSettings
-    if (
-      error instanceof Error &&
-      error.message === "SystemSettings record already exists"
-    ) {
+    if (error instanceof Prisma.PrismaClientInitializationError) {
       return NextResponse.json(
         {
           error:
-            "Setup has already been completed. System settings already exist.",
+            "Database is not reachable. Start Postgres and run `prisma migrate deploy`, then try setup again.",
+          detail: error.message,
         },
-        { status: 400 }
+        { status: 503 }
+      );
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json(
+        {
+          error: `Database setup failed (${error.code}). ${error.message}`,
+        },
+        { status: 500 }
       );
     }
 
     return NextResponse.json(
-      { error: "Failed to complete setup" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to complete setup for an unknown reason",
+      },
       { status: 500 }
     );
   }

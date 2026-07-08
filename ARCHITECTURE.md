@@ -4,7 +4,7 @@ This document captures the Phase 0 baseline for the FluidCalendar fork before th
 
 ## Current Fork Additions
 
-The fork now presents the app as `teenx planner` through `src/lib/app-config.ts`, while preserving upstream attribution and license text.
+The fork now presents the app as `Mina` through `src/lib/app-config.ts`, while preserving upstream attribution and license text.
 
 Single-user mode is enforced by disabling public signup/registration and SaaS surfaces. Auth remains NextAuth-backed, with first-run setup as the local account creation path.
 

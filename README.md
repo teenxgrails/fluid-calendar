@@ -25,7 +25,7 @@ FluidCalendar is built for people who want full control over their scheduling wo
 
 ## Mina Calendar Fork
 
-This repository is being shaped into **teenx planner**, a single-user Motion-style planner for Mina Calendar.
+This repository is being shaped into **Mina**, a single-user Motion-style planner for Mina Calendar.
 
 What this fork adds:
 

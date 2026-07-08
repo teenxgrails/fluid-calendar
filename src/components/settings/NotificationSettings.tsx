@@ -14,7 +14,12 @@ export function NotificationSettings() {
       return;
     }
 
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    if (
+      typeof window === "undefined" ||
+      typeof navigator === "undefined" ||
+      !("Notification" in window) ||
+      !("serviceWorker" in navigator)
+    ) {
       updateNotificationSettings({ webPushEnabled: false });
       return;
     }
