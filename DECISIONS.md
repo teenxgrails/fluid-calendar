@@ -23,3 +23,5 @@
 - 2026-07-08: Design Part 1 setup now returns database/migration errors directly and upserts default system settings so a partially initialized database does not block first account creation.
 - 2026-07-08: Design Part 2 persists all scheduler chunks in `ScheduledBlock` while keeping `Task.scheduledStart/scheduledEnd` as first-block compatibility fields.
 - 2026-07-08: Design Part 2 declares Neon adapter dependencies and loads them optionally at runtime; this sandbox lacks npm/pnpm, so the lockfile must be refreshed in a normal package-manager environment.
+- 2026-07-08: Design Part 3 defines Liquid Glass as CSS tokens/utilities plus React primitives; lucide-react remains the icon base with 1.75-style line treatment to avoid proprietary SF Symbols.
+- 2026-07-08: Design Part 3 uses CSS gradients for Mina glow/orb treatments rather than copied Opal assets; the provided reference file is `design-refs/opal-reference.jpg` despite the spec saying `.png`.
