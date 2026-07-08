@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
         eventCancellations: true,
         eventReminders: true,
         defaultReminderTiming: "[30]",
+        webPushEnabled: false,
       },
     });
 
@@ -42,6 +43,8 @@ export async function GET(request: NextRequest) {
         eventReminders: settings.eventReminders,
       },
       defaultReminderTiming: JSON.parse(settings.defaultReminderTiming),
+      webPushEnabled: settings.webPushEnabled,
+      webPushSubscription: settings.webPushSubscription,
     });
   } catch (error) {
     logger.error(
@@ -77,6 +80,8 @@ export async function PATCH(request: NextRequest) {
       defaultReminderTiming: updates.defaultReminderTiming
         ? JSON.stringify(updates.defaultReminderTiming)
         : undefined,
+      webPushEnabled: updates.webPushEnabled,
+      webPushSubscription: updates.webPushSubscription,
     };
 
     const settings = await prisma.notificationSettings.upsert({
@@ -99,6 +104,8 @@ export async function PATCH(request: NextRequest) {
         eventReminders: settings.eventReminders,
       },
       defaultReminderTiming: JSON.parse(settings.defaultReminderTiming),
+      webPushEnabled: settings.webPushEnabled,
+      webPushSubscription: settings.webPushSubscription,
     });
   } catch (error) {
     logger.error(

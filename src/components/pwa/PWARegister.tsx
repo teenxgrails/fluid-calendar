@@ -1,0 +1,86 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { Download, WifiOff } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
+
+export function PWARegister() {
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    }
+
+    const updateOnline = () => {
+      const offline = !navigator.onLine;
+      setIsOffline(offline);
+      if (!offline) {
+        navigator.serviceWorker.controller?.postMessage({
+          type: "MINA_SYNC_NOW",
+        });
+      }
+    };
+    const beforeInstall = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+    };
+    const appInstalled = () => {
+      setInstalled(true);
+      setInstallPrompt(null);
+    };
+
+    updateOnline();
+    window.addEventListener("online", updateOnline);
+    window.addEventListener("offline", updateOnline);
+    window.addEventListener("beforeinstallprompt", beforeInstall);
+    window.addEventListener("appinstalled", appInstalled);
+
+    return () => {
+      window.removeEventListener("online", updateOnline);
+      window.removeEventListener("offline", updateOnline);
+      window.removeEventListener("beforeinstallprompt", beforeInstall);
+      window.removeEventListener("appinstalled", appInstalled);
+    };
+  }, []);
+
+  if (!isOffline && (!installPrompt || installed)) return null;
+
+  return (
+    <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs shadow-lg">
+      {isOffline ? (
+        <>
+          <WifiOff className="h-4 w-4 text-amber-400" />
+          Offline mode. Changes will sync on reconnect.
+        </>
+      ) : (
+        <>
+          <Download className="h-4 w-4 text-blue-400" />
+          Install Mina
+          <Button
+            type="button"
+            size="sm"
+            onClick={async () => {
+              if (!installPrompt) return;
+              await installPrompt.prompt();
+              await installPrompt.userChoice;
+              setInstallPrompt(null);
+            }}
+          >
+            Add
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}

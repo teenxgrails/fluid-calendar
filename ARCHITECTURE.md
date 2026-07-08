@@ -25,6 +25,8 @@ Phase 9 adds time tracking and calibration. `TimeEntry` stores timer/manual/focu
 
 Phase 10 adds the focus loop. `FocusSession` records Pomodoro, Flow, and Deep Focus sessions. `FocusStats` stores score, streak, and lifetime focus minutes. `src/services/focus/focusStats.ts` owns session recording, motivation rollups, weekly report generation, and Phase 9 time-entry writes for task-linked completed focus sessions. `/api/focus` is the focus timer/report endpoint, and `src/components/focus/FocusTimerPanel.tsx` is the client timer surface.
 
+Phase 11 adds install/offline support with `public/manifest.webmanifest`, `public/sw.js`, and `src/components/pwa/PWARegister.tsx`. The service worker caches the app shell, snapshots task/schedule API responses in IndexedDB, queues API mutations while offline, and replays them on reconnect using last-write-wins semantics. Web push subscriptions are stored on `NotificationSettings` and default off; the service worker handles incoming push payloads for focus/session reminders.
+
 ## Stack
 
 - Next.js 15 App Router with React 19 and TypeScript.

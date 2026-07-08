@@ -71,6 +71,8 @@ const defaultSettings: Settings & { accounts: ConnectedAccount[] } = {
       eventReminders: true,
     },
     defaultReminderTiming: [30], // 30 minutes before
+    webPushEnabled: false,
+    webPushSubscription: null,
   },
   integrations: {
     googleCalendar: {
@@ -201,6 +203,8 @@ export const useSettingsStore = create<SettingsStore>()(
               defaultReminderTiming: JSON.stringify(
                 newSettings.defaultReminderTiming
               ),
+              webPushEnabled: newSettings.webPushEnabled,
+              webPushSubscription: newSettings.webPushSubscription,
             }),
           }).catch((error) => {
             logger.error(

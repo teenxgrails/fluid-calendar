@@ -1,0 +1,36 @@
+{
+  "name": "Mina",
+  "short_name": "Mina",
+  "description": "Installable local-first planner with schedule, task, and focus support.",
+  "start_url": "/calendar",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calendar",
+      "url": "/calendar",
+      "description": "Open today's schedule"
+    },
+    {
+      "name": "Focus",
+      "url": "/focus",
+      "description": "Start a focus session"
+    },
+    {
+      "name": "Tasks",
+      "url": "/tasks",
+      "description": "Open open tasks"
+    }
+  ]
+}

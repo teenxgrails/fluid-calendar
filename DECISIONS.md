@@ -17,3 +17,4 @@
 - 2026-07-07: Phase 8 keeps deployment/tagging local only; Phase 12 deployment work from `AGENTS_ADDON.md` is intentionally skipped for the separate session.
 - 2026-07-07: Phase 9 uses median actual/likely ratios per `contextTag` after five completed tasks as the personal correction factor; the global ADHD buffer remains only as fallback for sparse categories.
 - 2026-07-08: Phase 10 motivation uses completion, streak, focus-hours, and estimate-fit feedback only; no blocking, shame mechanics, paywalls, or coercive streak loss patterns.
+- 2026-07-08: Phase 11 uses a hand-rolled service worker instead of `next-pwa` to avoid a new dependency; offline mutations are queued client-side and replayed last-write-wins on reconnect.

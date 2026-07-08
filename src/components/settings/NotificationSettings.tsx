@@ -5,6 +5,44 @@ import { SettingRow, SettingsSection } from "./SettingsSection";
 export function NotificationSettings() {
   const { notifications, updateNotificationSettings } = useSettingsStore();
 
+  const enablePush = async (enabled: boolean) => {
+    if (!enabled) {
+      updateNotificationSettings({
+        webPushEnabled: false,
+        webPushSubscription: null,
+      });
+      return;
+    }
+
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      updateNotificationSettings({ webPushEnabled: false });
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      updateNotificationSettings({ webPushEnabled: false });
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    let subscription: PushSubscriptionJSON | null = null;
+
+    if (vapidKey) {
+      const pushSubscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
+      subscription = pushSubscription.toJSON();
+    }
+
+    updateNotificationSettings({
+      webPushEnabled: true,
+      webPushSubscription: subscription,
+    });
+  };
+
   return (
     <SettingsSection
       title="Notification Settings"
@@ -31,10 +69,27 @@ export function NotificationSettings() {
         </div>
       </SettingRow>
 
-      <div className="mt-4 text-sm text-muted-foreground">
-        More notification settings coming soon! You&apos;ll be able to customize
-        event reminders, updates, and more.
-      </div>
+      <SettingRow
+        label="Web Push"
+        description="Focus endings, upcoming tasks, and gentle streak reminders. Off by default."
+      >
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={notifications.webPushEnabled}
+            onChange={(event) => enablePush(event.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="ml-2 text-sm">Enable web push</span>
+        </label>
+      </SettingRow>
     </SettingsSection>
   );
+}
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
 }

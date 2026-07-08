@@ -60,3 +60,13 @@ AI_ENCRYPTION_KEY=""
 ```
 
 The human must supply provider API keys or a custom endpoint when the AI assistant feature is enabled in a later phase.
+
+## Web Push
+
+```bash
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=""
+VAPID_PRIVATE_KEY=""
+VAPID_SUBJECT="mailto:you@example.com"
+```
+
+Web push is optional and disabled by default in Settings. `NEXT_PUBLIC_VAPID_PUBLIC_KEY` lets the browser create a push subscription; the private key is for a future server-side push sender.

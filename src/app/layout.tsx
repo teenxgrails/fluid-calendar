@@ -1,7 +1,9 @@
 import { Providers } from "@/components/providers";
-import { metadata as baseMetadata } from "./metadata";
+
+import { metadata as baseMetadata, viewport as baseViewport } from "./metadata";
 
 export const metadata = baseMetadata;
+export const viewport = baseViewport;
 
 export default function RootLayout({
   children,

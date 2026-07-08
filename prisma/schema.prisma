@@ -538,6 +538,8 @@ model NotificationSettings {
   eventCancellations    Boolean  @default(true)
   eventReminders        Boolean  @default(true)
   defaultReminderTiming String   @default("[30]") // JSON string of minutes before event
+  webPushEnabled        Boolean  @default(false)
+  webPushSubscription   Json?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
