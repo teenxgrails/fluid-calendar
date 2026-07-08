@@ -6,18 +6,22 @@ Use this as the reference for `.env.local` in development or `.env` in Docker/pr
 
 ```bash
 DATABASE_URL="postgresql://fluid:fluid@localhost:5432/fluid_calendar"
+DIRECT_URL="postgresql://fluid:fluid@localhost:5432/fluid_calendar"
 NEXTAUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 NEXTAUTH_SECRET="replace-with-a-random-32-plus-character-secret"
 NEXT_PUBLIC_ENABLE_SAAS_FEATURES=false
+CRON_SECRET="replace-with-random-cron-secret"
 ```
 
 Notes:
 
 - For Docker Compose app containers, use `postgresql://fluid:fluid@db:5432/fluid_calendar`.
+- For Vercel + Neon, use the pooled Neon URL for `DATABASE_URL` and the direct non-pooled Neon URL for `DIRECT_URL`.
 - `NEXTAUTH_URL` must match the exact URL opened in the browser because OAuth redirects are derived from it.
 - `NEXTAUTH_SECRET` has a local fallback in code, but it should always be set explicitly.
+- `CRON_SECRET` protects Vercel Cron endpoints and must be supplied as the `x-cron-secret` header when testing manually.
 
 ## Human-Supplied Calendar OAuth
 

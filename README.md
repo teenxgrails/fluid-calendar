@@ -43,6 +43,7 @@ Key docs:
 - [Environment template](ENV_TEMPLATE.md)
 - [Custom AI contract](docs/custom-ai-contract.md)
 - [Connector API](docs/connector-api.md)
+- [Deploy to Vercel + Neon](docs/deploy.md)
 
 Local run:
 

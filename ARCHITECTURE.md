@@ -27,6 +27,8 @@ Phase 10 adds the focus loop. `FocusSession` records Pomodoro, Flow, and Deep Fo
 
 Phase 11 adds install/offline support with `public/manifest.webmanifest`, `public/sw.js`, and `src/components/pwa/PWARegister.tsx`. The service worker caches the app shell, snapshots task/schedule API responses in IndexedDB, queues API mutations while offline, and replays them on reconnect using last-write-wins semantics. Web push subscriptions are stored on `NotificationSettings` and default off; the service worker handles incoming push payloads for focus/session reminders.
 
+Phase 12 prepares serverless deployment. Prisma now declares `directUrl = env("DIRECT_URL")` for Neon migrations. `vercel.json` schedules `/api/cron/sync-calendars` and `/api/cron/reschedule`, both protected by `CRON_SECRET` through `src/lib/cron/auth.ts`. `/api/health` reports database connectivity and build SHA. Deployment instructions live in `docs/deploy.md`.
+
 ## Stack
 
 - Next.js 15 App Router with React 19 and TypeScript.
