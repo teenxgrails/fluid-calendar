@@ -6,6 +6,7 @@ import { ActionOverlay } from "@/components/ui/action-overlay";
 
 import { useFocusModeStore } from "@/store/focusMode";
 
+import { FocusTimerPanel } from "./FocusTimerPanel";
 import { FocusedTask } from "./FocusedTask";
 import { QuickActions } from "./QuickActions";
 import { TaskQueue } from "./TaskQueue";
@@ -56,7 +57,8 @@ export function FocusMode() {
         </aside>
 
         {/* Main content area */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 space-y-6 overflow-y-auto p-8">
+          <FocusTimerPanel task={currentTask} />
           <FocusedTask task={currentTask} />
         </main>
 

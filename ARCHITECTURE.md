@@ -23,6 +23,8 @@ The local connector API uses `ConnectorSettings` with a hashed personal bearer t
 
 Phase 9 adds time tracking and calibration. `TimeEntry` stores timer/manual/focus sessions, while `Task` stores three-point estimates (`estOptimistic`, `estLikely`, `estPessimistic`) plus actual-minute deltas. `src/services/time-tracking/timeEntries.ts` owns timer writes and task actual rollups. `src/services/time-tracking/calibration.ts` computes median actual/likely correction factors per `contextTag`; `TaskSchedulingService` injects those factors into the pure scheduler, and `/api/calibration` exposes the report to the planning UI and AI layer.
 
+Phase 10 adds the focus loop. `FocusSession` records Pomodoro, Flow, and Deep Focus sessions. `FocusStats` stores score, streak, and lifetime focus minutes. `src/services/focus/focusStats.ts` owns session recording, motivation rollups, weekly report generation, and Phase 9 time-entry writes for task-linked completed focus sessions. `/api/focus` is the focus timer/report endpoint, and `src/components/focus/FocusTimerPanel.tsx` is the client timer surface.
+
 ## Stack
 
 - Next.js 15 App Router with React 19 and TypeScript.
