@@ -80,3 +80,17 @@ Date: 2026-07-08
 - PASS: Local dev server started. Port `3000` was occupied by another process returning HTTP 500, so Next served this build on `http://localhost:3001`.
 - PASS: Browser smoke for `http://localhost:3001/auth/signin`; desktop width had no horizontal overflow, and 390px mobile width had no horizontal overflow.
 - BLOCKED: Live creation of a task through the modal and through calendar-slot click. `/calendar` and `/setup` redirected to sign-in, no authenticated local session was available, and the configured database host was unreachable, so task persistence could not be exercised from the browser.
+
+## Polish Pass
+
+Date: 2026-07-09
+
+- PASS: Removed the leftover ambient wash from the app canvas. Browser computed `body` background on localhost is `rgb(26, 29, 30)`, and `background-image` does not contain a radial gradient.
+- PASS: Calendar grid and side panels were tightened to Motion-style density; week slots are compact, labels are smaller, and event chips use flat `#262627` surfaces with `#323234` borders.
+- PASS: Added Framer Motion animations for calendar view/date transitions, event chip layout/hover, quick-create popover, task modal spring, calendar feed list stagger, and settings shell transitions. Animated surfaces use `useReducedMotion` so reduced-motion users get zero-duration/no-motion variants.
+- PASS: `pnpm tsc --noEmit`.
+- PASS: full Jest suite via `pnpm jest --runInBand`: 39 suites passed, 1 skipped; 276 tests passed, 1 skipped.
+- PASS: `pnpm build`. Build completed with known DB-unreachable warnings for the configured Neon host during static collection.
+- PASS: Local dev server started at `http://localhost:3000`.
+- PASS: Browser smoke for `http://localhost:3000/auth/signin`; desktop and 390px mobile widths had no horizontal overflow.
+- BLOCKED: Authenticated calendar animation and task-modal creation smoke. `/calendar` redirected to sign-in, and no authenticated local session/database-backed account was available in this environment.
