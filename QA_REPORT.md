@@ -68,3 +68,15 @@ Date: 2026-07-08
 - PASS: `pnpm exec tsc --noEmit`.
 - PASS: `pnpm exec jest src/services/scheduling/__tests__/engine.test.ts --runInBand`: 1 suite passed, 7 tests passed.
 - PASS: `pnpm build`. Build completed with the same known unavailable-Postgres warnings for `localhost:5432` during static collection and the existing standalone trace warning for `/api/task-sync/sync`.
+
+## UI Base Pass
+
+Date: 2026-07-08
+
+- PASS: Calendar, task modal, and settings were converted to the updated flat Motion-style base. The target pass files no longer use Liquid Glass/glow classes; shared glass utilities remain in the repo for later design work.
+- PASS: `pnpm tsc --noEmit`.
+- PASS: full Jest suite via `pnpm jest --runInBand`: 39 suites passed, 1 skipped; 276 tests passed, 1 skipped.
+- PASS: `pnpm build`. Build completed with known DB-unreachable warnings for the configured Neon host during static collection and the existing standalone trace warning for `/api/task-sync/sync`.
+- PASS: Local dev server started. Port `3000` was occupied by another process returning HTTP 500, so Next served this build on `http://localhost:3001`.
+- PASS: Browser smoke for `http://localhost:3001/auth/signin`; desktop width had no horizontal overflow, and 390px mobile width had no horizontal overflow.
+- BLOCKED: Live creation of a task through the modal and through calendar-slot click. `/calendar` and `/setup` redirected to sign-in, no authenticated local session was available, and the configured database host was unreachable, so task persistence could not be exercised from the browser.
