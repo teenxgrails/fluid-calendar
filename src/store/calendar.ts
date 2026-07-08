@@ -824,10 +824,29 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
           return false;
         }
 
-        if (task.isAutoScheduled && task.scheduledStart && task.scheduledEnd) {
+        const blocks =
+          task.scheduledBlocks && task.scheduledBlocks.length > 0
+            ? task.scheduledBlocks
+            : task.scheduledStart && task.scheduledEnd
+              ? [
+                  {
+                    id: `${task.id}:legacy`,
+                    taskId: task.id,
+                    start: task.scheduledStart,
+                    end: task.scheduledEnd,
+                    chunkIndex: 0,
+                    chunkCount: 1,
+                    isFrozen: Boolean(task.isFrozen || task.scheduleLocked),
+                  },
+                ]
+              : [];
+
+        if (task.isAutoScheduled && blocks.length > 0) {
           // For auto-scheduled tasks, check if scheduled time is within range
-          const scheduledStart = newDate(task.scheduledStart);
-          return scheduledStart >= startDay && scheduledStart <= endDay;
+          return blocks.some((block) => {
+            const scheduledStart = newDate(block.start);
+            return scheduledStart >= startDay && scheduledStart <= endDay;
+          });
         } else if (task.dueDate) {
           // For non-auto-scheduled tasks, use due date logic
           const taskDueDate = newDate(task.dueDate);
@@ -841,15 +860,34 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
         return false;
       })
       .map((task) => {
-        if (task.isAutoScheduled && task.scheduledStart && task.scheduledEnd) {
-          // For auto-scheduled tasks, use the scheduled times
-          return {
-            id: `${task.id}`,
+        const blocks =
+          task.scheduledBlocks && task.scheduledBlocks.length > 0
+            ? task.scheduledBlocks
+            : task.scheduledStart && task.scheduledEnd
+              ? [
+                  {
+                    id: `${task.id}:legacy`,
+                    taskId: task.id,
+                    start: task.scheduledStart,
+                    end: task.scheduledEnd,
+                    chunkIndex: 0,
+                    chunkCount: 1,
+                    isFrozen: Boolean(task.isFrozen || task.scheduleLocked),
+                  },
+                ]
+              : [];
+
+        if (task.isAutoScheduled && blocks.length > 0) {
+          return blocks.map((block) => ({
+            id: `${task.id}:${block.chunkIndex}`,
             feedId: "tasks",
-            title: task.title,
+            title:
+              block.chunkCount > 1
+                ? `${task.title} (${block.chunkIndex + 1}/${block.chunkCount})`
+                : task.title,
             description: task.description || undefined,
-            start: newDate(task.scheduledStart),
-            end: newDate(task.scheduledEnd),
+            start: newDate(block.start),
+            end: newDate(block.end),
             isRecurring: task.isRecurring,
             isMaster: false,
             allDay: false,
@@ -864,6 +902,10 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
               tags: task.tags,
               isAutoScheduled: true,
               scheduleScore: task.scheduleScore,
+              scheduledBlockId: block.id,
+              chunkIndex: block.chunkIndex,
+              chunkCount: block.chunkCount,
+              isFrozen: block.isFrozen,
               dueDate: task.dueDate
                 ? newDate(task.dueDate).toISOString()
                 : null,
@@ -871,7 +913,7 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
                 ? newDate(task.startDate).toISOString()
                 : null,
             },
-          };
+          }));
         } else {
           // For non-auto-scheduled tasks, use the existing due date logic
           const taskDueDate = newDate(task.dueDate!);
@@ -913,7 +955,8 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
             },
           };
         }
-      });
+      })
+      .flat();
 
     return events;
   },

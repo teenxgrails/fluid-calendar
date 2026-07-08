@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
 
   const scheduledTask = await prisma.task.findUnique({
     where: { id: task.id, userId },
+    include: { scheduledBlocks: { orderBy: { chunkIndex: "asc" } } },
   });
 
   return NextResponse.json(scheduledTask || task, { status: 201 });

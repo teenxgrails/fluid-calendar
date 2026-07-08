@@ -21,3 +21,5 @@
 - 2026-07-08: Phase 12 targets Vercel + Neon with Prisma `directUrl`, protected cron routes, and a health check; Neon adapter packages are documented but not added because this offline build cannot safely update dependencies.
 - 2026-07-08: Design Part 1 renames the visible product to `Mina`; historical upstream `FluidCalendar` attribution remains in README/license docs.
 - 2026-07-08: Design Part 1 setup now returns database/migration errors directly and upserts default system settings so a partially initialized database does not block first account creation.
+- 2026-07-08: Design Part 2 persists all scheduler chunks in `ScheduledBlock` while keeping `Task.scheduledStart/scheduledEnd` as first-block compatibility fields.
+- 2026-07-08: Design Part 2 declares Neon adapter dependencies and loads them optionally at runtime; this sandbox lacks npm/pnpm, so the lockfile must be refreshed in a normal package-manager environment.

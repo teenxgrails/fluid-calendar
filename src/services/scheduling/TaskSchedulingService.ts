@@ -55,6 +55,16 @@ type DbTaskWithRelations = {
   isFrozen: boolean;
   dependsOnId: string | null;
   autoScheduled: boolean;
+  scheduledBlocks?: {
+    id: string;
+    taskId: string;
+    userId: string | null;
+    start: Date;
+    end: Date;
+    chunkIndex: number;
+    chunkCount: number;
+    isFrozen: boolean;
+  }[];
   projectId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -321,6 +331,7 @@ export async function scheduleAllTasksForUser(
       include: {
         project: true,
         tags: true,
+        scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
       },
     })) as DbTaskWithRelations[];
 
@@ -366,6 +377,16 @@ export async function scheduleAllTasksForUser(
         scheduleScore: null,
       },
     });
+    await prisma.scheduledBlock.deleteMany({
+      where: {
+        userId,
+        taskId: {
+          in: dbTasks
+            .filter((task) => !task.scheduleLocked && !task.isFrozen)
+            .map((task) => task.id),
+        },
+      },
+    });
 
     const firstBlockByTask = new Map<string, (typeof result.blocks)[number]>();
     for (const block of result.blocks) {
@@ -390,6 +411,20 @@ export async function scheduleAllTasksForUser(
         })
       )
     );
+    if (result.blocks.length > 0) {
+      await prisma.scheduledBlock.createMany({
+        data: result.blocks.map((block) => ({
+          taskId: block.taskId,
+          userId,
+          start: block.start,
+          end: block.end,
+          chunkIndex: block.chunkIndex,
+          chunkCount: block.chunkCount,
+          isFrozen: block.isFrozen,
+        })),
+        skipDuplicates: true,
+      });
+    }
 
     const updatedDbTasks = (await prisma.task.findMany({
       where: {
@@ -401,6 +436,7 @@ export async function scheduleAllTasksForUser(
       include: {
         tags: true,
         project: true,
+        scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
       },
     })) as DbTaskWithRelations[];
 

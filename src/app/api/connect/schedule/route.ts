@@ -17,9 +17,16 @@ export async function GET(request: NextRequest) {
     where: {
       userId,
       status: { not: "completed" },
-      OR: [{ scheduledEnd: { gte: now } }, { scheduledEnd: null }],
+      OR: [
+        { scheduledEnd: { gte: now } },
+        { scheduledEnd: null },
+        { scheduledBlocks: { some: { end: { gte: now } } } },
+      ],
     },
     orderBy: [{ scheduledStart: "asc" }, { createdAt: "desc" }],
+    include: {
+      scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
+    },
   });
 
   return NextResponse.json({

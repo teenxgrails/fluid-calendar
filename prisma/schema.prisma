@@ -94,6 +94,7 @@ model User {
   aiSettings            AISettings?
   connectorSettings     ConnectorSettings?
   timeEntries           TimeEntry[]
+  scheduledBlocks       ScheduledBlock[]
   focusSessions         FocusSession[]
   focusStats            FocusStats?
   tasks                 Task[]
@@ -278,9 +279,10 @@ model Task {
   skipSync          Boolean   @default(false) // Flag to skip syncing this task
 
   // Change tracking relation
-  changes       TaskChange[]
-  timeEntries   TimeEntry[]
-  focusSessions FocusSession[]
+  changes         TaskChange[]
+  timeEntries     TimeEntry[]
+  scheduledBlocks ScheduledBlock[]
+  focusSessions   FocusSession[]
 
   // User relationship
   userId String?
@@ -334,6 +336,26 @@ model TimeEntry {
   @@index([taskId])
   @@index([userId, startedAt])
   @@index([source])
+}
+
+model ScheduledBlock {
+  id         String   @id @default(cuid())
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  start      DateTime
+  end        DateTime
+  chunkIndex Int      @default(0)
+  chunkCount Int      @default(1)
+  isFrozen   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([taskId, chunkIndex])
+  @@index([userId, start])
+  @@index([taskId])
+  @@index([start, end])
 }
 
 model FocusSession {

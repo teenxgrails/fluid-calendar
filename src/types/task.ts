@@ -75,6 +75,7 @@ export interface Task {
   isFrozen?: boolean;
   dependsOnId?: string | null;
   autoScheduled?: boolean;
+  scheduledBlocks?: ScheduledTaskBlock[];
   tags: Tag[];
   projectId?: string | null;
   project?: Project | null;
@@ -97,6 +98,17 @@ export interface Task {
   source?: string | null;
   externalListId?: string | null;
   lastSyncedAt?: Date | null;
+}
+
+export interface ScheduledTaskBlock {
+  id: string;
+  taskId: string;
+  userId?: string | null;
+  start: Date | string;
+  end: Date | string;
+  chunkIndex: number;
+  chunkCount: number;
+  isFrozen: boolean;
 }
 
 export interface NewTask extends Omit<

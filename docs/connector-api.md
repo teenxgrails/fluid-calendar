@@ -27,6 +27,7 @@ curl -X POST http://localhost:3000/api/connect/tasks \
 ```
 
 The task is created as auto-scheduled and Mina immediately runs the deterministic scheduler.
+The response includes the task plus `scheduledBlocks` when the task is split into multiple chunks.
 
 ## Read Schedule
 
@@ -40,7 +41,23 @@ Response:
 ```json
 {
   "generatedAt": "2026-07-07T21:00:00.000Z",
-  "tasks": []
+  "tasks": [
+    {
+      "id": "task_id",
+      "title": "Process resale photos",
+      "scheduledStart": "2026-07-08T09:00:00.000Z",
+      "scheduledEnd": "2026-07-08T09:30:00.000Z",
+      "scheduledBlocks": [
+        {
+          "start": "2026-07-08T09:00:00.000Z",
+          "end": "2026-07-08T09:30:00.000Z",
+          "chunkIndex": 0,
+          "chunkCount": 3,
+          "isFrozen": false
+        }
+      ]
+    }
+  ]
 }
 ```
 

@@ -21,6 +21,10 @@ export interface ExtendedEventProps {
   energyLevel?: string;
   preferredTime?: string;
   tags?: Array<{ id: string; name: string; color?: string }>;
+  scheduledBlockId?: string;
+  chunkIndex?: number;
+  chunkCount?: number;
+  isFrozen?: boolean;
 }
 
 export interface CalendarEvent {

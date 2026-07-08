@@ -44,6 +44,7 @@ export async function GET(
       include: {
         tags: true,
         project: true,
+        scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
       },
     });
 
@@ -267,6 +268,7 @@ export async function PUT(
       include: {
         tags: true,
         project: true,
+        scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
       },
     });
 

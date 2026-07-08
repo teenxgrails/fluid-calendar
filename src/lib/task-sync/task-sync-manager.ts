@@ -10,6 +10,7 @@
  */
 import {
   TaskProvider as DbTaskProvider,
+  Prisma,
   TaskListMapping,
 } from "@prisma/client";
 
@@ -24,8 +25,8 @@ import { TaskStatus } from "@/types/task";
 import { FieldMapper } from "./field-mapper";
 import { CalDAVFieldMapper } from "./providers/caldav-field-mapper";
 import { CalDAVTaskProvider } from "./providers/caldav-provider";
-import { OutlookFieldMapper } from "./providers/outlook-field-mapper";
 import { GoogleFieldMapper } from "./providers/google-field-mapper";
+import { OutlookFieldMapper } from "./providers/outlook-field-mapper";
 // Import provider implementations
 import { OutlookTaskProvider } from "./providers/outlook-provider";
 import {
@@ -100,19 +101,25 @@ export class TaskSyncManager {
         return new OutlookTaskProvider(client, dbProvider.accountId);
       case "GOOGLE":
         if (!dbProvider.accountId || !dbProvider.account?.userId) {
-          throw new Error(`Missing account information for Google provider ${providerId}`);
+          throw new Error(
+            `Missing account information for Google provider ${providerId}`
+          );
         }
         // Lazy import to avoid increasing startup cost
-        const { getGoogleTasksClient, GoogleTaskProvider } = await import(
-          "@/lib/task-sync/providers/google-provider"
+        const { getGoogleTasksClient, GoogleTaskProvider } =
+          await import("@/lib/task-sync/providers/google-provider");
+        const googleClient = await getGoogleTasksClient(
+          dbProvider.accountId,
+          dbProvider.account.userId
         );
-        const googleClient = await getGoogleTasksClient(dbProvider.accountId, dbProvider.account.userId);
-        return new GoogleTaskProvider(googleClient, dbProvider.accountId, dbProvider.account.userId);
+        return new GoogleTaskProvider(
+          googleClient,
+          dbProvider.accountId,
+          dbProvider.account.userId
+        );
       case "CALDAV":
         if (!dbProvider.account) {
-          throw new Error(
-            `Missing account for CalDAV provider ${providerId}`
-          );
+          throw new Error(`Missing account for CalDAV provider ${providerId}`);
         }
         // Defense-in-depth: only use the account's CalDAV credentials if the
         // account is actually owned by the provider's user and is a CalDAV
@@ -379,12 +386,12 @@ export class TaskSyncManager {
             mappedExternalTask
           );
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { tags, project, ...updateData } = mergedData;
+          const { tags, project, scheduledBlocks, ...updateData } = mergedData;
 
           await prisma.task.update({
             where: { id: localTask.id },
             data: {
-              ...updateData,
+              ...(updateData as Prisma.TaskUncheckedUpdateInput),
               externalUpdatedAt: externalTask.lastModified
                 ? newDate(externalTask.lastModified)
                 : externalTask.lastModifiedDateTime
@@ -1080,14 +1087,14 @@ export class TaskSyncManager {
 
       // Extract and remove nested objects that can't be used directly in the update
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { tags, project, ...updateData } = mergedData;
+      const { tags, project, scheduledBlocks, ...updateData } = mergedData;
 
       // Update local task with the merged data
       await prisma.task.update({
         where: { id: localTask.id },
         data: {
           // Use type assertion to handle the TaskUpdateInput type
-          ...updateData,
+          ...(updateData as Prisma.TaskUncheckedUpdateInput),
           externalUpdatedAt: externalUpdatedAt,
           lastSyncedAt: newDate(),
           syncStatus: "SYNCED",
