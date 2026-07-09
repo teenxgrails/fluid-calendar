@@ -71,6 +71,11 @@ export async function POST(request: NextRequest) {
         name: json.name,
         description: json.description,
         color: json.color,
+        icon: json.icon,
+        progress:
+          typeof json.progress === "number"
+            ? Math.max(0, Math.min(100, Math.round(json.progress)))
+            : 0,
         status: json.status || ProjectStatus.ACTIVE,
         // Associate the project with the current user
         userId,

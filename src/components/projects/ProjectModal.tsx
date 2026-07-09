@@ -31,6 +31,8 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("#E5E7EB");
+  const [icon, setIcon] = useState("");
+  const [progress, setProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -39,10 +41,14 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
       setName(project.name);
       setDescription(project.description || "");
       setColor(project.color || "#E5E7EB");
+      setIcon(project.icon || "");
+      setProgress(project.progress || 0);
     } else if (!project && isOpen) {
       setName("");
       setDescription("");
       setColor("#E5E7EB");
+      setIcon("");
+      setProgress(0);
     }
   }, [project, isOpen]);
 
@@ -57,12 +63,16 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
           name: name.trim(),
           description: description.trim() || undefined,
           color: color === "#E5E7EB" ? undefined : color,
+          icon: icon.trim() || undefined,
+          progress,
         });
       } else {
         await createProject({
           name: name.trim(),
           description: description.trim() || undefined,
           color: color === "#E5E7EB" ? undefined : color,
+          icon: icon.trim() || undefined,
+          progress,
           status: ProjectStatus.ACTIVE,
         });
       }
@@ -119,6 +129,30 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
                 <div
                   className="h-10 flex-1 rounded-md border"
                   style={{ backgroundColor: color }}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="icon">Icon</Label>
+                <Input
+                  id="icon"
+                  value={icon}
+                  onChange={(e) => setIcon(e.target.value)}
+                  maxLength={2}
+                  placeholder="◆"
+                />
+              </div>
+              <div>
+                <Label htmlFor="progress">Progress</Label>
+                <Input
+                  id="progress"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={progress}
+                  onChange={(e) => setProgress(Number(e.target.value))}
                 />
               </div>
             </div>

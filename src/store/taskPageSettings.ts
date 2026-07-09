@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type ViewMode = "list" | "board";
+type ViewMode = "list" | "board" | "timeline";
 
 interface TaskPageSettings {
   // View settings

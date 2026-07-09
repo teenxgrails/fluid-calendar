@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-import { Kanban, ListTodo } from "lucide-react";
+import { CalendarRange, Kanban, ListTodo } from "lucide-react";
 import { toast } from "sonner";
 
 import { ProjectSidebar } from "@/components/projects/ProjectSidebar";
 import { BoardView } from "@/components/tasks/BoardView/BoardView";
 import { TaskList } from "@/components/tasks/TaskList";
 import { TaskModal } from "@/components/tasks/TaskModal";
+import { TimelineView } from "@/components/tasks/TimelineView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -143,6 +144,18 @@ export default function TasksPage() {
                   <Kanban className="h-4 w-4" strokeWidth={1.75} />
                   Board
                 </button>
+                <button
+                  onClick={() => setViewMode("timeline")}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg p-2 text-sm font-medium transition-all",
+                    viewMode === "timeline"
+                      ? "bg-white/10 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+                  )}
+                >
+                  <CalendarRange className="h-4 w-4" strokeWidth={1.75} />
+                  Timeline
+                </button>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -195,7 +208,7 @@ export default function TasksPage() {
               onStatusChange={handleStatusChange}
               onInlineEdit={handleInlineEdit}
             />
-          ) : (
+          ) : viewMode === "board" ? (
             <BoardView
               tasks={tasks}
               onEdit={(task) => {
@@ -205,6 +218,8 @@ export default function TasksPage() {
               onDelete={handleDeleteTask}
               onStatusChange={handleStatusChange}
             />
+          ) : (
+            <TimelineView tasks={tasks} />
           )}
         </div>
 

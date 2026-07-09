@@ -75,6 +75,11 @@ export async function PUT(
         name: json.name,
         description: json.description,
         color: json.color,
+        icon: json.icon,
+        progress:
+          typeof json.progress === "number"
+            ? Math.max(0, Math.min(100, Math.round(json.progress)))
+            : undefined,
         status: json.status,
       },
       include: {

@@ -183,6 +183,8 @@ model Project {
   name             String
   description      String?
   color            String?
+  icon             String?
+  progress         Int               @default(0)
   status           String            @default("active") // enum: 'active', 'archived'
   tasks            Task[]
   taskListMappings TaskListMapping[]
