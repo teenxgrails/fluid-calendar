@@ -3,6 +3,8 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 
+import { AIChatSurface } from "./AIChatSurface";
+
 interface AIChatOverlayProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -46,16 +48,8 @@ export function AIChatOverlay({ open, onOpenChange }: AIChatOverlayProps) {
                 <X className="h-4 w-4" strokeWidth={1.75} />
               </button>
             </header>
-            <div className="flex flex-1 items-center justify-center px-8 text-center">
-              <div>
-                <div className="text-sm font-medium">
-                  Chat agent wiring is next.
-                </div>
-                <p className="mt-2 text-[13px] leading-5 text-[#9AA0A6]">
-                  This overlay is connected to the Motion shell; provider-gated
-                  streaming chat lands in the agent phase.
-                </p>
-              </div>
+            <div className="min-h-0 flex-1">
+              <AIChatSurface compact />
             </div>
           </motion.aside>
         </motion.div>

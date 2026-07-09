@@ -92,6 +92,8 @@ model User {
   schedulingPreferences SchedulingPreferences?
   energyProfileWindows  EnergyProfileWindow[]
   aiSettings            AISettings?
+  aiConversations       AiConversation[]
+  aiMessages            AiMessage[]
   connectorSettings     ConnectorSettings?
   timeEntries           TimeEntry[]
   scheduledBlocks       ScheduledBlock[]
@@ -454,6 +456,35 @@ model AISettings {
 
   @@index([userId])
   @@index([provider])
+}
+
+model AiConversation {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String      @default("New chat")
+  messages  AiMessage[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+model AiMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  toolName       String?
+  toolPayload    Json?
+  requiresConfirm Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([userId, createdAt])
 }
 
 model ConnectorSettings {
