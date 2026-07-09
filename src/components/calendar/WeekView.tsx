@@ -9,7 +9,6 @@ import type { DateSelectArg } from "@fullcalendar/core";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { motion, useReducedMotion } from "framer-motion";
 
 import { TaskModal } from "@/components/tasks/TaskModal";
 
@@ -40,17 +39,10 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
     useCalendarStore();
   const { user: userSettings, calendar: calendarSettings } = useSettingsStore();
   const { createTask, updateTask } = useTaskStore();
-  const prefersReducedMotion = useReducedMotion();
   const [selectedEvent, setSelectedEvent] = useState<Partial<CalendarEvent>>();
   const [selectedTask, setSelectedTask] = useState<Task>();
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedEndDate, setSelectedEndDate] = useState<Date>();
-  const [quickCreate, setQuickCreate] = useState<{
-    start: Date;
-    end: Date;
-    x: number;
-    y: number;
-  }>();
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
@@ -200,7 +192,6 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
     setSelectedEvent({
       allDay,
     });
-    setQuickCreate(undefined);
     setIsEventModalOpen(true);
   };
 
@@ -214,17 +205,11 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
     setSelectedDate(arg.date);
     setSelectedEndDate(end);
     setSelectedEvent({ allDay: arg.allDay });
-    setQuickCreate({
-      start: arg.date,
-      end,
-      x: Math.min(arg.jsEvent.clientX, window.innerWidth - 240),
-      y: Math.min(arg.jsEvent.clientY, window.innerHeight - 140),
-    });
+    setIsEventModalOpen(true);
   };
 
   const handleEventModalClose = () => {
     setIsEventModalOpen(false);
-    setQuickCreate(undefined);
     eventModalStore.setOpen(false);
     setSelectedEvent(undefined);
     setSelectedDate(undefined);
@@ -237,7 +222,6 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
     setIsTaskModalOpen(false);
     setIsNewTaskModalOpen(false);
     setSelectedTask(undefined);
-    setQuickCreate(undefined);
   };
 
   const handleQuickViewClose = () => {
@@ -365,48 +349,6 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
         snapDuration="00:15:00"
         dragRevertDuration={250}
       />
-      {quickCreate && !isEventModalOpen && !isNewTaskModalOpen && (
-        <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{
-            duration: prefersReducedMotion ? 0 : 0.12,
-            ease: "easeOut",
-          }}
-          className="fixed z-50 w-56 rounded-md border border-[#323234] bg-[#262627] p-2 text-white shadow-lg"
-          style={{
-            left: quickCreate.x,
-            top: quickCreate.y,
-            transformOrigin: "top left",
-          }}
-        >
-          <div className="mb-1 px-2 py-1 text-xs text-[#9AA0A6]">
-            {quickCreate.start.toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            })}
-          </div>
-          <button
-            type="button"
-            className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm hover:bg-[#2B2F31]"
-            onClick={() => {
-              setIsEventModalOpen(true);
-            }}
-          >
-            Create event
-          </button>
-          <button
-            type="button"
-            className="mt-1 flex w-full items-center rounded-md px-3 py-2 text-left text-sm hover:bg-[#2B2F31]"
-            onClick={() => {
-              setIsNewTaskModalOpen(true);
-            }}
-          >
-            Create task (fixed time)
-          </button>
-        </motion.div>
-      )}
       {quickViewItem && (
         <EventQuickView
           isOpen={!!quickViewItem}
@@ -442,13 +384,13 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
           }}
         />
       )}
-      {isNewTaskModalOpen && quickCreate && (
+      {isNewTaskModalOpen && selectedDate && selectedEndDate && (
         <TaskModal
           isOpen={isNewTaskModalOpen}
           onClose={handleTaskModalClose}
           tags={useTaskStore.getState().tags}
-          initialStart={quickCreate.start}
-          initialEnd={quickCreate.end}
+          initialStart={selectedDate}
+          initialEnd={selectedEndDate}
           onSave={async (updates) => {
             await createTask(updates);
             handleTaskModalClose();

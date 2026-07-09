@@ -385,9 +385,8 @@
 .fc .fc-event {
   @apply cursor-pointer border shadow-sm;
   border-radius: 6px !important;
-  background: #262627 !important;
-  border-color: #323234 !important;
   box-shadow: none !important;
+  overflow: hidden;
 }
 
 .fc .fc-event-main {
@@ -447,6 +446,22 @@
 
 .fc .fc-timegrid-slot-minor {
   border-top-style: dotted;
+}
+
+.fc .fc-non-business {
+  background: rgba(255, 255, 255, 0.025) !important;
+}
+
+.fc .fc-non-business:hover,
+.fc .fc-timegrid-col-bg .fc-non-business:hover,
+.fc .fc-bg-event:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  filter: none !important;
+}
+
+.fc .fc-timegrid-col:hover,
+.fc .fc-timegrid-slot:hover {
+  background: transparent;
 }
 
 /* Dark mode styles for FullCalendar */

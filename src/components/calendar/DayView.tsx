@@ -189,6 +189,15 @@ export function DayView({ currentDate, onDateClick }: DayViewProps) {
     setIsEventModalOpen(true);
   };
 
+  const handleSlotClick = (arg: { date: Date; allDay: boolean }) => {
+    onDateClick?.(arg.date);
+    const end = new Date(arg.date.getTime() + 30 * 60 * 1000);
+    setSelectedDate(arg.date);
+    setSelectedEndDate(end);
+    setSelectedEvent({ allDay: arg.allDay });
+    setIsEventModalOpen(true);
+  };
+
   const handleEventModalClose = () => {
     setIsEventModalOpen(false);
     eventModalStore.setOpen(false);
@@ -312,7 +321,7 @@ export function DayView({ currentDate, onDateClick }: DayViewProps) {
           omitCommas: true,
         }}
         height="100%"
-        dateClick={(arg) => onDateClick?.(arg.date)}
+        dateClick={handleSlotClick}
         eventClick={handleEventClick}
         select={handleDateSelect}
         selectable={true}

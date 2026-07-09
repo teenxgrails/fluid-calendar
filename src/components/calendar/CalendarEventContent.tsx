@@ -19,10 +19,10 @@ interface CalendarEventContentProps {
 }
 
 const priorityColors = {
-  [Priority.HIGH]: "border-l-red-400",
-  [Priority.MEDIUM]: "border-l-amber-400",
-  [Priority.LOW]: "border-l-blue-400",
-  [Priority.NONE]: "border-l-[#323234]",
+  [Priority.HIGH]: "#f87171",
+  [Priority.MEDIUM]: "#f59e0b",
+  [Priority.LOW]: "#60a5fa",
+  [Priority.NONE]: "#323234",
 };
 
 export const CalendarEventContent = memo(function CalendarEventContent({
@@ -66,16 +66,25 @@ export const CalendarEventContent = memo(function CalendarEventContent({
     eventInfo.event.backgroundColor ||
     eventInfo.event.borderColor ||
     DEFAULT_EVENT_COLOR;
+  const taskColor =
+    isTask && priority
+      ? priorityColors[priority as Priority] || eventColor
+      : eventColor;
+  const chipColor = isTask ? taskColor : eventColor;
 
   return (
     <motion.div
       layout={!prefersReducedMotion}
       whileHover={prefersReducedMotion ? undefined : { y: -1 }}
       data-testid={isTask ? "calendar-task" : "calendar-event"}
+      style={{
+        backgroundColor: `color-mix(in srgb, ${chipColor} 22%, #262627)`,
+        borderColor: `color-mix(in srgb, ${chipColor} 55%, #323234)`,
+        borderLeftColor: chipColor,
+      }}
       className={cn(
-        "flex h-full flex-col justify-start gap-0.5 overflow-hidden rounded-md border border-[#323234] bg-[#262627] px-1.5 py-0.5 text-[11px] text-white",
+        "flex h-full flex-col justify-start gap-0.5 overflow-hidden rounded-md border px-1.5 py-0.5 text-[11px] text-white",
         isTask && "border-l-4",
-        isTask && priority && priorityColors[priority as Priority],
         isTask &&
           !priority && {
             "border-green-500": status === TaskStatus.COMPLETED,
