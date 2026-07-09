@@ -88,17 +88,27 @@ export class AnthropicProvider implements SchedulerAI {
 }
 
 export class OpenAIProvider implements SchedulerAI {
-  name = "OpenAI";
+  name: string;
 
-  constructor(private config: SchedulerAIConfig) {}
+  constructor(
+    private config: SchedulerAIConfig,
+    name = "OpenAI",
+    private defaultModel = "gpt-4o"
+  ) {
+    this.name = name;
+  }
 
   private async complete<T>(prompt: string): Promise<T> {
     if (!this.config.apiKey) {
-      throw new Error("OpenAI API key is not configured");
+      throw new Error(`${this.name} API key is not configured`);
     }
 
+    const baseUrl = (this.config.baseUrl || "https://api.openai.com/v1").replace(
+      /\/$/,
+      ""
+    );
     const response = await fetchWithTimeout(
-      "https://api.openai.com/v1/chat/completions",
+      `${baseUrl}/chat/completions`,
       {
         method: "POST",
         headers: {
@@ -106,7 +116,7 @@ export class OpenAIProvider implements SchedulerAI {
           Authorization: `Bearer ${this.config.apiKey}`,
         },
         body: JSON.stringify({
-          model: this.config.model || "gpt-5",
+          model: this.config.model || this.defaultModel,
           temperature: 0,
           response_format: { type: "json_object" },
           messages: [{ role: "user", content: prompt }],
@@ -116,7 +126,7 @@ export class OpenAIProvider implements SchedulerAI {
     );
 
     if (!response.ok) {
-      throw new Error(`OpenAI request failed: ${response.status}`);
+      throw new Error(`${this.name} request failed: ${response.status}`);
     }
 
     return parseStrictJson<T>(extractProviderText(await response.json()));
@@ -178,7 +188,22 @@ export function createSchedulerAI(config: SchedulerAIConfig): SchedulerAI {
     case "ANTHROPIC":
       return new AnthropicProvider(config);
     case "OPENAI":
-      return new OpenAIProvider(config);
+      return new OpenAIProvider(config, "OpenAI", "gpt-4o");
+    case "GROK":
+      return new OpenAIProvider(
+        { ...config, baseUrl: config.baseUrl || "https://api.x.ai/v1" },
+        "Grok",
+        "grok-2-latest"
+      );
+    case "GLM":
+      return new OpenAIProvider(
+        {
+          ...config,
+          baseUrl: config.baseUrl || "https://api.z.ai/api/paas/v4",
+        },
+        "GLM",
+        "glm-4.5"
+      );
     case "CUSTOM":
       return new CustomProvider(config);
     case "NONE":

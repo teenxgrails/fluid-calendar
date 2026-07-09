@@ -41,3 +41,4 @@
 - 2026-07-08: UI Part 3 keeps existing settings components but relabels the left navigation to Motion-style sections; Smart Scheduling represents the requested Energy profile section because it already owns those controls.
 - 2026-07-09: Polish Part 1 flattens the existing glass/glow utility classes instead of deleting them because other screens still import those class names; this removes ambient visuals without changing component contracts.
 - 2026-07-09: Polish Part 3 uses Framer's `useReducedMotion` at each animated shell/chip/modal surface so animations can be disabled without adding app-level state or changing planner behavior.
+- 2026-07-09: Master Phase 4 stores separate encrypted API keys per AI provider; Grok/GLM use the OpenAI-compatible client with configurable base URLs so endpoint changes do not require scheduler changes.

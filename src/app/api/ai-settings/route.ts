@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { encryptSecret } from "@/services/ai/encryption";
-import { ensureAISettings, publicAISettings } from "@/services/ai/settings";
+import {
+  defaultModelForProvider,
+  ensureAISettings,
+  publicAISettings,
+} from "@/services/ai/settings";
 import { AIProvider } from "@prisma/client";
 
 import { authenticateRequest } from "@/lib/auth/api-auth";
@@ -15,8 +19,27 @@ function isProvider(value: unknown): value is AIProvider {
     value === "NONE" ||
     value === "ANTHROPIC" ||
     value === "OPENAI" ||
+    value === "GROK" ||
+    value === "GLM" ||
     value === "CUSTOM"
   );
+}
+
+function encryptedKeyField(provider: AIProvider) {
+  switch (provider) {
+    case AIProvider.ANTHROPIC:
+      return "encryptedAnthropicKey";
+    case AIProvider.OPENAI:
+      return "encryptedOpenAIKey";
+    case AIProvider.GROK:
+      return "encryptedGrokKey";
+    case AIProvider.GLM:
+      return "encryptedGlmKey";
+    case AIProvider.CUSTOM:
+      return "encryptedApiKey";
+    default:
+      return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -52,18 +75,23 @@ export async function PATCH(request: NextRequest) {
       typeof body.apiKey === "string" && body.apiKey.trim()
         ? encryptSecret(body.apiKey.trim())
         : undefined;
+    const keyField = encryptedKeyField(provider);
+    const soulPreset = body.soulPreset === "coach" ? "coach" : "business";
 
     const settings = await prisma.aISettings.update({
       where: { userId: auth.userId },
       data: {
         provider,
         model:
-          typeof body.model === "string" ? body.model.trim() || null : null,
+          typeof body.model === "string"
+            ? body.model.trim() || defaultModelForProvider(provider)
+            : defaultModelForProvider(provider),
         customUrl:
           typeof body.customUrl === "string"
             ? body.customUrl.trim() || null
             : null,
-        ...(apiKey && { encryptedApiKey: apiKey }),
+        ...(apiKey && keyField && { [keyField]: apiKey }),
+        soulPreset,
         allowParseTasks: Boolean(body.allowParseTasks),
         allowReorder: Boolean(body.allowReorder),
         allowSuggestEnergy: Boolean(body.allowSuggestEnergy),

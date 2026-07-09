@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { Bot, ClipboardList, Save } from "lucide-react";
+import { Bot, ClipboardList, KeyRound, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,13 +20,16 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { SettingRow, SettingsSection } from "./SettingsSection";
 
-type AIProvider = "NONE" | "ANTHROPIC" | "OPENAI" | "CUSTOM";
+type AIProvider = "NONE" | "ANTHROPIC" | "OPENAI" | "GROK" | "GLM" | "CUSTOM";
+type SoulPreset = "business" | "coach";
 
 interface AISettingsResponse {
   provider: AIProvider;
   hasApiKey: boolean;
+  providerKeys?: Partial<Record<Exclude<AIProvider, "NONE">, boolean>>;
   customUrl: string | null;
   model: string | null;
+  soulPreset: SoulPreset;
   allowParseTasks: boolean;
   allowReorder: boolean;
   allowSuggestEnergy: boolean;
@@ -47,11 +50,20 @@ const DEFAULT_SETTINGS: AISettingsResponse = {
   hasApiKey: false,
   customUrl: null,
   model: null,
+  soulPreset: "business",
   allowParseTasks: true,
   allowReorder: false,
   allowSuggestEnergy: true,
   allowFullAuto: false,
   requestTimeoutSeconds: 20,
+};
+
+const providerDefaults: Record<Exclude<AIProvider, "NONE">, string> = {
+  ANTHROPIC: "claude-sonnet-4-6",
+  OPENAI: "gpt-4o",
+  GROK: "grok-2-latest",
+  GLM: "glm-4.5",
+  CUSTOM: "optional",
 };
 
 export function AIAssistantSettings() {
@@ -171,9 +183,35 @@ export function AIAssistantSettings() {
               <SelectItem value="NONE">None</SelectItem>
               <SelectItem value="ANTHROPIC">Anthropic</SelectItem>
               <SelectItem value="OPENAI">OpenAI</SelectItem>
+              <SelectItem value="GROK">Grok (xAI)</SelectItem>
+              <SelectItem value="GLM">GLM (z.ai)</SelectItem>
               <SelectItem value="CUSTOM">Custom</SelectItem>
             </SelectContent>
           </Select>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => updateSetting("soulPreset", "business")}
+              className={`rounded-md border px-3 py-2 text-left text-sm ${
+                settings.soulPreset === "business"
+                  ? "border-[#3E63DD] bg-[#2B2F31]"
+                  : "border-[#323234] bg-[#262627]"
+              }`}
+            >
+              Brief business assistant
+            </button>
+            <button
+              type="button"
+              onClick={() => updateSetting("soulPreset", "coach")}
+              className={`rounded-md border px-3 py-2 text-left text-sm ${
+                settings.soulPreset === "coach"
+                  ? "border-[#3E63DD] bg-[#2B2F31]"
+                  : "border-[#323234] bg-[#262627]"
+              }`}
+            >
+              Friendly ADHD coach
+            </button>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="ai-model">Model</Label>
@@ -182,11 +220,9 @@ export function AIAssistantSettings() {
                 value={settings.model || ""}
                 onChange={(event) => updateSetting("model", event.target.value)}
                 placeholder={
-                  settings.provider === "ANTHROPIC"
-                    ? "claude-sonnet-4-6"
-                    : settings.provider === "OPENAI"
-                      ? "gpt-5"
-                      : "optional"
+                  settings.provider === "NONE"
+                    ? "deterministic only"
+                    : providerDefaults[settings.provider]
                 }
               />
             </div>
@@ -210,7 +246,11 @@ export function AIAssistantSettings() {
           {settings.provider !== "NONE" && (
             <div className="space-y-2">
               <Label htmlFor="ai-key">
-                API key {settings.hasApiKey ? "(saved)" : ""}
+                API key{" "}
+                {settings.providerKeys?.[settings.provider] ||
+                settings.hasApiKey
+                  ? "(saved)"
+                  : ""}
               </Label>
               <Input
                 id="ai-key"
@@ -221,6 +261,14 @@ export function AIAssistantSettings() {
                   settings.hasApiKey ? "Leave blank to keep saved key" : ""
                 }
               />
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center gap-2 rounded-md border border-[#323234] bg-[#262627] px-3 py-1.5 text-xs text-muted-foreground"
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                Connect OAuth (soon)
+              </button>
             </div>
           )}
           {settings.provider === "CUSTOM" && (

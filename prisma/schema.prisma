@@ -435,8 +435,13 @@ model AISettings {
   user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   provider              AIProvider @default(NONE)
   encryptedApiKey       String?
+  encryptedAnthropicKey String?
+  encryptedOpenAIKey    String?
+  encryptedGrokKey      String?
+  encryptedGlmKey       String?
   customUrl             String?
   model                 String?
+  soulPreset            String     @default("business")
   allowParseTasks       Boolean    @default(true)
   allowReorder          Boolean    @default(false)
   allowSuggestEnergy    Boolean    @default(true)
@@ -856,6 +861,8 @@ enum AIProvider {
   NONE
   ANTHROPIC
   OPENAI
+  GROK
+  GLM
   CUSTOM
 }
 
