@@ -2,6 +2,9 @@ import { parseTasksFallback } from "./fallback-parser";
 import { extractProviderText, parseStrictJson } from "./json";
 import { parsePrompt, schedulePrompt } from "./prompts";
 import {
+  AIChatRequest,
+  AIChatToolCall,
+  AIChatToolDefinition,
   AISuggestion,
   ParsedTask,
   SchedulerAI,
@@ -30,6 +33,73 @@ async function fetchWithTimeout(
   }
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function parseToolArguments(value: unknown): Record<string, unknown> {
+  if (!value) return {};
+  if (typeof value === "string") {
+    try {
+      return asRecord(JSON.parse(value)) || {};
+    } catch {
+      return {};
+    }
+  }
+  return asRecord(value) || {};
+}
+
+function openAITools(tools?: AIChatToolDefinition[]) {
+  return tools?.map((tool) => ({
+    type: "function",
+    function: {
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+    },
+  }));
+}
+
+async function* parseSseJson(
+  response: Response
+): AsyncGenerator<Record<string, unknown>> {
+  if (!response.body) {
+    throw new Error("Provider returned an empty stream");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const chunks = buffer.split("\n\n");
+    buffer = chunks.pop() || "";
+
+    for (const chunk of chunks) {
+      const dataLines = chunk
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => line.slice(5).trim());
+
+      for (const data of dataLines) {
+        if (!data || data === "[DONE]") continue;
+        try {
+          const parsed = asRecord(JSON.parse(data));
+          if (parsed) yield parsed;
+        } catch {
+          // Ignore malformed provider stream fragments.
+        }
+      }
+    }
+  }
+}
+
 export class NoneProvider implements SchedulerAI {
   name = "Deterministic";
 
@@ -39,6 +109,17 @@ export class NoneProvider implements SchedulerAI {
 
   async parseTasks(text: string): Promise<ParsedTask[]> {
     return parseTasksFallback(text);
+  }
+
+  async selectChatTool(): Promise<AIChatToolCall | null> {
+    return null;
+  }
+
+  async *streamChat(input: AIChatRequest): AsyncGenerator<string> {
+    const latest = input.messages[input.messages.length - 1]?.content || "";
+    yield latest
+      ? `Deterministic mode is enabled. I can still parse local tasks, but chat requires an AI provider. Last message: ${latest}`
+      : "Deterministic mode is enabled. Configure an AI provider to use chat.";
   }
 }
 
@@ -85,6 +166,104 @@ export class AnthropicProvider implements SchedulerAI {
   parseTasks(text: string): Promise<ParsedTask[]> {
     return this.complete<ParsedTask[]>(parsePrompt(text));
   }
+
+  async selectChatTool(input: AIChatRequest): Promise<AIChatToolCall | null> {
+    if (!this.config.apiKey || !input.tools?.length) return null;
+
+    const response = await fetchWithTimeout(
+      "https://api.anthropic.com/v1/messages",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": this.config.apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: this.config.model || "claude-sonnet-4-6",
+          max_tokens: 600,
+          temperature: 0,
+          system: input.systemPrompt,
+          messages: input.messages
+            .filter((message) => message.role !== "system")
+            .map((message) => ({
+              role: message.role === "assistant" ? "assistant" : "user",
+              content: message.content,
+            })),
+          tools: input.tools.map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+            input_schema: tool.parameters,
+          })),
+          tool_choice: { type: "auto" },
+        }),
+      },
+      this.config.timeoutMs
+    );
+
+    if (!response.ok) {
+      throw new Error(`Anthropic tool request failed: ${response.status}`);
+    }
+
+    const payload = asRecord(await response.json());
+    const content = Array.isArray(payload?.content) ? payload.content : [];
+    for (const block of content) {
+      const record = asRecord(block);
+      if (record?.type === "tool_use" && typeof record.name === "string") {
+        return {
+          name: record.name,
+          arguments: parseToolArguments(record.input),
+        };
+      }
+    }
+    return null;
+  }
+
+  async *streamChat(input: AIChatRequest): AsyncGenerator<string> {
+    if (!this.config.apiKey) {
+      throw new Error("Anthropic API key is not configured");
+    }
+
+    const response = await fetchWithTimeout(
+      "https://api.anthropic.com/v1/messages",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": this.config.apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: this.config.model || "claude-sonnet-4-6",
+          max_tokens: 1600,
+          temperature: 0.2,
+          stream: true,
+          system: input.systemPrompt,
+          messages: input.messages
+            .filter((message) => message.role !== "system")
+            .map((message) => ({
+              role: message.role === "assistant" ? "assistant" : "user",
+              content: message.content,
+            })),
+        }),
+      },
+      this.config.timeoutMs
+    );
+
+    if (!response.ok) {
+      throw new Error(`Anthropic chat request failed: ${response.status}`);
+    }
+
+    for await (const payload of parseSseJson(response)) {
+      const delta = asRecord(payload.delta);
+      if (
+        payload.type === "content_block_delta" &&
+        typeof delta?.text === "string"
+      ) {
+        yield delta.text;
+      }
+    }
+  }
 }
 
 export class OpenAIProvider implements SchedulerAI {
@@ -103,10 +282,9 @@ export class OpenAIProvider implements SchedulerAI {
       throw new Error(`${this.name} API key is not configured`);
     }
 
-    const baseUrl = (this.config.baseUrl || "https://api.openai.com/v1").replace(
-      /\/$/,
-      ""
-    );
+    const baseUrl = (
+      this.config.baseUrl || "https://api.openai.com/v1"
+    ).replace(/\/$/, "");
     const response = await fetchWithTimeout(
       `${baseUrl}/chat/completions`,
       {
@@ -138,6 +316,102 @@ export class OpenAIProvider implements SchedulerAI {
 
   parseTasks(text: string): Promise<ParsedTask[]> {
     return this.complete<ParsedTask[]>(parsePrompt(text));
+  }
+
+  async selectChatTool(input: AIChatRequest): Promise<AIChatToolCall | null> {
+    if (!this.config.apiKey || !input.tools?.length) return null;
+
+    const baseUrl = (
+      this.config.baseUrl || "https://api.openai.com/v1"
+    ).replace(/\/$/, "");
+    const response = await fetchWithTimeout(
+      `${baseUrl}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.config.model || this.defaultModel,
+          temperature: 0,
+          tool_choice: "auto",
+          tools: openAITools(input.tools),
+          messages: [
+            { role: "system", content: input.systemPrompt },
+            ...input.messages.map((message) => ({
+              role: message.role === "assistant" ? "assistant" : "user",
+              content: message.content,
+            })),
+          ],
+        }),
+      },
+      this.config.timeoutMs
+    );
+
+    if (!response.ok) {
+      throw new Error(`${this.name} tool request failed: ${response.status}`);
+    }
+
+    const payload = asRecord(await response.json());
+    const choices = Array.isArray(payload?.choices) ? payload.choices : [];
+    const firstChoice = asRecord(choices[0]);
+    const message = asRecord(firstChoice?.message);
+    const calls = Array.isArray(message?.tool_calls) ? message.tool_calls : [];
+    const firstCall = asRecord(calls[0]);
+    const fn = asRecord(firstCall?.function);
+    if (typeof fn?.name !== "string") return null;
+
+    return {
+      name: fn.name,
+      arguments: parseToolArguments(fn.arguments),
+    };
+  }
+
+  async *streamChat(input: AIChatRequest): AsyncGenerator<string> {
+    if (!this.config.apiKey) {
+      throw new Error(`${this.name} API key is not configured`);
+    }
+
+    const baseUrl = (
+      this.config.baseUrl || "https://api.openai.com/v1"
+    ).replace(/\/$/, "");
+    const response = await fetchWithTimeout(
+      `${baseUrl}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.config.model || this.defaultModel,
+          temperature: 0.2,
+          stream: true,
+          messages: [
+            { role: "system", content: input.systemPrompt },
+            ...input.messages.map((message) => ({
+              role: message.role === "assistant" ? "assistant" : "user",
+              content: message.content,
+            })),
+          ],
+        }),
+      },
+      this.config.timeoutMs
+    );
+
+    if (!response.ok) {
+      throw new Error(`${this.name} chat request failed: ${response.status}`);
+    }
+
+    for await (const payload of parseSseJson(response)) {
+      const choices = Array.isArray(payload.choices) ? payload.choices : [];
+      const firstChoice = asRecord(choices[0]);
+      const delta = asRecord(firstChoice?.delta);
+      if (typeof delta?.content === "string") {
+        yield delta.content;
+      }
+    }
   }
 }
 
@@ -180,6 +454,31 @@ export class CustomProvider implements SchedulerAI {
 
   parseTasks(text: string): Promise<ParsedTask[]> {
     return this.post<ParsedTask[]>("/parse-tasks", { text });
+  }
+
+  async selectChatTool(input: AIChatRequest): Promise<AIChatToolCall | null> {
+    if (!input.tools?.length) return null;
+    try {
+      const result = await this.post<unknown>("/chat/tool", input);
+      const record = asRecord(result);
+      if (!record || typeof record.name !== "string") return null;
+      return {
+        name: record.name,
+        arguments: parseToolArguments(record.arguments),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  async *streamChat(input: AIChatRequest): AsyncGenerator<string> {
+    const result = await this.post<unknown>("/chat", input);
+    const record = asRecord(result);
+    const text =
+      (typeof record?.message === "string" && record.message) ||
+      (typeof record?.text === "string" && record.text) ||
+      "Custom AI completed without returning text.";
+    yield text;
   }
 }
 

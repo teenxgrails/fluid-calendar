@@ -10,12 +10,7 @@ import {
 import { CalibrationContext } from "@/services/time-tracking/calibration";
 
 export type AIProviderName =
-  | "NONE"
-  | "ANTHROPIC"
-  | "OPENAI"
-  | "GROK"
-  | "GLM"
-  | "CUSTOM";
+  "NONE" | "ANTHROPIC" | "OPENAI" | "GROK" | "GLM" | "CUSTOM";
 
 export interface SchedulingContext {
   tasks: SchedulableTask[];
@@ -65,10 +60,36 @@ export interface ParsedTask {
   contextTag?: string;
 }
 
+export type AIChatRole = "system" | "user" | "assistant";
+
+export interface AIChatMessage {
+  role: AIChatRole;
+  content: string;
+}
+
+export interface AIChatToolDefinition {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
+
+export interface AIChatToolCall {
+  name: string;
+  arguments: Record<string, unknown>;
+}
+
+export interface AIChatRequest {
+  systemPrompt: string;
+  messages: AIChatMessage[];
+  tools?: AIChatToolDefinition[];
+}
+
 export interface SchedulerAI {
   name: string;
   suggestSchedule(input: SchedulingContext): Promise<AISuggestion>;
   parseTasks(text: string): Promise<ParsedTask[]>;
+  selectChatTool?(input: AIChatRequest): Promise<AIChatToolCall | null>;
+  streamChat?(input: AIChatRequest): AsyncGenerator<string>;
 }
 
 export interface SchedulerAIConfig {

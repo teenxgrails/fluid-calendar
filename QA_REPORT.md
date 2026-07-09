@@ -114,3 +114,16 @@ Date: 2026-07-09
 - PASS: PWA manifest is present and uses Mina dark canvas theme colors; service worker includes offline queueing and push notification handlers.
 - BLOCKED: Authenticated live checks for calendar slot event creation, task modal creation, task colors after creation, Settings AI key save, Projects CRUD, Timeline with persisted projects, AI chat blocked/streaming states, AI tool execution, web push permission prompt, and actual offline sync. The browser has no signed-in session and the configured database is unreachable from this environment.
 - NOT FULLY IMPLEMENTED: Real provider token streaming/function-calling is not wired to external LLM streaming APIs yet. The Phase 6 route gates on configured provider keys, streams server-generated responses, persists history, confirms destructive actions, and maps supported prompts to existing app-control tools.
+
+## AI Chat Provider Continuation
+
+Date: 2026-07-09
+
+- FIXED: `/api/ai/chat` now asks the configured provider to select supported planner tools, executes those tools server-side, and streams the final provider response back through the existing NDJSON chat protocol.
+- FIXED: Anthropic uses native `tool_use` plus streaming Messages API deltas; OpenAI, Grok, and GLM use OpenAI-compatible function calling plus streamed chat completions; Custom AI can implement `/chat/tool` and `/chat`.
+- PASS: `pnpm prisma validate`.
+- PASS: `pnpm exec tsc --noEmit`.
+- PASS: full Jest via `pnpm exec jest --runInBand`: 39 suites passed, 1 skipped; 276 tests passed, 1 skipped.
+- PASS: `pnpm build`. Build completed with known database-unreachable warnings for the configured Neon host during static collection.
+- PASS: Dev server booted at `http://localhost:3000` after sandbox bind approval. Elevated HTTP smoke returned 307 from `/chat` to sign-in and 200 from `/auth/signin`.
+- BLOCKED: Authenticated live AI provider/tool execution remains unverified because this environment has no signed-in session and the configured database is unreachable.
