@@ -127,3 +127,15 @@ Date: 2026-07-09
 - PASS: `pnpm build`. Build completed with known database-unreachable warnings for the configured Neon host during static collection.
 - PASS: Dev server booted at `http://localhost:3000` after sandbox bind approval. Elevated HTTP smoke returned 307 from `/chat` to sign-in and 200 from `/auth/signin`.
 - BLOCKED: Authenticated live AI provider/tool execution remains unverified because this environment has no signed-in session and the configured database is unreachable.
+
+## AI Provider Test Continuation
+
+Date: 2026-07-10
+
+- FIXED: Added mocked provider-adapter coverage for Anthropic native `tool_use`, Anthropic streaming message deltas, OpenAI-compatible function calling, OpenAI-compatible SSE streaming, Custom AI `/chat/tool`, Custom AI bearer auth, and Grok/GLM provider selection.
+- PASS: `pnpm exec jest src/services/ai/__tests__/providers.test.ts --runInBand`: 1 suite passed, 6 tests passed.
+- PASS: `pnpm exec tsc --noEmit`.
+- PASS: full Jest via `pnpm exec jest --runInBand`: 40 suites passed, 1 skipped; 282 tests passed, 1 skipped.
+- PASS: `pnpm prisma validate`.
+- PASS: `pnpm build`. Build completed with the known configured Neon database-unreachable warnings during static collection.
+- BLOCKED: Authenticated live AI provider/tool execution remains unverified because this environment has no signed-in session and the configured database is unreachable.
