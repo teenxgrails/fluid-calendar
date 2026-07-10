@@ -139,3 +139,21 @@ Date: 2026-07-10
 - PASS: `pnpm prisma validate`.
 - PASS: `pnpm build`. Build completed with the known configured Neon database-unreachable warnings during static collection.
 - BLOCKED: Authenticated live AI provider/tool execution remains unverified because this environment has no signed-in session and the configured database is unreachable.
+
+## Flowday Pass
+
+Date: 2026-07-10
+
+- PASS: `pnpm prisma validate`.
+- PASS: `pnpm prisma migrate status` reached the configured Neon database and reported the Flowday customization migration pending.
+- PASS: `pnpm prisma migrate deploy` applied `20260710110000_flowday_customization`.
+- PASS: `pnpm tsc --noEmit`.
+- PASS: full Jest via `pnpm test:unit`: 40 suites passed, 1 skipped; 282 tests passed, 1 skipped.
+- PASS: `pnpm build` completed successfully. It logged existing intermittent Neon reachability warnings during static page collection, but exited 0.
+- PASS: live localhost smoke at `http://localhost:3000/calendar` loaded the Flowday shell, left sidebar, mini-month, AI Chat entry, search command bar, nav items, and `#1B1D1E` body background.
+- PASS: live mobile smoke at 390px showed no horizontal overflow.
+- PASS: command palette opens from the sidebar command bar and renders the Flowday-styled command/search surface.
+- PASS: PWA manifest names Flowday and uses Flowday background/accent colors; service worker cache/sync/notification labels were renamed to Flowday.
+- PASS: scheduler engine files were not rewritten in this pass; AI still calls the deterministic scheduler through existing server tools.
+- BLOCKED: authenticated live task creation via modal and calendar-slot click could not be completed because the browser had no signed-in local session.
+- BLOCKED: AI chat with a real provider key, streaming provider responses, tool execution, and destructive confirmation could not be live-tested without an authenticated session and user-owned API key.
