@@ -163,7 +163,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
           requiresConfirm = Boolean(event.requiresConfirm);
           if (event.toolName && event.toolName !== "confirmation_required") {
             window.dispatchEvent(
-              new CustomEvent("mina:ai-action", {
+              new CustomEvent("flowday:ai-action", {
                 detail: { label: event.toolName.replace(/_/g, " ") },
               })
             );
@@ -205,7 +205,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
           <button
             type="button"
             onClick={newChat}
-            className="mb-4 flex w-full items-center gap-2 rounded-md bg-[#3E63DD] px-3 py-2 text-[13px] font-medium text-white"
+            className="mb-4 flex w-full items-center gap-2 rounded-md bg-[var(--accent)] px-3 py-2 text-[13px] font-medium text-white"
           >
             <Plus className="h-4 w-4" />
             New chat
@@ -246,7 +246,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
         <div className="flex-1 overflow-y-auto p-6">
           {!messages.length ? (
             <div className="mx-auto flex h-full max-w-[760px] flex-col justify-center text-center">
-              <h1 className="text-2xl font-medium">Hi Maksym!</h1>
+              <h1 className="text-2xl font-medium">Flowday is ready.</h1>
               <p className="mt-2 text-sm text-[#9AA0A6]">
                 What can I help you get done?
               </p>
@@ -295,7 +295,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
               <button
                 type="button"
                 onClick={() => send(pendingConfirm, true)}
-                className="rounded-md bg-[#3E63DD] px-3 py-1.5 text-xs text-white"
+                className="rounded-md bg-[var(--accent)] px-3 py-1.5 text-xs text-white"
               >
                 Confirm
               </button>
@@ -318,7 +318,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
             <button
               type="submit"
               disabled={!canChat || streaming || !input.trim()}
-              className="grid h-8 w-8 place-items-center rounded-md bg-[#3E63DD] text-white disabled:opacity-40"
+              className="grid h-8 w-8 place-items-center rounded-md bg-[var(--accent)] text-white disabled:opacity-40"
             >
               <Send className="h-4 w-4" />
             </button>

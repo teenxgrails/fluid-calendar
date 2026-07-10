@@ -1,10 +1,10 @@
 # Custom AI Contract
 
-Mina can call a local or private AI service when Settings -> AI Assistant uses provider `Custom`.
+Flowday can call a local or private AI service when Settings -> AI Assistant uses provider `Custom`.
 
 ## Authentication
 
-If an API key is saved, Mina sends it as:
+If an API key is saved, Flowday sends it as:
 
 ```http
 Authorization: Bearer <key>
@@ -60,4 +60,4 @@ Response:
 }
 ```
 
-Return strict JSON only. Mina treats custom AI output as suggestions; deterministic scheduling remains the fallback.
+Return strict JSON only. Flowday treats custom AI output as suggestions; deterministic scheduling remains the fallback.

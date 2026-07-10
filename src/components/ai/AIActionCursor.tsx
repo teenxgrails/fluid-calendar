@@ -23,8 +23,12 @@ export function AIActionCursor() {
       });
     }
 
+    window.addEventListener("flowday:ai-action", onAction);
     window.addEventListener("mina:ai-action", onAction);
-    return () => window.removeEventListener("mina:ai-action", onAction);
+    return () => {
+      window.removeEventListener("flowday:ai-action", onAction);
+      window.removeEventListener("mina:ai-action", onAction);
+    };
   }, []);
 
   useEffect(() => {
@@ -38,7 +42,7 @@ export function AIActionCursor() {
   return (
     <motion.div
       key={cursor.id}
-      className="pointer-events-none fixed left-[52%] top-[48%] z-[70] flex items-center gap-2 rounded-md border border-[#323234] bg-[#262627] px-3 py-2 text-xs text-white"
+      className="pointer-events-none fixed left-[52%] top-[48%] z-[70] flex items-center gap-2 rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2 text-xs text-[var(--text-hi)]"
       initial={{ opacity: 0, x: -80, y: -40, scale: 0.96 }}
       animate={{
         opacity: [0, 1, 1, 0],
@@ -48,7 +52,7 @@ export function AIActionCursor() {
       }}
       transition={{ duration: 1.2, ease: "easeOut" }}
     >
-      <Sparkles className="h-4 w-4 text-[#8EA2FF]" strokeWidth={1.75} />
+      <Sparkles className="h-4 w-4 text-[var(--accent)]" strokeWidth={1.75} />
       {cursor.label}
     </motion.div>
   );
