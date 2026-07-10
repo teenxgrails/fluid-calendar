@@ -300,12 +300,11 @@ export function DayView({ currentDate, onDateClick }: DayViewProps) {
           meridiem: userSettings.timeFormat === "12h" ? "short" : false,
           hour12: userSettings.timeFormat === "12h",
         }}
-        slotLabelFormat={{
-          hour: userSettings.timeFormat === "12h" ? "numeric" : "2-digit",
-          minute: "2-digit",
-          meridiem: userSettings.timeFormat === "12h" ? "short" : false,
-          hour12: userSettings.timeFormat === "12h",
-        }}
+        slotLabelFormat={
+          userSettings.timeFormat === "12h"
+            ? { hour: "numeric", meridiem: "short", hour12: true }
+            : { hour: "2-digit", minute: "2-digit", hour12: false }
+        }
         firstDay={userSettings.weekStartDay === "monday" ? 1 : 0}
         businessHours={{
           daysOfWeek: calendarSettings.workingHours.enabled

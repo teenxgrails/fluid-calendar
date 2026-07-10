@@ -432,8 +432,8 @@ html[data-animations="off"] *::after {
 }
 
 .fc .fc-timegrid-slot-label {
-  @apply text-[11px] leading-none;
-  color: var(--text-lo);
+  @apply text-[10px] font-normal leading-none;
+  color: #9ba1a6;
 }
 
 .fc .fc-event {
@@ -528,8 +528,9 @@ html[data-animations="off"] *::after {
   background: transparent;
 }
 
+/* Motion shows only hourly lines - hide the half-hour (minor) slot border */
 .fc .fc-timegrid-slot-minor {
-  border-top-style: dotted;
+  border-top-style: none !important;
 }
 
 .fc .fc-non-business {
