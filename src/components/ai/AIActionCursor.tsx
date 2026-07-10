@@ -53,7 +53,15 @@ export function AIActionCursor() {
       transition={{ duration: 1.2, ease: "easeOut" }}
     >
       <Sparkles className="h-4 w-4 text-[var(--accent)]" strokeWidth={1.75} />
-      {cursor.label}
+      <span>{cursor.label}</span>
+      <motion.span
+        className="ml-1 rounded border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_16%,var(--raised))] px-2 py-0.5 text-[10px] text-[var(--text-hi)]"
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: [0, 1, 1, 0], x: [-8, 0, 18, 28] }}
+        transition={{ duration: 1.1, ease: "easeOut" }}
+      >
+        task chip
+      </motion.span>
     </motion.div>
   );
 }
