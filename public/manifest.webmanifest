@@ -1,12 +1,12 @@
 {
-  "name": "Mina",
-  "short_name": "Mina",
+  "name": "Flowday",
+  "short_name": "Flowday",
   "description": "Installable local-first planner with schedule, task, and focus support.",
   "start_url": "/calendar",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#1A1D1E",
-  "theme_color": "#1A1D1E",
+  "background_color": "#1B1D1E",
+  "theme_color": "#6366F1",
   "orientation": "portrait-primary",
   "icons": [
     {

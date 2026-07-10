@@ -1,6 +1,6 @@
-const CACHE_NAME = "mina-shell-v2";
-const API_CACHE_NAME = "mina-api-v1";
-const DB_NAME = "mina-offline-v1";
+const CACHE_NAME = "flowday-shell-v3";
+const API_CACHE_NAME = "flowday-api-v1";
+const DB_NAME = "flowday-offline-v1";
 const STORE_QUEUE = "mutationQueue";
 const STORE_SNAPSHOTS = "snapshots";
 const SHELL_URLS = [
@@ -59,13 +59,13 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("sync", (event) => {
-  if (event.tag === "mina-sync-queue") {
+  if (event.tag === "flowday-sync-queue" || event.tag === "mina-sync-queue") {
     event.waitUntil(flushQueue());
   }
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data?.type === "MINA_SYNC_NOW") {
+  if (event.data?.type === "FLOWDAY_SYNC_NOW" || event.data?.type === "MINA_SYNC_NOW") {
     event.waitUntil(flushQueue());
   }
 });
@@ -75,11 +75,11 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data?.json() ?? {};
   } catch {
-    data = { title: "Mina", body: event.data?.text() ?? "Planner reminder" };
+    data = { title: "Flowday", body: event.data?.text() ?? "Planner reminder" };
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "Mina", {
+    self.registration.showNotification(data.title || "Flowday", {
       body: data.body || "Your planner has an update.",
       icon: "/logo.svg",
       badge: "/logo.svg",
@@ -155,7 +155,7 @@ async function queueWhenOffline(request) {
       body,
       createdAt: Date.now(),
     });
-    await self.registration.sync?.register("mina-sync-queue");
+    await self.registration.sync?.register("flowday-sync-queue");
     return new Response(JSON.stringify({ queued: true, offline: true }), {
       status: 202,
       headers: { "content-type": "application/json" },

@@ -67,7 +67,7 @@ export function NotificationSettings() {
                   dailyEmailEnabled: e.target.checked,
                 })
               }
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="h-4 w-4 rounded border-[var(--line-strong)] text-[var(--accent)] focus:ring-[var(--accent)]"
             />
             <span className="ml-2 text-sm">Enable daily email updates</span>
           </label>
@@ -83,7 +83,7 @@ export function NotificationSettings() {
             type="checkbox"
             checked={notifications.webPushEnabled}
             onChange={(event) => enablePush(event.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-[var(--line-strong)] text-[var(--accent)] focus:ring-[var(--accent)]"
           />
           <span className="ml-2 text-sm">Enable web push</span>
         </label>
