@@ -12,7 +12,7 @@ import { useSettingsStore } from "@/store/settings";
 
 import { Priority, TaskStatus } from "@/types/task";
 
-const DEFAULT_EVENT_COLOR = "#3b82f6";
+const DEFAULT_EVENT_COLOR = "#6366F1";
 
 interface CalendarEventContentProps {
   eventInfo: EventContentArg;

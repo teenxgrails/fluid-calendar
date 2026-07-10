@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
       .map((calendar) => ({
         id: calendar.id,
         name: calendar.name,
-        color: calendar.color || "#3b82f6",
+        color: calendar.color || "#6366F1",
         canEdit: calendar.canEdit ?? true,
       }))
       .filter((cal) => {

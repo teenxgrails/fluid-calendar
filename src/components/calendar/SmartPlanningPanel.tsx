@@ -264,7 +264,7 @@ export function SmartPlanningPanel() {
           </Button>
         </div>
         {parsedTasks.length > 0 && (
-          <div className="space-y-1 rounded-md border border-[#323234] bg-[#1A1D1E] p-2">
+          <div className="space-y-1 rounded-md border border-[#323234] bg-[#1B1D1E] p-2">
             {parsedTasks.map((task, index) => (
               <div key={`${task.title}-${index}`}>
                 <div className="font-medium">{task.title}</div>
@@ -294,7 +294,7 @@ export function SmartPlanningPanel() {
             todayEnergy.map((window) => (
               <div
                 key={`${window.startTime}-${window.endTime}-${window.energyLevel}`}
-                className="flex items-center justify-between rounded-md bg-[#1A1D1E] px-2 py-1"
+                className="flex items-center justify-between rounded-md bg-[#1B1D1E] px-2 py-1"
               >
                 <span>
                   {window.startTime}-{window.endTime}
@@ -315,12 +315,12 @@ export function SmartPlanningPanel() {
           <Clock className="h-4 w-4" />
           Time-Blindness Buffer
         </div>
-        <div className="rounded-md bg-[#1A1D1E] p-2 text-xs text-[#9AA0A6]">
+        <div className="rounded-md bg-[#1B1D1E] p-2 text-xs text-[#9AA0A6]">
           Mina places tasks at {bufferMultiplier.toFixed(1)}x estimates when no
           personal category data exists.
         </div>
         {nextTask && (
-          <div className="rounded-md border border-[#323234] bg-[#1A1D1E] p-2">
+          <div className="rounded-md border border-[#323234] bg-[#1B1D1E] p-2">
             <div className="font-medium">Next: {nextTask.title}</div>
             <div className="text-xs text-[#9AA0A6]">
               Raw{" "}
@@ -344,7 +344,7 @@ export function SmartPlanningPanel() {
           <TrendingUp className="h-4 w-4" />
           Calibration
         </div>
-        <div className="rounded-md bg-[#1A1D1E] p-2 text-xs text-[#9AA0A6]">
+        <div className="rounded-md bg-[#1B1D1E] p-2 text-xs text-[#9AA0A6]">
           {calibration?.reportReady
             ? "Your estimates are getting calibrated from completed work."
             : `${calibration?.totalCompletedWithActuals ?? 0}/20 completed tasks tracked before the full report unlocks.`}
@@ -352,7 +352,7 @@ export function SmartPlanningPanel() {
         {calibration?.contexts.slice(0, 4).map((context) => (
           <div
             key={context.contextTag}
-            className="rounded-md border border-[#323234] bg-[#1A1D1E] p-2"
+            className="rounded-md border border-[#323234] bg-[#1B1D1E] p-2"
           >
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium">{context.contextTag}</span>

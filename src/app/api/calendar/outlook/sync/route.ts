@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         name,
         type: "OUTLOOK",
         url: calendarId,
-        color: color || "#3b82f6",
+        color: color || "#6366F1",
         enabled: true,
         accountId: account.id,
         userId,

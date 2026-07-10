@@ -90,7 +90,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
     : 1;
   const ringStyle = useMemo(
     () => ({
-      background: `conic-gradient(#3E63DD ${progress * 360}deg, #323234 0deg)`,
+      background: `conic-gradient(#6366F1 ${progress * 360}deg, #323234 0deg)`,
     }),
     [progress]
   );
@@ -191,7 +191,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
       <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row">
         <div className="shrink-0">
           <div className="grid h-40 w-40 place-items-center rounded-full p-2" style={ringStyle}>
-            <div className="grid h-full w-full place-items-center rounded-full border border-[#323234] bg-[#1A1D1E] text-center">
+            <div className="grid h-full w-full place-items-center rounded-full border border-[#323234] bg-[#1B1D1E] text-center">
               <div>
                 <div className="stat-numeral text-4xl text-white">
                   {mode === "FLOW"

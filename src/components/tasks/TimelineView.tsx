@@ -85,14 +85,14 @@ export function TimelineView({ tasks }: TimelineViewProps) {
   }
 
   return (
-    <div className="h-full overflow-auto rounded-md border border-[#323234] bg-[#1A1D1E]">
+    <div className="h-full overflow-auto rounded-md border border-[#323234] bg-[#1B1D1E]">
       <div
         className="grid min-w-[760px]"
         style={{
           gridTemplateColumns: `180px repeat(${rows.dayCount}, minmax(42px, 1fr))`,
         }}
       >
-        <div className="sticky left-0 z-10 border-b border-r border-[#323234] bg-[#1A1D1E] p-2 text-xs text-[#9AA0A6]">
+        <div className="sticky left-0 z-10 border-b border-r border-[#323234] bg-[#1B1D1E] p-2 text-xs text-[#9AA0A6]">
           Project
         </div>
         {Array.from({ length: rows.dayCount }).map((_, index) => {
@@ -109,7 +109,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
 
         {rows.groups.map((group) => (
           <div key={group.label} className="contents">
-            <div className="sticky left-0 z-10 border-b border-r border-[#323234] bg-[#1A1D1E] p-2 text-sm text-white">
+            <div className="sticky left-0 z-10 border-b border-r border-[#323234] bg-[#1B1D1E] p-2 text-sm text-white">
               {group.label}
             </div>
             <div
@@ -130,7 +130,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
                   Math.floor((start.getTime() - rows.rangeStart.getTime()) / DAY_MS) + 1;
                 const span =
                   Math.max(1, Math.floor((end.getTime() - start.getTime()) / DAY_MS) + 1);
-                const color = task.project?.color || "#3E63DD";
+                const color = task.project?.color || "#6366F1";
                 return (
                   <motion.div
                     key={task.id}
