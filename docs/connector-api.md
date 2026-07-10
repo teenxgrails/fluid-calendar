@@ -1,11 +1,11 @@
 # Connector API
 
-Mina exposes a local, single-user API for scripts, bots, n8n, and private tools. Generate a token in Settings -> Connectors.
+Flowday exposes a local, single-user API for scripts, bots, n8n, and private tools. Generate a token in Settings -> Connectors.
 
 Use:
 
 ```http
-Authorization: Bearer mina_...
+Authorization: Bearer flowday_...
 Content-Type: application/json
 ```
 
@@ -13,7 +13,7 @@ Content-Type: application/json
 
 ```bash
 curl -X POST http://localhost:3000/api/connect/tasks \
-  -H "Authorization: Bearer mina_REPLACE_ME" \
+  -H "Authorization: Bearer flowday_REPLACE_ME" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Process resale photos",
@@ -26,14 +26,14 @@ curl -X POST http://localhost:3000/api/connect/tasks \
   }'
 ```
 
-The task is created as auto-scheduled and Mina immediately runs the deterministic scheduler.
+The task is created as auto-scheduled and Flowday immediately runs the deterministic scheduler.
 The response includes the task plus `scheduledBlocks` when the task is split into multiple chunks.
 
 ## Read Schedule
 
 ```bash
 curl http://localhost:3000/api/connect/schedule \
-  -H "Authorization: Bearer mina_REPLACE_ME"
+  -H "Authorization: Bearer flowday_REPLACE_ME"
 ```
 
 Response:
@@ -67,7 +67,7 @@ Response:
 
 ```bash
 curl http://localhost:3000/api/connect/tasks \
-  -H "Authorization: Bearer mina_REPLACE_ME"
+  -H "Authorization: Bearer flowday_REPLACE_ME"
 ```
 
 Response:
@@ -83,7 +83,7 @@ Response:
 
 ```bash
 curl -X POST http://localhost:3000/api/connect/reschedule \
-  -H "Authorization: Bearer mina_REPLACE_ME"
+  -H "Authorization: Bearer flowday_REPLACE_ME"
 ```
 
 ## Webhooks

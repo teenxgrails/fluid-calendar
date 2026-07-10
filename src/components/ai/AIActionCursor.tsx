@@ -24,10 +24,8 @@ export function AIActionCursor() {
     }
 
     window.addEventListener("flowday:ai-action", onAction);
-    window.addEventListener("mina:ai-action", onAction);
     return () => {
       window.removeEventListener("flowday:ai-action", onAction);
-      window.removeEventListener("mina:ai-action", onAction);
     };
   }, []);
 

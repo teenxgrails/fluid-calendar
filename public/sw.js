@@ -59,13 +59,13 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("sync", (event) => {
-  if (event.tag === "flowday-sync-queue" || event.tag === "mina-sync-queue") {
+  if (event.tag === "flowday-sync-queue") {
     event.waitUntil(flushQueue());
   }
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data?.type === "FLOWDAY_SYNC_NOW" || event.data?.type === "MINA_SYNC_NOW") {
+  if (event.data?.type === "FLOWDAY_SYNC_NOW") {
     event.waitUntil(flushQueue());
   }
 });
@@ -131,7 +131,7 @@ async function snapshotFirst(request) {
       return new Response(snapshot.body, {
         headers: {
           "content-type": snapshot.contentType,
-          "x-mina-offline": "true",
+          "x-flowday-offline": "true",
         },
       });
     }

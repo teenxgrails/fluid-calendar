@@ -6,6 +6,8 @@ import { Download, WifiOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
+import { APP_NAME } from "@/lib/app-config";
+
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -28,7 +30,7 @@ export function PWARegister() {
       setIsOffline(offline);
       if (!offline && navigator.serviceWorker) {
         navigator.serviceWorker.controller?.postMessage({
-          type: "MINA_SYNC_NOW",
+          type: "FLOWDAY_SYNC_NOW",
         });
       }
     };
@@ -67,7 +69,7 @@ export function PWARegister() {
       ) : (
         <>
           <Download className="h-4 w-4 text-blue-400" />
-          Install Mina
+          Install {APP_NAME}
           <Button
             type="button"
             size="sm"

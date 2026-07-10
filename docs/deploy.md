@@ -1,6 +1,6 @@
-# Deploy Mina to Vercel + Neon
+# Deploy Flowday to Vercel + Neon
 
-Mina is prepared for a single-user serverless deployment on Vercel with Neon Postgres. The teenx VPS is not used.
+Flowday is prepared for a single-user serverless deployment on Vercel with Neon Postgres. The previous VPS is not used.
 
 ## 1. Create Neon
 
@@ -34,9 +34,9 @@ Required:
 ```bash
 DATABASE_URL="postgresql://...-pooler..."
 DIRECT_URL="postgresql://..."
-NEXTAUTH_URL="https://app.minacalendar.com"
-NEXT_PUBLIC_APP_URL="https://app.minacalendar.com"
-NEXT_PUBLIC_SITE_URL="https://app.minacalendar.com"
+NEXTAUTH_URL="https://app.flowday.local"
+NEXT_PUBLIC_APP_URL="https://app.flowday.local"
+NEXT_PUBLIC_SITE_URL="https://app.flowday.local"
 NEXTAUTH_SECRET="random-32-plus-character-secret"
 CRON_SECRET="random-cron-secret"
 NEXT_PUBLIC_ENABLE_SAAS_FEATURES=false
@@ -68,7 +68,7 @@ Apple/iCloud CalDAV credentials are entered in the app at runtime and never stor
 
 ## 4. Domain
 
-1. Add `app.minacalendar.com` or `minacalendar.com` in Vercel Project -> Domains after the domain is owned.
+1. Add `app.flowday.local` or `flowday.local` in Vercel Project -> Domains after the domain is owned.
 2. Point DNS to Vercel as instructed.
 3. Vercel provisions HTTPS automatically.
 
@@ -82,15 +82,15 @@ Register exact production redirect URIs:
 Google:
 
 ```text
-https://app.minacalendar.com/api/auth/callback/google
-https://app.minacalendar.com/api/calendar/google/auth
+https://app.flowday.local/api/auth/callback/google
+https://app.flowday.local/api/calendar/google/auth
 ```
 
 Microsoft/Azure:
 
 ```text
-https://app.minacalendar.com/api/auth/callback/azure-ad
-https://app.minacalendar.com/api/calendar/outlook/auth
+https://app.flowday.local/api/auth/callback/azure-ad
+https://app.flowday.local/api/calendar/outlook/auth
 ```
 
 Keep local redirect URIs for development if needed.
@@ -105,8 +105,8 @@ Keep local redirect URIs for development if needed.
 Manual test:
 
 ```bash
-curl -H "x-cron-secret: $CRON_SECRET" https://app.minacalendar.com/api/cron/reschedule
-curl -H "x-cron-secret: $CRON_SECRET" https://app.minacalendar.com/api/cron/sync-calendars
+curl -H "x-cron-secret: $CRON_SECRET" https://app.flowday.local/api/cron/reschedule
+curl -H "x-cron-secret: $CRON_SECRET" https://app.flowday.local/api/cron/sync-calendars
 ```
 
 The calendar cron syncs CalDAV directly in this build. Google/Outlook sync remains route-driven until their OAuth refresh flow is factored into reusable cron-safe services.
@@ -114,7 +114,7 @@ The calendar cron syncs CalDAV directly in this build. Google/Outlook sync remai
 ## 7. Health Check
 
 ```bash
-curl https://app.minacalendar.com/api/health
+curl https://app.flowday.local/api/health
 ```
 
 Expected result:

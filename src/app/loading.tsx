@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { getTitleFromPathname } from "@/lib/utils/page-title";
+import { APP_NAME } from "@/lib/app-config";
 
 import "../app/globals.css";
 
@@ -28,9 +29,9 @@ export default function Loading() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
       <div className="glass--strong flex w-full max-w-sm flex-col items-center p-8">
-        <div className="mina-orb mb-5 h-16 w-16 animate-pulse" />
+        <div className="flowday-orb mb-5 h-16 w-16 animate-pulse" />
         <p className="text-sm font-medium text-[var(--text-hi)]">
-          Opening Mina
+          Opening {APP_NAME}
         </p>
         <div className="mt-5 grid w-full gap-2">
           <div className="glass-skeleton h-3 w-full" />

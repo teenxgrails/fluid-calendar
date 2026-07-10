@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export function generateConnectorToken() {
-  return `mina_${crypto.randomBytes(32).toString("base64url")}`;
+  return `flowday_${crypto.randomBytes(32).toString("base64url")}`;
 }
 
 export function hashConnectorToken(token: string) {

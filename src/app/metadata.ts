@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   title: APP_NAME,
   description: APP_DESCRIPTION,
   manifest: "/manifest.webmanifest",
-  applicationName: "Mina",
+  applicationName: APP_NAME,
   appleWebApp: {
     capable: true,
-    title: "Mina",
+    title: APP_NAME,
     statusBarStyle: "black-translucent",
   },
   icons: {
@@ -22,5 +22,5 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1A1D1E",
+  themeColor: "#1B1D1E",
 };

@@ -316,7 +316,7 @@ export function SmartPlanningPanel() {
           Time-Blindness Buffer
         </div>
         <div className="rounded-md bg-[#1B1D1E] p-2 text-xs text-[#9AA0A6]">
-          Mina places tasks at {bufferMultiplier.toFixed(1)}x estimates when no
+          Flowday places tasks at {bufferMultiplier.toFixed(1)}x estimates when no
           personal category data exists.
         </div>
         {nextTask && (

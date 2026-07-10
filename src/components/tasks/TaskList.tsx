@@ -379,7 +379,7 @@ export function TaskList({
           </table>
           {sortedTasks.length === 0 && (
             <div className="flex flex-col items-center py-10 text-center text-sm text-muted-foreground">
-              <div className="mina-orb mb-4 h-12 w-12 opacity-80" />
+              <div className="flowday-orb mb-4 h-12 w-12 opacity-80" />
               <div className="font-medium text-foreground">
                 Nothing in this view
               </div>

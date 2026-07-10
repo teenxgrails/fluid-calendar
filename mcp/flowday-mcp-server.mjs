@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
 const PROTOCOL_VERSION = "2024-11-05";
-const SERVER_NAME = "mina-calendar";
+const SERVER_NAME = "flowday";
 const SERVER_VERSION = "0.3.0";
 
-const baseUrl = (process.env.MINA_BASE_URL || "http://localhost:3000").replace(
+const baseUrl = (process.env.FLOWDAY_BASE_URL || "http://localhost:3000").replace(
   /\/$/,
   ""
 );
-const connectToken = process.env.MINA_CONNECT_TOKEN;
+const connectToken = process.env.FLOWDAY_CONNECT_TOKEN;
 
 const tools = [
   {
-    name: "mina_create_task",
-    description: "Create an auto-scheduled task in Mina via the connector API.",
+    name: "flowday_create_task",
+    description:
+      "Create an auto-scheduled task in Flowday via the connector API.",
     inputSchema: {
       type: "object",
       required: ["title"],
@@ -38,25 +39,26 @@ const tools = [
     },
   },
   {
-    name: "mina_list_tasks",
-    description: "List tasks from Mina through GET /api/connect/tasks.",
+    name: "flowday_list_tasks",
+    description: "List tasks from Flowday through GET /api/connect/tasks.",
     inputSchema: {
       type: "object",
       properties: {},
     },
   },
   {
-    name: "mina_schedule",
+    name: "flowday_schedule",
     description:
-      "Run Mina scheduling and return the current schedule through POST /api/connect/schedule.",
+      "Run Flowday scheduling and return the current schedule through POST /api/connect/schedule.",
     inputSchema: {
       type: "object",
       properties: {},
     },
   },
   {
-    name: "mina_reschedule",
-    description: "Run Mina rescheduling through POST /api/connect/reschedule.",
+    name: "flowday_reschedule",
+    description:
+      "Run Flowday rescheduling through POST /api/connect/reschedule.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -142,7 +144,7 @@ async function callTool(params = {}) {
   const args = params.arguments || {};
 
   if (!connectToken) {
-    throw new Error("MINA_CONNECT_TOKEN is required");
+    throw new Error("FLOWDAY_CONNECT_TOKEN is required");
   }
 
   const endpoint = toolEndpoint(name);
@@ -190,13 +192,13 @@ async function callTool(params = {}) {
 
 function toolEndpoint(name) {
   switch (name) {
-    case "mina_create_task":
+    case "flowday_create_task":
       return { method: "POST", path: "/api/connect/tasks" };
-    case "mina_list_tasks":
+    case "flowday_list_tasks":
       return { method: "GET", path: "/api/connect/tasks" };
-    case "mina_schedule":
+    case "flowday_schedule":
       return { method: "POST", path: "/api/connect/schedule" };
-    case "mina_reschedule":
+    case "flowday_reschedule":
       return { method: "POST", path: "/api/connect/reschedule" };
     default:
       return null;

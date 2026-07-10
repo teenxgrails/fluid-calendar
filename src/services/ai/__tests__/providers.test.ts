@@ -7,7 +7,7 @@ import {
 import { AIChatRequest } from "../types";
 
 const chatRequest: AIChatRequest = {
-  systemPrompt: "You are Mina.",
+  systemPrompt: "You are Flowday.",
   messages: [{ role: "user", content: "Create a task called plan week" }],
   tools: [
     {
@@ -151,7 +151,7 @@ describe("AI provider chat adapters", () => {
     });
     const provider = new CustomProvider({
       provider: "CUSTOM",
-      customUrl: "https://mina-ai.example/",
+      customUrl: "https://flowday-ai.example/",
       apiKey: "custom-key",
     });
 
@@ -161,7 +161,7 @@ describe("AI provider chat adapters", () => {
     });
 
     expect(fetchMock.mock.calls[0][0]).toBe(
-      "https://mina-ai.example/chat/tool"
+      "https://flowday-ai.example/chat/tool"
     );
     expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({
       Authorization: "Bearer custom-key",

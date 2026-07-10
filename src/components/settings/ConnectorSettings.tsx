@@ -162,7 +162,7 @@ export function ConnectorSettings() {
                   webhookUrl: event.target.value,
                 }))
               }
-              placeholder="http://localhost:5678/webhook/mina"
+              placeholder="http://localhost:5678/webhook/flowday"
             />
           </div>
           <label className="flex items-center justify-between gap-4">

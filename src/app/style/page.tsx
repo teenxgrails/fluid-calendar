@@ -22,7 +22,7 @@ export default function StylePage() {
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[var(--text-lo)]">
               <Sparkles className="h-3.5 w-3.5" />
-              Mina Design System
+              Flowday Design System
             </div>
             <h1 className="max-w-2xl text-5xl font-semibold leading-tight md:text-7xl">
               Liquid Glass primitives.
@@ -50,7 +50,7 @@ export default function StylePage() {
                 </div>
                 <h2 className="mt-3 text-4xl font-medium">Focus bloom</h2>
                 <p className="mt-3 max-w-md text-[var(--text-lo)]">
-                  CSS gradients create Mina&apos;s own abstract glow. No Opal
+                  CSS gradients create Flowday&apos;s own abstract glow. No Opal
                   artwork or trademarked assets are used.
                 </p>
               </div>

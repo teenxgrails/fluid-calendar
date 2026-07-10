@@ -7,7 +7,7 @@ function getKey(): Buffer {
   const secret =
     process.env.AI_ENCRYPTION_KEY ||
     process.env.NEXTAUTH_SECRET ||
-    "mina-calendar-local-ai-secret";
+    "flowday-local-ai-secret";
 
   return crypto.createHash("sha256").update(secret).digest();
 }
