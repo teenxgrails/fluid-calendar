@@ -157,3 +157,16 @@ Date: 2026-07-10
 - PASS: scheduler engine files were not rewritten in this pass; AI still calls the deterministic scheduler through existing server tools.
 - BLOCKED: authenticated live task creation via modal and calendar-slot click could not be completed because the browser had no signed-in local session.
 - BLOCKED: AI chat with a real provider key, streaming provider responses, tool execution, and destructive confirmation could not be live-tested without an authenticated session and user-owned API key.
+
+## Motion Parity - Calendar, Auth, Performance
+
+Date: 2026-07-11
+
+- MEASURED IN CHROME: Motion calendar toolbar controls are 25px high with `rgb(49, 53, 56)` background, `rgb(58, 63, 66)` 1px border, 6px radius, 13px/500 type, 3px 6px padding, and a 17px line height. Motion's week grid begins at x=244 with a 44-45px day header; its time-axis text is 10px/400 `rgb(155, 161, 166)`.
+- FIXED: Flowday calendar controls now use those measured values, and day headers use a 44px height. The calendar transition is a 150ms ease-out fade; toolbar buttons no longer lift or scale.
+- FIXED: Removed the nested NextAuth session provider inside the authenticated app layout. The profile entry holds an avatar-sized placeholder while the single root session resolves, preventing a false Sign In control during hydration.
+- FIXED: Week view no longer duplicates calendar/task fetches on mount and skips state updates when calendar item content is unchanged.
+- PASS: `pnpm tsc --noEmit`.
+- PASS: `pnpm test:unit`: 40 suites passed, 1 skipped; 282 tests passed, 1 skipped.
+- PASS: `pnpm build` completed successfully. Static collection emitted the existing intermittent configured-Neon unreachable warnings but exited 0.
+- BLOCKED: Chrome local authentication with the supplied test account did not complete because the development server could not reach the configured Neon database; production Chrome remained authenticated and was used for the live comparison. No credential or account data was changed.

@@ -24,9 +24,16 @@ export function UserMenu() {
   const { theme, setTheme } = useTheme();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Show a loading state or nothing while session is loading
+  // Keep the profile control's footprint while NextAuth resolves. Rendering a
+  // sign-in CTA here briefly is both visually jarring and incorrect for an
+  // authenticated route during client hydration.
   if (status === "loading") {
-    return null; // Return nothing during loading to prevent flash of sign-in button
+    return (
+      <div
+        aria-hidden="true"
+        className="h-8 w-8 rounded-full bg-[var(--active)]"
+      />
+    );
   }
 
   // Check both session status and session data to handle all authentication scenarios

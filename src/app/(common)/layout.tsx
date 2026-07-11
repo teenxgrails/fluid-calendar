@@ -8,7 +8,6 @@ import { DndProvider } from "@/components/dnd/DndProvider";
 import { AppNav } from "@/components/navigation/AppNav";
 import { NotificationProvider } from "@/components/providers/NotificationProvider.open";
 import { PrivacyProvider } from "@/components/providers/PrivacyProvider";
-import { SessionProvider } from "@/components/providers/SessionProvider";
 import { SetupCheck } from "@/components/setup/SetupCheck";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { CommandPaletteFab } from "@/components/ui/command-palette-fab";
@@ -53,8 +52,7 @@ export default function RootLayout({
 
   return (
     <div className="relative flex min-h-screen bg-[#1A1D1E]">
-      <SessionProvider>
-        <PrivacyProvider>
+      <PrivacyProvider>
           <DndProvider>
             <TooltipProvider delayDuration={400}>
               <SetupCheck />
@@ -80,8 +78,7 @@ export default function RootLayout({
               <Toaster />
             </TooltipProvider>
           </DndProvider>
-        </PrivacyProvider>
-      </SessionProvider>
+      </PrivacyProvider>
     </div>
   );
 }

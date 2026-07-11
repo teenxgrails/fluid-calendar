@@ -147,25 +147,26 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
           },
         }));
 
-      // console.log("Setting formatted calendar items:", {
-      //   total: formattedItems.length,
-      //   tasks: formattedItems.filter((item) => item.extendedProps?.isTask)
-      //     .length,
-      //   events: formattedItems.filter((item) => !item.extendedProps?.isTask)
-      //     .length,
-      // });
-      setEvents(formattedItems);
+      setEvents((current) => {
+        const hasChanged =
+          current.length !== formattedItems.length ||
+          current.some((event, index) => {
+            const next = formattedItems[index];
+            return (
+              !next ||
+              event.id !== next.id ||
+              event.title !== next.title ||
+              event.start.getTime() !== next.start.getTime() ||
+              event.end.getTime() !== next.end.getTime() ||
+              event.backgroundColor !== next.backgroundColor
+            );
+          });
+
+        return hasChanged ? formattedItems : current;
+      });
     },
     [feeds, getAllCalendarItems]
   );
-
-  // Initial data load
-  useEffect(() => {
-    Promise.all([
-      useCalendarStore.getState().loadFromDatabase(),
-      useTaskStore.getState().fetchTasks(),
-    ]);
-  }, []);
 
   // Motion-style hover guide line: a dashed line that follows the cursor,
   // snapped to 15-minute increments, with a small time label.
@@ -235,7 +236,6 @@ export function WeekView({ currentDate, onDateClick }: WeekViewProps) {
   // Update items when loading state changes, feeds change, or tasks change
   useEffect(() => {
     if (!isLoading && calendarRef.current) {
-      console.log("Updating calendar items due to dependency change");
       const calendar = calendarRef.current.getApi();
       handleDatesSet({
         start: calendar.view.activeStart,

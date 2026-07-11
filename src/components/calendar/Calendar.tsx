@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -69,7 +69,6 @@ export function Calendar({
     useSettingsStore();
   const eventModalStore = useEventModalStore();
   const prefersReducedMotion = useReducedMotion();
-  const [transitionDirection, setTransitionDirection] = useState(0);
 
   const titlePrimary =
     view === "day"
@@ -102,7 +101,6 @@ export function Calendar({
   }, [initialFeeds, initialEvents, setFeeds, setEvents]);
 
   const handlePrevWeek = () => {
-    setTransitionDirection(-1);
     if (view === "month" || view === "multiMonth") {
       const newDate = new Date(currentDate);
       newDate.setMonth(newDate.getMonth() - 1);
@@ -114,7 +112,6 @@ export function Calendar({
   };
 
   const handleNextWeek = () => {
-    setTransitionDirection(1);
     if (view === "month" || view === "multiMonth") {
       const newDate = new Date(currentDate);
       newDate.setMonth(newDate.getMonth() + 1);
@@ -130,12 +127,10 @@ export function Calendar({
   };
 
   const handleViewChange = (nextView: typeof view) => {
-    setTransitionDirection(0);
     setView(nextView);
   };
 
   const handleToday = () => {
-    setTransitionDirection(0);
     setDate(newDate());
   };
 
@@ -153,37 +148,31 @@ export function Calendar({
         {/* Header */}
         <header className="flex h-12 flex-none items-center border-b border-[#323234] px-2">
           <div className="flex items-center gap-1.5">
-            <motion.button
-              whileHover={prefersReducedMotion ? undefined : { y: -1 }}
-              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+            <button
               onClick={handleToday}
-              className="rounded-md border border-[#323234] bg-[#262627] px-1.5 py-[3px] text-[13px] font-medium text-white hover:bg-[#2B2F31]"
+              className="h-[25px] rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
               title="Go to Today (t)"
             >
               Today
-            </motion.button>
+            </button>
 
             <div className="flex items-center gap-0.5">
-              <motion.button
-                whileHover={prefersReducedMotion ? undefined : { y: -1 }}
-                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              <button
                 onClick={handlePrevWeek}
-                className="rounded-md p-1 text-[#9BA1A6] hover:bg-[#2B2F31] hover:text-white"
+                className="rounded-md p-1 text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
                 data-testid="calendar-prev-week"
                 title="Previous Week (←)"
               >
                 <IoChevronBack className="h-4 w-4" />
-              </motion.button>
-              <motion.button
-                whileHover={prefersReducedMotion ? undefined : { y: -1 }}
-                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              </button>
+              <button
                 onClick={handleNextWeek}
-                className="rounded-md p-1 text-[#9BA1A6] hover:bg-[#2B2F31] hover:text-white"
+                className="rounded-md p-1 text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
                 data-testid="calendar-next-week"
                 title="Next Week (→)"
               >
                 <IoChevronForward className="h-4 w-4" />
-              </motion.button>
+              </button>
             </div>
 
             <h1 className="px-1.5 text-[20px] leading-none text-white">
@@ -200,7 +189,7 @@ export function Calendar({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="flex items-center gap-1.5 rounded-md border border-[#323234] bg-[#262627] px-1.5 py-[3px] text-[13px] font-medium text-white hover:bg-[#2B2F31]"
+                  className="flex h-[25px] items-center gap-1.5 rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
                   title="Calendar options"
                 >
                   <IoOptionsOutline className="h-4 w-4" />
@@ -245,32 +234,28 @@ export function Calendar({
             </DropdownMenu>
 
             {/* Refresh all tasks (auto-schedule) */}
-            <motion.button
-              whileHover={prefersReducedMotion ? undefined : { y: -1 }}
-              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+            <button
               onClick={handleAutoSchedule}
-              className="flex items-center gap-1.5 rounded-md border border-[#323234] bg-[#262627] px-1.5 py-[3px] text-[13px] font-medium text-white hover:bg-[#2B2F31]"
+              className="flex h-[25px] items-center gap-1.5 rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
               title="Refresh all tasks"
             >
               <IoRefreshOutline className="h-4 w-4" />
               <span className="hidden md:inline">Refresh all tasks</span>
-            </motion.button>
+            </button>
 
             {/* New event */}
-            <motion.button
-              whileHover={prefersReducedMotion ? undefined : { y: -1 }}
-              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+            <button
               onClick={handleNewEvent}
-              className="rounded-md border border-[#323234] bg-[#262627] p-1 text-white hover:bg-[#2B2F31]"
+              className="grid h-[25px] w-[25px] place-items-center rounded-md border border-[#3A3F42] bg-[#313538] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
               title="New event"
             >
               <IoAddOutline className="h-4 w-4" />
-            </motion.button>
+            </button>
 
             {/* View switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 rounded-md border border-[#323234] bg-[#262627] px-1.5 py-[3px] text-[13px] font-medium text-white hover:bg-[#2B2F31]">
+                <button className="flex h-[25px] items-center gap-1 rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]">
                   {VIEW_LABELS[view]}
                   <IoChevronDown className="h-3.5 w-3.5 text-[#9AA0A6]" />
                 </button>
@@ -299,15 +284,15 @@ export function Calendar({
               initial={
                 prefersReducedMotion
                   ? false
-                  : { opacity: 0, x: transitionDirection * 12 }
+                  : { opacity: 0 }
               }
-              animate={{ opacity: 1, x: 0 }}
+              animate={{ opacity: 1 }}
               exit={
                 prefersReducedMotion
-                  ? { opacity: 1, x: 0 }
-                  : { opacity: 0, x: -transitionDirection * 12 }
+                  ? { opacity: 1 }
+                  : { opacity: 0 }
               }
-              transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.15, ease: "easeOut" }}
             >
               {view === "day" ? (
                 <DayView currentDate={currentDate} onDateClick={setDate} />

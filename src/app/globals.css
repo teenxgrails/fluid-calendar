@@ -522,6 +522,7 @@ html[data-animations="off"] *::after {
 .fc .fc-col-header-cell {
   border-color: #2b2f31 !important;
   background: #202425 !important;
+  height: 44px;
 }
 
 /* All-day row: flat #202425, no divider tint, and hide the "all-day" label */
@@ -654,7 +655,7 @@ html[data-animations="off"] *::after {
 }
 
 .dark .fc .fc-col-header-cell {
-  background: #262627;
+  background: #202425;
   border-color: var(--fc-border-color);
 }
 
