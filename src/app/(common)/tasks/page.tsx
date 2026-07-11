@@ -114,21 +114,21 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="flex h-full gap-3 bg-transparent p-3">
+    <div className="flex h-full bg-[#1B1D1E]">
       <ProjectSidebar />
-      <div className="glass flex min-w-0 flex-1 flex-col" data-task-page>
-        <div className="border-b border-white/10 px-6 py-4">
+      <div className="flex min-w-0 flex-1 flex-col border-y border-r border-[#2B2F31] bg-[#1B1D1E]" data-task-page>
+        <div className="flex min-h-12 items-center border-b border-[#2B2F31] px-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-foreground">Tasks</h1>
-              <div className="glass--subtle flex items-center gap-1 rounded-xl p-1">
+              <h1 className="text-xl font-semibold text-white">Projects &amp; Tasks</h1>
+              <div className="flex items-center gap-0.5 rounded-md border border-[#3A3F42] bg-[#26292B] p-0.5">
                 <button
                   onClick={() => setViewMode("list")}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg p-2 text-sm font-medium transition-all",
+                    "flex h-7 items-center gap-1.5 rounded-[4px] px-2 text-[13px] font-medium transition-colors duration-150",
                     viewMode === "list"
-                      ? "bg-white/10 text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+                      ? "bg-[#3A3F42] text-white"
+                      : "text-[#9BA1A6] hover:bg-[#323638] hover:text-white"
                   )}
                 >
                   <ListTodo className="h-4 w-4" strokeWidth={1.75} />
@@ -137,10 +137,10 @@ export default function TasksPage() {
                 <button
                   onClick={() => setViewMode("board")}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg p-2 text-sm font-medium transition-all",
+                    "flex h-7 items-center gap-1.5 rounded-[4px] px-2 text-[13px] font-medium transition-colors duration-150",
                     viewMode === "board"
-                      ? "bg-white/10 text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+                      ? "bg-[#3A3F42] text-white"
+                      : "text-[#9BA1A6] hover:bg-[#323638] hover:text-white"
                   )}
                 >
                   <Kanban className="h-4 w-4" strokeWidth={1.75} />
@@ -149,10 +149,10 @@ export default function TasksPage() {
                 <button
                   onClick={() => setViewMode("timeline")}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg p-2 text-sm font-medium transition-all",
+                    "flex h-7 items-center gap-1.5 rounded-[4px] px-2 text-[13px] font-medium transition-colors duration-150",
                     viewMode === "timeline"
-                      ? "bg-white/10 text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+                      ? "bg-[#3A3F42] text-white"
+                      : "text-[#9BA1A6] hover:bg-[#323638] hover:text-white"
                   )}
                 >
                   <CalendarRange className="h-4 w-4" strokeWidth={1.75} />
@@ -198,7 +198,7 @@ export default function TasksPage() {
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={viewMode}

@@ -2,7 +2,6 @@
 
 import { TaskTimer } from "@/components/tasks/TaskTimer";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 
 import { format } from "@/lib/date-utils";
 
@@ -58,10 +57,11 @@ export function FocusedTask({ task }: FocusedTaskProps) {
   }
 
   return (
-    <Card className="flex h-full flex-col p-6">
+    <section className="flex flex-1 flex-col pt-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h2 className="task-title mb-2 text-2xl font-bold">{task.title}</h2>
+          <p className="mb-2 text-[11px] font-medium uppercase text-[#9BA1A6]">Now</p>
+          <h2 className="task-title text-2xl font-semibold text-white">{task.title}</h2>
 
           {/* Display tags */}
           {task.tags && task.tags.length > 0 && (
@@ -87,7 +87,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {task.dueDate && (
-          <div className="glass--subtle p-3">
+          <div className="border-l-2 border-[var(--accent)] bg-[#202425] p-3">
             <h3 className="mb-1 text-sm font-medium">Due Date</h3>
             <p className="text-muted-foreground">
               {format(task.dueDate, "PPP")}
@@ -95,7 +95,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.completedAt && task.status === TaskStatus.COMPLETED && (
-          <div className="glass--subtle p-3">
+          <div className="border-l-2 border-[#4D9A72] bg-[#202425] p-3">
             <h3 className="mb-1 text-sm font-medium">Completed On</h3>
             <p className="text-muted-foreground">
               {format(task.completedAt, "PPP p")}
@@ -103,13 +103,13 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.duration && (
-          <div className="glass--subtle p-3">
+          <div className="border-l-2 border-[#697177] bg-[#202425] p-3">
             <h3 className="mb-1 text-sm font-medium">Estimated Duration</h3>
             <p className="text-muted-foreground">{task.duration} minutes</p>
           </div>
         )}
         {task.scheduleScore && (
-          <div className="glass--subtle p-3">
+          <div className="border-l-2 border-[#697177] bg-[#202425] p-3">
             <h3 className="mb-1 text-sm font-medium">Focus Score</h3>
             <p className="text-muted-foreground">
               {task.scheduleScore.toFixed(2)}
@@ -117,7 +117,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.isRecurring && (
-          <div className="glass--subtle p-3">
+          <div className="border-l-2 border-[#697177] bg-[#202425] p-3">
             <h3 className="mb-1 text-sm font-medium">Recurring Task</h3>
             <p className="text-muted-foreground">This task repeats</p>
           </div>
@@ -135,13 +135,13 @@ export function FocusedTask({ task }: FocusedTaskProps) {
 
       {/* Task description with hyperlinks */}
       {task.description && (
-        <div className="border-t border-white/10 pt-4">
+        <div className="border-t border-[#2B2F31] pt-4">
           <h3 className="mb-2 text-sm font-medium">Description</h3>
           <div className="task-description overflow-auto whitespace-pre-wrap text-muted-foreground">
             {linkifyText(task.description)}
           </div>
         </div>
       )}
-    </Card>
+    </section>
   );
 }

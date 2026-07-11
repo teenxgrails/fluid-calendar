@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Headphones, Pause, Play, Square } from "lucide-react";
 
-import { StatBlock } from "@/components/liquid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -156,19 +155,14 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
   }
 
   const isDeepLocked = mode === "DEEP_FOCUS" && running;
-  const milestone = report
-    ? [10, 100, 1000, 10000].find(
-        (hours) => report.stats.lifetimeMinutes / 60 < hours
-      )
-    : 10;
-
   return (
-    <section className="glass--strong overflow-visible p-5">
+    <section className="relative overflow-hidden border-b border-[#2B2F31] pb-10">
       {sessionBloom && <div className="session-complete-bloom" />}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-white">Focus Timer</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase text-[#9BA1A6]">Focus session</p>
+          <h2 className="mt-1 text-xl font-semibold text-white">{task ? task.title : "Choose one thing"}</h2>
+          <p className="mt-1 text-xs text-[#9BA1A6]">
             {task ? task.title : "Start with the selected task"}
           </p>
         </div>
@@ -188,12 +182,12 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
         </Select>
       </div>
 
-      <div className="mt-5 flex flex-col items-center gap-5 lg:flex-row">
+      <div className="mt-8 flex flex-col items-center gap-8 lg:flex-row">
         <div className="shrink-0">
-          <div className="grid h-40 w-40 place-items-center rounded-full p-2" style={ringStyle}>
-            <div className="grid h-full w-full place-items-center rounded-full border border-[#323234] bg-[#1B1D1E] text-center">
+          <div className="grid h-52 w-52 place-items-center rounded-full p-2" style={ringStyle}>
+            <div className="grid h-full w-full place-items-center rounded-full border border-[#3A3F42] bg-[#1B1D1E] text-center">
               <div>
-                <div className="stat-numeral text-4xl text-white">
+                <div className="text-5xl font-semibold tabular-nums text-white">
                   {mode === "FLOW"
                     ? mmss(elapsedSeconds)
                     : mmss(remainingSeconds)}
@@ -275,7 +269,7 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
               </>
             )}
           </div>
-          <div className="glass--subtle flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 border-t border-[#2B2F31] pt-3 text-xs text-[#9BA1A6]">
             <Headphones className="h-3.5 w-3.5" />
             Soundscape: rain, brown noise, or silence can plug in here.
           </div>
@@ -283,25 +277,24 @@ export function FocusTimerPanel({ task }: FocusTimerPanelProps) {
       </div>
 
       {isDeepLocked && (
-        <div className="glass--subtle mt-3 border-blue-300/30 bg-blue-500/10 p-2 text-xs text-blue-100">
+        <div className="mt-5 border-l-2 border-[var(--accent)] bg-[#202425] px-3 py-2 text-xs text-[#D5D8DB]">
           Deep Focus is a commitment block. It completes when the timer ends.
         </div>
       )}
 
       {report && (
-        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          <StatBlock label="Focus Score" value={report.stats.focusScore} />
-          <StatBlock label="Streak" value={`${report.stats.currentStreak}d`} />
-          <StatBlock
-            label="Focus Hours"
-            value={minutesLabel(report.stats.lifetimeMinutes)}
-            detail={`Next: ${milestone}h`}
-          />
-          <StatBlock
-            label="Weekly"
-            value={`${minutesLabel(report.weeklyReport.focusMinutes)}`}
-            detail={`${report.weeklyReport.sessionsCompleted} sessions · ${report.weeklyReport.bestDay ?? "n/a"}`}
-          />
+        <div className="mt-8 grid grid-cols-2 border-y border-[#2B2F31] sm:grid-cols-4">
+          {[
+            ["Focus score", report.stats.focusScore],
+            ["Streak", `${report.stats.currentStreak}d`],
+            ["Focus hours", minutesLabel(report.stats.lifetimeMinutes)],
+            ["This week", minutesLabel(report.weeklyReport.focusMinutes)],
+          ].map(([label, value]) => (
+            <div key={label} className="border-r border-[#2B2F31] px-3 py-4 last:border-r-0">
+              <div className="text-[11px] text-[#9BA1A6]">{label}</div>
+              <div className="mt-1 text-lg font-semibold text-white">{value}</div>
+            </div>
+          ))}
         </div>
       )}
 
