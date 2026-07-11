@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
-  ArrowUpRight,
   CalendarDays,
   CheckSquare,
   Focus,
@@ -102,38 +101,6 @@ export const AppNav = memo(function AppNav({
         className
       )}
     >
-      <div className="mb-3 grid grid-cols-[1fr_auto] gap-1 max-md:hidden">
-        <Link
-          href="/chat"
-          className={cn(
-            "flex min-w-0 items-center gap-2 rounded-md border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_18%,var(--raised))] px-2.5 py-2 text-[13px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_24%,var(--raised))]",
-            pathname === "/chat" && "text-white"
-          )}
-        >
-          <Sparkles
-            className="h-4 w-4 flex-none text-[var(--accent)]"
-            strokeWidth={1.75}
-          />
-          <span className="truncate max-md:hidden">AI Chat</span>
-          <kbd className="ml-auto rounded bg-[var(--app-bg)] px-1.5 py-0.5 text-[10px] text-[var(--text-lo)] max-md:hidden">
-            ⌘/
-          </kbd>
-        </Link>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={onOpenChatOverlay}
-              className="grid h-9 w-9 place-items-center rounded-md border border-[var(--line-strong)] bg-[var(--raised)] text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
-              aria-label="Open compact AI chat"
-            >
-              <ArrowUpRight className="h-4 w-4" strokeWidth={1.75} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Open compact AI chat</TooltipContent>
-        </Tooltip>
-      </div>
-
       <button
         type="button"
         onClick={openCommandPalette}
@@ -202,38 +169,56 @@ export const AppNav = memo(function AppNav({
         })}
       </nav>
 
-      <div className="mt-auto flex items-center justify-between gap-1 border-t border-[var(--line-strong)] pt-2 max-md:hidden">
-        <UserMenu />
-        <div className="flex items-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="/settings"
-                className={cn(
-                  "grid h-8 w-8 place-items-center rounded-md text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]",
-                  pathname === "/settings" &&
-                    "bg-[var(--active)] text-[var(--text-hi)]"
-                )}
-                aria-label="Settings"
-              >
-                <Settings className="h-4 w-4" strokeWidth={1.75} />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>Settings</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={onOpenChatOverlay}
-                className="grid h-8 w-8 place-items-center rounded-md text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
-                aria-label="AI Chat"
-              >
-                <Sparkles className="h-4 w-4" strokeWidth={1.75} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>AI Chat</TooltipContent>
-          </Tooltip>
+      <div className="mt-auto max-md:hidden">
+        <Link
+          href="/chat"
+          className={cn(
+            "mb-2 flex min-w-0 items-center gap-2 rounded-md border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_18%,var(--raised))] px-2.5 py-2 text-[13px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_24%,var(--raised))]",
+            pathname === "/chat" && "text-white"
+          )}
+        >
+          <Sparkles
+            className="h-4 w-4 flex-none text-[var(--accent)]"
+            strokeWidth={1.75}
+          />
+          <span className="truncate">AI Chat</span>
+          <kbd className="ml-auto rounded bg-[var(--app-bg)] px-1.5 py-0.5 text-[10px] text-[var(--text-lo)]">
+            ⌘/
+          </kbd>
+        </Link>
+        <div className="flex items-center justify-between gap-1 border-t border-[var(--line-strong)] pt-2">
+          <UserMenu />
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/settings"
+                  className={cn(
+                    "grid h-8 w-8 place-items-center rounded-md text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]",
+                    pathname === "/settings" &&
+                      "bg-[var(--active)] text-[var(--text-hi)]"
+                  )}
+                  aria-label="Settings"
+                >
+                  <Settings className="h-4 w-4" strokeWidth={1.75} />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>Settings</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={onOpenChatOverlay}
+                  className="grid h-8 w-8 place-items-center rounded-md text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
+                  aria-label="AI Chat"
+                >
+                  <Sparkles className="h-4 w-4" strokeWidth={1.75} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>AI Chat</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </aside>
