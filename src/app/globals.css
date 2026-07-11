@@ -673,9 +673,9 @@ html[data-animations="off"] *::after {
   max-width: 640px;
   width: 100%;
   border-radius: 8px;
-  border: 1px solid #323234;
-  background: #262627;
-  box-shadow: none;
+  border: 1px solid #313538;
+  background: #26292b;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
 }
 
 [cmdk-input] {
@@ -704,7 +704,7 @@ html[data-animations="off"] *::after {
   content-visibility: auto;
   cursor: pointer;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 2px;
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -713,8 +713,7 @@ html[data-animations="off"] *::after {
   color: hsl(var(--foreground));
   user-select: none;
   will-change: background, color;
-  transition: all 150ms ease;
-  transition-property: none;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
 }
 
 [cmdk-item][aria-selected="true"] {

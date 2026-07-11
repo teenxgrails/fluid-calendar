@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { motion, useReducedMotion } from "framer-motion";
 import { RRule } from "rrule";
 
 import { TaskTimer } from "@/components/tasks/TaskTimer";
@@ -97,7 +96,6 @@ export function TaskModal({
   initialEnd,
 }: TaskModalProps) {
   const { projects } = useProjectStore();
-  const prefersReducedMotion = useReducedMotion();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<TaskStatus>(TaskStatus.TODO);
@@ -361,17 +359,8 @@ export function TaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[92vh] flex-col rounded-lg border-[#323234] bg-[#1A1D1E] p-0 text-white sm:max-w-[1040px]">
-        <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={
-            prefersReducedMotion
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 300, damping: 30 }
-          }
-          className="contents"
-        >
+      <DialogContent className="flex max-h-[92vh] flex-col gap-0 p-0 text-white sm:max-w-[1040px]">
+        <div className="contents">
           {isSubmitting && <LoadingOverlay />}
           <DialogHeader className="border-b border-[#323234] px-5 py-4">
             <DialogTitle className="flex items-center gap-3 text-base">
@@ -1004,7 +993,7 @@ export function TaskModal({
               </div>
             </div>
           </form>
-        </motion.div>
+        </div>
       </DialogContent>
     </Dialog>
   );

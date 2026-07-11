@@ -182,3 +182,14 @@ Date: 2026-07-11
 - PASS: `pnpm test:unit`: 40 suites passed, 1 skipped; 282 tests passed, 1 skipped.
 - PASS: `pnpm build` completed successfully with the existing intermittent configured-Neon unreachable warnings during static collection.
 - BLOCKED: After the build, Chrome rejected the local settings navigation with a client-side localhost block; the signed-in production Flowday tab was used for its before-state and Motion was used for all measured target values.
+
+## Motion Parity - Menus and Modals
+
+Date: 2026-07-11
+
+- MEASURED IN CHROME: Motion's create-event editor is 614px wide with an 8px radius, `rgb(38, 41, 43)` main surface, `rgb(49, 53, 56)` border, 24px header padding, and a 150ms ease-out transform. Its event-title input is 18px with a 32px line height.
+- FIXED: Shared Flowday dialogs, menus, popovers, and command palette now use the measured elevated surface/border/radius system and short fade/scale transitions. The task editor no longer uses a spring animation; the event editor adopts the Motion width and header surface.
+- PASS: `pnpm tsc --noEmit`.
+- PASS: `pnpm test:unit`: 40 suites passed, 1 skipped; 282 tests passed, 1 skipped.
+- PASS: `pnpm build` completed successfully with the existing intermittent configured-Neon unreachable warnings during static collection.
+- BLOCKED: Local authenticated creation flows could not be replayed in Chrome because the configured database was unreachable and the browser subsequently blocked localhost navigation. No create/update/delete operation was submitted.

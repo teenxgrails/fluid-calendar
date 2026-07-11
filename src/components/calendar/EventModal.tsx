@@ -361,15 +361,15 @@ export function EventModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="flex max-h-[90vh] max-w-[500px] flex-col p-0">
+        <DialogContent className="flex max-h-[90vh] max-w-[614px] flex-col gap-0 p-0">
           {isSubmitting && <LoadingOverlay />}
-          <DialogHeader className="space-y-1.5 px-6 pb-4 pt-6">
-            <DialogTitle>{event?.id ? "Edit Event" : "New Event"}</DialogTitle>
+          <DialogHeader className="space-y-1.5 rounded-t-lg border-t-4 border-[var(--accent)] bg-[#262626] px-6 pb-4 pt-5">
+            <DialogTitle className="text-lg font-normal leading-8">{event?.id ? "Edit Event" : "New Event"}</DialogTitle>
           </DialogHeader>
 
           <form
             onSubmit={handleSubmit}
-            className="space-y-4 overflow-y-auto px-6 pb-6"
+            className="space-y-4 overflow-y-auto bg-[#26292B] px-6 pb-6 pt-5"
           >
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
