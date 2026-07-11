@@ -482,11 +482,10 @@ html[data-animations="off"] *::after {
   display: none !important;
 }
 
-/* Grid background system - matches Motion exactly:
-   the whole time grid is a flat #202425 panel (no working/non-working or
-   today shading), sitting on the #1B1D1E page, with #2B2F31 grid lines. */
+/* Grid background uses Flowday's normal dark canvas, with the same quiet
+   one-pixel separators across working, non-working, and today columns. */
 .fc .fc-timegrid-col-frame {
-  background: #202425;
+  background: #1B1D1E;
 }
 
 .fc .fc-non-business {
@@ -521,11 +520,11 @@ html[data-animations="off"] *::after {
 
 .fc .fc-col-header-cell {
   border-color: #2b2f31 !important;
-  background: #202425 !important;
+  background: #1B1D1E !important;
   height: 44px;
 }
 
-/* All-day row: flat #202425, no divider tint, and hide the "all-day" label */
+/* All-day row uses the same canvas, with no divider tint. */
 .fc .fc-timegrid-axis-cushion {
   font-size: 0 !important;
 }
@@ -533,7 +532,7 @@ html[data-animations="off"] *::after {
 .fc .fc-scrollgrid-section-header > td,
 .fc .fc-timegrid-divider,
 .fc .fc-daygrid-body {
-  background: #202425 !important;
+  background: #1B1D1E !important;
 }
 
 .fc .fc-timegrid-divider {
@@ -581,9 +580,9 @@ html[data-animations="off"] *::after {
   filter: none !important;
 }
 
-/* Uniform #202425 grid panel (behind columns, gutter and gaps) */
+/* Uniform Flowday canvas behind columns, gutter and gaps. */
 .fc .fc-view-harness {
-  background: #202425;
+  background: #1B1D1E;
 }
 
 .fc .fc-timegrid-col:hover,
@@ -655,7 +654,7 @@ html[data-animations="off"] *::after {
 }
 
 .dark .fc .fc-col-header-cell {
-  background: #202425;
+  background: #1B1D1E;
   border-color: var(--fc-border-color);
 }
 

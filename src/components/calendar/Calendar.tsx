@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -16,6 +16,7 @@ import { DayView } from "@/components/calendar/DayView";
 import { MonthView } from "@/components/calendar/MonthView";
 import { MultiMonthView } from "@/components/calendar/MultiMonthView";
 import { WeekView } from "@/components/calendar/WeekView";
+import { TaskModal } from "@/components/tasks/TaskModal";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -69,6 +70,8 @@ export function Calendar({
     useSettingsStore();
   const eventModalStore = useEventModalStore();
   const prefersReducedMotion = useReducedMotion();
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const { createTask, tags } = useTaskStore();
 
   const titlePrimary =
     view === "day"
@@ -139,6 +142,10 @@ export function Calendar({
     eventModalStore.setDefaultDate(start);
     eventModalStore.setDefaultEndDate(new Date(start.getTime() + 30 * 60 * 1000));
     eventModalStore.setOpen(true);
+  };
+
+  const handleNewTask = () => {
+    setIsTaskModalOpen(true);
   };
 
   return (
@@ -243,14 +250,21 @@ export function Calendar({
               <span className="hidden md:inline">Refresh all tasks</span>
             </button>
 
-            {/* New event */}
-            <button
-              onClick={handleNewEvent}
-              className="grid h-[25px] w-[25px] place-items-center rounded-md border border-[#3A3F42] bg-[#313538] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
-              title="New event"
-            >
-              <IoAddOutline className="h-4 w-4" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="grid h-[25px] w-[25px] place-items-center rounded-md border border-[#3A3F42] bg-[#313538] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
+                  title="Create"
+                  aria-label="Create task or event"
+                >
+                  <IoAddOutline className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={handleNewTask}>New Task</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleNewEvent}>New Meeting or Event</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* View switcher */}
             <DropdownMenu>
@@ -295,9 +309,9 @@ export function Calendar({
               transition={{ duration: prefersReducedMotion ? 0 : 0.15, ease: "easeOut" }}
             >
               {view === "day" ? (
-                <DayView currentDate={currentDate} onDateClick={setDate} />
+                <DayView currentDate={currentDate} />
               ) : view === "week" ? (
-                <WeekView currentDate={currentDate} onDateClick={setDate} />
+                <WeekView currentDate={currentDate} />
               ) : view === "month" ? (
                 <MonthView currentDate={currentDate} onDateClick={setDate} />
               ) : (
@@ -310,6 +324,16 @@ export function Calendar({
           </AnimatePresence>
         </div>
       </main>
+      <TaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        tags={tags}
+        onSave={async (task) => {
+          await createTask(task);
+          setIsTaskModalOpen(false);
+        }}
+        onCreateTag={(name, color) => useTaskStore.getState().createTag({ name, color })}
+      />
     </div>
   );
 }

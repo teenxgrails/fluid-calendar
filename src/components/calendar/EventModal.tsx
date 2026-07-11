@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { useCalendarStore } from "@/store/calendar";
 import { useSettingsStore } from "@/store/settings";
 
-import { CalendarEvent } from "@/types/calendar";
+import { CalendarEvent, CalendarFeed } from "@/types/calendar";
 
 interface EventModalProps {
   isOpen: boolean;
@@ -218,10 +218,36 @@ export function EventModal({
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const feed = feeds.find((f) => f.id === selectedFeedId);
+      let feedId = selectedFeedId;
+      let feed = feeds.find((candidate) => candidate.id === feedId);
+
+      // A fresh personal planner has no external calendar yet. Motion still
+      // lets the user create an event, so create Flowday's private local
+      // calendar on first use rather than blocking the editor.
+      if (!feed && !event?.id) {
+        const response = await fetch("/api/feeds", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Flowday",
+            type: "LOCAL",
+            color: "#6366F1",
+            enabled: true,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create Flowday calendar");
+        }
+
+        feed = (await response.json()) as CalendarFeed;
+        feedId = feed.id;
+        setSelectedFeedId(feedId);
+        await useCalendarStore.getState().loadFromDatabase();
+      }
+
       if (!feed) {
-        console.error("Selected calendar not found");
-        return;
+        throw new Error("Selected calendar not found");
       }
 
       const eventData: Omit<CalendarEvent, "id"> = {
@@ -230,7 +256,7 @@ export function EventModal({
         location,
         start: startDate,
         end: endDate,
-        feedId: selectedFeedId,
+        feedId,
         allDay: isAllDay,
         isRecurring,
         recurrenceRule: isRecurring

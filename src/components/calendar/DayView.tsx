@@ -31,10 +31,9 @@ import { useCalendarDragHandlers } from "./useCalendarDragHandlers";
 
 interface DayViewProps {
   currentDate: Date;
-  onDateClick?: (date: Date) => void;
 }
 
-export function DayView({ currentDate, onDateClick }: DayViewProps) {
+export function DayView({ currentDate }: DayViewProps) {
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
   const { user: userSettings, calendar: calendarSettings } = useSettingsStore();
@@ -190,7 +189,6 @@ export function DayView({ currentDate, onDateClick }: DayViewProps) {
   };
 
   const handleSlotClick = (arg: { date: Date; allDay: boolean }) => {
-    onDateClick?.(arg.date);
     const end = new Date(arg.date.getTime() + 30 * 60 * 1000);
     setSelectedDate(arg.date);
     setSelectedEndDate(end);

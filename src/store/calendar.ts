@@ -423,6 +423,22 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
         throw new Error("Calendar not found");
       }
 
+      if (feed.type === "LOCAL") {
+        const response = await fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEvent),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add event to Flowday calendar");
+        }
+
+        await get().loadFromDatabase();
+        await useTaskStore.getState().triggerScheduleAllTasks();
+        return;
+      }
+
       // For Google Calendar feeds, use the Google Calendar API
       if (feed.type === "GOOGLE") {
         const response = await fetch("/api/calendar/google/events", {
