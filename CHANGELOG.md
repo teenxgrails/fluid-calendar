@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Restored the month mini-calendar in the left sidebar (above the navigation list). Clicking a day moves the main calendar, the ‹ › arrows change month, today is shown with an accent-filled pill, and the selected day with a grey pill
 
+### Fixed
+
+- Restored the calendar grid lines (hourly rows and day-column separators at `#2B2F31`, half-hour lines hidden) and added Motion-style column shading: the current-day column stays flat `#202425`, while other days show a two-step tint — working hours `#24282A`, non-working hours `#282C2E`
+
 ### Changed
 
 - Redesigned the calendar toolbar and week grid to match the Motion reference: the header now shows a compact "Mon YYYY" title, and the right side groups a "Calendar options" menu (24-hour time, start week on Monday, highlight working hours), a "Refresh all tasks" action, a "+" new-event button, and a single "Week" view-switcher dropdown (replacing the separate Day/Week/Month/Year buttons). Week day headers now read "Mon 6" and a timezone abbreviation is shown in the top-left axis corner

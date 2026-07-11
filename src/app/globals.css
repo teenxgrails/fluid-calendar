@@ -464,17 +464,27 @@ html[data-animations="off"] *::after {
   display: none !important;
 }
 
-/* Grid background uses Flowday's normal dark canvas, with the same quiet
-   one-pixel separators across working, non-working, and today columns. */
+/* Motion-style column shading. Lightness order: today (darkest) < working
+   hours < non-working hours (lightest). Working hours come from the column
+   frame; non-working hours from the .fc-non-business overlay; the today
+   column stays flat #202425 with no working/non-working split. */
 .fc .fc-timegrid-col-frame {
-  background: #1B1D1E;
+  background: #24282a;
 }
 
-.fc .fc-non-business {
-  background: transparent !important;
+.fc .fc-timegrid-col-bg .fc-non-business {
+  background: #282c2e !important;
 }
 
 .fc .fc-day-today {
+  background: transparent !important;
+}
+
+.fc .fc-day-today .fc-timegrid-col-frame {
+  background: #202425;
+}
+
+.fc .fc-day-today .fc-timegrid-col-bg .fc-non-business {
   background: transparent !important;
 }
 
@@ -496,7 +506,8 @@ html[data-animations="off"] *::after {
   border-color: var(--line-strong);
 }
 
-/* Flowday's calendar deliberately avoids the spreadsheet-grid treatment. */
+/* Reset every internal cell border, then draw back only Motion's hourly
+   rows and day-column separators (#2B2F31, 1px). */
 .fc .fc-scrollgrid,
 .fc .fc-scrollgrid td,
 .fc .fc-scrollgrid th,
@@ -504,6 +515,16 @@ html[data-animations="off"] *::after {
 .fc .fc-timegrid-divider,
 .fc .fc-col-header-cell {
   border: 0 !important;
+}
+
+/* Horizontal hour lines (major slot lanes only). */
+.fc .fc-timegrid-slots .fc-timegrid-slot-lane {
+  border-top: 1px solid #2b2f31 !important;
+}
+
+/* Vertical day-column separators. */
+.fc .fc-timegrid-cols .fc-timegrid-col {
+  border-left: 1px solid #2b2f31 !important;
 }
 
 .fc .fc-col-header-cell {
@@ -555,7 +576,10 @@ html[data-animations="off"] *::after {
   pointer-events: none;
 }
 
-/* Motion shows only hourly lines - hide the half-hour (minor) slot border */
+/* Motion shows only hourly lines - hide the half-hour (minor) slot border.
+   Kept more specific than the slot-lane rule above so the minor lines stay
+   hidden. */
+.fc .fc-timegrid-slots .fc-timegrid-slot-lane.fc-timegrid-slot-minor,
 .fc .fc-timegrid-slot-minor {
   border-top-style: none !important;
 }
@@ -598,11 +622,14 @@ html[data-animations="off"] *::after {
   border: 0 !important;
 }
 
-.fc .fc-non-business:hover,
+/* Don't let hover repaint the non-working shading; keep the two-step tint. */
 .fc .fc-timegrid-col-bg .fc-non-business:hover,
 .fc .fc-bg-event:hover {
-  background: transparent !important;
   filter: none !important;
+}
+
+.fc .fc-day-today .fc-timegrid-col-bg .fc-non-business:hover {
+  background: transparent !important;
 }
 
 /* Uniform Flowday canvas behind columns, gutter and gaps. */
