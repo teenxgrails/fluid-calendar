@@ -151,9 +151,9 @@ export function Calendar({
   return (
     <div className="flex h-full w-full overflow-hidden bg-[#1B1D1E] text-white">
       {/* Main Content */}
-      <main className="flex min-w-0 flex-1 flex-col border-y border-r border-[#323234] bg-[#1B1D1E]">
+      <main className="flex min-w-0 flex-1 flex-col bg-[#1B1D1E]">
         {/* Header */}
-        <header className="flex h-12 flex-none items-center border-b border-[#323234] px-2">
+        <header className="flex h-12 flex-none items-center px-2">
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleToday}

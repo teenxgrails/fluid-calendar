@@ -2,7 +2,7 @@
 
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_NAME = "flowday";
-const SERVER_VERSION = "0.3.0";
+const SERVER_VERSION = "0.4.0";
 
 const baseUrl = (process.env.FLOWDAY_BASE_URL || "http://localhost:3000").replace(
   /\/$/,
@@ -62,6 +62,27 @@ const tools = [
     inputSchema: {
       type: "object",
       properties: {},
+    },
+  },
+  {
+    name: "flowday_control",
+    description:
+      "Control Flowday projects, tasks, local calendars, and events. Use action: overview to inspect the app. Deletes require confirm: true.",
+    inputSchema: {
+      type: "object",
+      required: ["action"],
+      properties: {
+        action: { type: "string", enum: ["overview", "create_project", "update_project", "update_task", "complete_task", "create_calendar", "create_event", "update_event", "delete_task", "delete_project", "delete_event", "delete_calendar"] },
+        id: { type: "string" },
+        title: { type: "string" },
+        name: { type: "string" },
+        description: { type: "string" },
+        start: { type: "string", description: "ISO 8601" },
+        end: { type: "string", description: "ISO 8601" },
+        feedId: { type: "string" },
+        projectId: { type: ["string", "null"] },
+        confirm: { type: "boolean" },
+      },
     },
   },
 ];
@@ -200,6 +221,8 @@ function toolEndpoint(name) {
       return { method: "POST", path: "/api/connect/schedule" };
     case "flowday_reschedule":
       return { method: "POST", path: "/api/connect/reschedule" };
+    case "flowday_control":
+      return { method: "POST", path: "/api/connect/control" };
     default:
       return null;
   }

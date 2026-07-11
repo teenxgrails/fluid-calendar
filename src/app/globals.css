@@ -496,12 +496,17 @@ html[data-animations="off"] *::after {
   border-color: var(--line-strong);
 }
 
-.fc .fc-scrollgrid {
-  border-color: var(--line-strong) !important;
+/* Flowday's calendar deliberately avoids the spreadsheet-grid treatment. */
+.fc .fc-scrollgrid,
+.fc .fc-scrollgrid td,
+.fc .fc-scrollgrid th,
+.fc .fc-timegrid-slot,
+.fc .fc-timegrid-divider,
+.fc .fc-col-header-cell {
+  border: 0 !important;
 }
 
 .fc .fc-col-header-cell {
-  border-color: #2b2f31 !important;
   background: #1B1D1E !important;
   height: 44px;
 }
