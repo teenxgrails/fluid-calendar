@@ -395,7 +395,7 @@ html[data-animations="off"] *::after {
   --fc-page-bg-color: transparent;
   --fc-neutral-bg-color: var(--raised);
   --fc-neutral-text-color: var(--text-lo);
-  --fc-border-color: var(--line-strong);
+  --fc-border-color: #2b2f31;
   --fc-today-bg-color: var(--active);
   --fc-now-indicator-color: var(--accent);
   color: var(--text-hi);
@@ -438,7 +438,7 @@ html[data-animations="off"] *::after {
 
 .fc .fc-event {
   @apply cursor-pointer border shadow-sm;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
   box-shadow: none !important;
   overflow: hidden;
 }
@@ -482,25 +482,19 @@ html[data-animations="off"] *::after {
   display: none !important;
 }
 
-/* Grid background system (Motion-like):
-   - non-working hours = base #1B1D1E
-   - working hours     = slightly darker band
-   - today column      = a touch darker with stronger separators */
+/* Grid background system - matches Motion exactly:
+   the whole time grid is a flat #202425 panel (no working/non-working or
+   today shading), sitting on the #1B1D1E page, with #2B2F31 grid lines. */
 .fc .fc-timegrid-col-frame {
-  background: #17191a;
+  background: #202425;
 }
 
 .fc .fc-non-business {
-  background: #1b1d1e !important;
+  background: transparent !important;
 }
 
 .fc .fc-day-today {
-  background: #141617 !important;
-}
-
-.fc .fc-timegrid-col.fc-day-today {
-  border-left: 1px solid #2c2e30 !important;
-  border-right: 1px solid #2c2e30 !important;
+  background: transparent !important;
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
@@ -526,11 +520,11 @@ html[data-animations="off"] *::after {
 }
 
 .fc .fc-col-header-cell {
-  border-color: var(--line-strong) !important;
-  background: #1b1d1e !important;
+  border-color: #2b2f31 !important;
+  background: #202425 !important;
 }
 
-/* All-day row: flat #1B1D1E, no divider tint, and hide the "all-day" label */
+/* All-day row: flat #202425, no divider tint, and hide the "all-day" label */
 .fc .fc-timegrid-axis-cushion {
   font-size: 0 !important;
 }
@@ -538,11 +532,16 @@ html[data-animations="off"] *::after {
 .fc .fc-scrollgrid-section-header > td,
 .fc .fc-timegrid-divider,
 .fc .fc-daygrid-body {
-  background: #1b1d1e !important;
+  background: #202425 !important;
 }
 
 .fc .fc-timegrid-divider {
-  border-color: #1b1d1e !important;
+  border-color: #2b2f31 !important;
+}
+
+/* Unify all grid lines (hour rows + day separators) to Motion's #2B2F31 */
+.fc {
+  --fc-border-color: #2b2f31;
 }
 
 .fc .fc-col-header-cell-cushion {
@@ -577,8 +576,13 @@ html[data-animations="off"] *::after {
 .fc .fc-non-business:hover,
 .fc .fc-timegrid-col-bg .fc-non-business:hover,
 .fc .fc-bg-event:hover {
-  background: #1b1d1e !important;
+  background: transparent !important;
   filter: none !important;
+}
+
+/* Uniform #202425 grid panel (behind columns, gutter and gaps) */
+.fc .fc-view-harness {
+  background: #202425;
 }
 
 .fc .fc-timegrid-col:hover,
@@ -592,7 +596,7 @@ html[data-animations="off"] *::after {
   --fc-page-bg-color: transparent;
   --fc-neutral-bg-color: var(--raised);
   --fc-neutral-text-color: var(--text-lo);
-  --fc-border-color: var(--line-strong);
+  --fc-border-color: #2b2f31;
 
   --fc-button-text-color: #ffffff;
   --fc-button-bg-color: var(--raised);
