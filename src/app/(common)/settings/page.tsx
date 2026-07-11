@@ -2,6 +2,22 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  Bell,
+  Brain,
+  CalendarDays,
+  CalendarRange,
+  Download,
+  ListChecks,
+  Palette,
+  Plug,
+  ScrollText,
+  Server,
+  SlidersHorizontal,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
+
 import { AIAssistantSettings } from "@/components/settings/AIAssistantSettings";
 import { AccountManager } from "@/components/settings/AccountManager";
 import { AutoScheduleSettings } from "@/components/settings/AutoScheduleSettings";
@@ -49,24 +65,24 @@ export default function SettingsPage() {
 
   const tabs = useMemo(() => {
     const baseTabs = [
-      { id: "calendar", label: "Calendars / Apple-iCloud" },
-      { id: "auto-schedule", label: "Auto-scheduling" },
-      { id: "task-sync", label: "Task defaults" },
-      { id: "user", label: "Theme" },
-      { id: "customization", label: "Customization" },
-      { id: "notifications", label: "Notifications" },
-      { id: "smart-scheduling", label: "Energy profile" },
-      { id: "connectors", label: "Connectors" },
-      { id: "ai-assistant", label: "AI" },
-      { id: "accounts", label: "Account" },
-      { id: "import-export", label: "Import / Export" },
+      { id: "calendar", label: "Calendars / Apple-iCloud", icon: CalendarDays },
+      { id: "auto-schedule", label: "Auto-scheduling", icon: CalendarRange },
+      { id: "task-sync", label: "Task defaults", icon: ListChecks },
+      { id: "user", label: "Theme", icon: Palette },
+      { id: "customization", label: "Customization", icon: SlidersHorizontal },
+      { id: "notifications", label: "Notifications", icon: Bell },
+      { id: "smart-scheduling", label: "Energy profile", icon: Brain },
+      { id: "connectors", label: "Connectors", icon: Plug },
+      { id: "ai-assistant", label: "AI", icon: Sparkles },
+      { id: "accounts", label: "Account", icon: UserRound },
+      { id: "import-export", label: "Import / Export", icon: Download },
     ] as const;
 
     // Add admin-only tabs
     if (isAdmin) {
       const adminTabs = [
-        { id: "system", label: "System" },
-        { id: "logs", label: "Logs" },
+        { id: "system", label: "System", icon: Server },
+        { id: "logs", label: "Logs", icon: ScrollText },
       ] as const;
 
       return [...baseTabs, ...adminTabs] as const;
@@ -202,24 +218,32 @@ export default function SettingsPage() {
                     .filter(
                       (tab) => !["accounts", "system", "logs"].includes(tab.id)
                     )
-                    .map((tab) => (
-                      <a
-                        key={tab.id}
-                        href={`#${tab.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveTab(tab.id as SettingsTab);
-                        }}
-                        className={cn(
-                          "flex h-[30px] w-full items-center rounded-[2px] px-2.5 text-[14px] font-normal leading-[21px] transition-colors duration-150 ease-out",
-                          activeTab === tab.id
-                            ? "bg-[#2B2F31] text-white"
-                            : "text-[#9AA0A6] hover:bg-[#2B2F31] hover:text-white"
-                        )}
-                      >
-                        {tab.label}
-                      </a>
-                    ))}
+                    .map((tab) => {
+                      const Icon = tab.icon;
+
+                      return (
+                        <a
+                          key={tab.id}
+                          href={`#${tab.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setActiveTab(tab.id as SettingsTab);
+                          }}
+                          className={cn(
+                            "flex h-[30px] w-full items-center rounded-[2px] px-2.5 text-[14px] font-normal leading-[21px] transition-colors duration-150 ease-out",
+                            activeTab === tab.id
+                              ? "bg-[#2B2F31] text-white"
+                              : "text-[#9AA0A6] hover:bg-[#2B2F31] hover:text-white"
+                          )}
+                        >
+                          <Icon
+                            className="h-4 w-4 shrink-0"
+                            strokeWidth={1.75}
+                          />
+                          {tab.label}
+                        </a>
+                      );
+                    })}
                 </nav>
               </div>
               <div>
@@ -231,24 +255,32 @@ export default function SettingsPage() {
                     .filter((tab) =>
                       ["accounts", "system", "logs"].includes(tab.id)
                     )
-                    .map((tab) => (
-                      <a
-                        key={tab.id}
-                        href={`#${tab.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActiveTab(tab.id as SettingsTab);
-                        }}
-                        className={cn(
-                          "flex h-[30px] w-full items-center rounded-[2px] px-2.5 text-[14px] font-normal leading-[21px] transition-colors duration-150 ease-out",
-                          activeTab === tab.id
-                            ? "bg-[#2B2F31] text-white"
-                            : "text-[#9AA0A6] hover:bg-[#2B2F31] hover:text-white"
-                        )}
-                      >
-                        {tab.label}
-                      </a>
-                    ))}
+                    .map((tab) => {
+                      const Icon = tab.icon;
+
+                      return (
+                        <a
+                          key={tab.id}
+                          href={`#${tab.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setActiveTab(tab.id as SettingsTab);
+                          }}
+                          className={cn(
+                            "flex h-[30px] w-full items-center rounded-[2px] px-2.5 text-[14px] font-normal leading-[21px] transition-colors duration-150 ease-out",
+                            activeTab === tab.id
+                              ? "bg-[#2B2F31] text-white"
+                              : "text-[#9AA0A6] hover:bg-[#2B2F31] hover:text-white"
+                          )}
+                        >
+                          <Icon
+                            className="h-4 w-4 shrink-0"
+                            strokeWidth={1.75}
+                          />
+                          {tab.label}
+                        </a>
+                      );
+                    })}
                 </nav>
               </div>
             </div>
