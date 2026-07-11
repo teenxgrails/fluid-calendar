@@ -87,14 +87,14 @@ export function TodaysTasksPanel({ className }: { className?: string }) {
                     <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-hi)]">
                       {task.title}
                     </span>
-                    <span className="flex-none text-[11px] tabular-nums text-[var(--text-lo)] transition-opacity duration-[140ms] ease-out group-hover:opacity-0">
+                    <span className="flex-none text-[11px] tabular-nums text-[var(--text-lo)] transition-opacity duration-150 ease-out group-hover:opacity-0">
                       {task.dueDate ? formatDueTime(newDate(task.dueDate)) : ""}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleStart(task)}
                       aria-label={`Start ${task.title}`}
-                      className="pointer-events-none absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 translate-x-1 place-items-center rounded-full bg-[var(--accent)] text-white opacity-0 transition-all duration-[140ms] ease-out group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100"
+                      className="pointer-events-none absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 translate-x-1 place-items-center rounded-full bg-[var(--accent)] text-white opacity-0 transition-all duration-150 ease-out group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100"
                     >
                       <Play className="h-3 w-3 fill-current" />
                     </button>
