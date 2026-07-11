@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,7 +15,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { MiniCalendar } from "@/components/calendar/MiniCalendar";
 import {
   Tooltip,
   TooltipContent,
@@ -21,12 +22,12 @@ import {
 } from "@/components/ui/tooltip";
 
 import { APP_NAME } from "@/lib/app-config";
-import { getOverdueSummary } from "@/lib/overdue";
 import { cn } from "@/lib/utils";
 
-import { useCalendarStore, useViewStore } from "@/store/calendar";
 import { useFocusModeStore } from "@/store/focusMode";
 import { useTaskStore } from "@/store/task";
+
+import { TaskStatus } from "@/types/task";
 
 import { UserMenu } from "./UserMenu";
 
@@ -45,11 +46,20 @@ function openCommandPalette() {
   );
 }
 
-export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
+export const AppNav = memo(function AppNav({
+  className,
+  onOpenChatOverlay,
+}: AppNavProps) {
   const pathname = usePathname();
-  const { date: currentDate, setDate } = useViewStore();
-  const { feeds } = useCalendarStore();
-  const tasks = useTaskStore((state) => state.tasks);
+  const overdueCount = useTaskStore(
+    (state) =>
+      state.tasks.filter(
+        (task) =>
+          task.status !== TaskStatus.COMPLETED &&
+          task.dueDate &&
+          new Date(task.dueDate) < new Date()
+      ).length
+  );
   const currentTaskId = useFocusModeStore((state) => state.currentTaskId);
   const isProcessing = useFocusModeStore((state) => state.isProcessing);
   const todayLabel = new Intl.DateTimeFormat(undefined, {
@@ -57,7 +67,6 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
     month: "short",
     day: "numeric",
   }).format(new Date());
-  const overdueSummary = getOverdueSummary(tasks);
 
   // Motion swaps its product rail for the settings rail on settings pages.
   // Keeping both creates an unnecessary second navigation column.
@@ -66,13 +75,17 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
   }
 
   const links = [
-    { href: "/calendar", label: "Calendar", icon: CalendarDays, meta: todayLabel },
+    {
+      href: "/calendar",
+      label: "Calendar",
+      icon: CalendarDays,
+      meta: todayLabel,
+    },
     {
       href: "/tasks",
       label: "Projects & Tasks",
       icon: CheckSquare,
-      badge: overdueSummary.count,
-      badgeSeverity: overdueSummary.severity,
+      badge: overdueCount,
     },
     { href: "/focus", label: "Focus", icon: Focus },
   ];
@@ -81,15 +94,11 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
     <aside
       aria-label={`${APP_NAME} navigation`}
       className={cn(
-        "motion-sidebar z-20 flex h-screen w-[244px] flex-none flex-col border-r border-[var(--line-strong)] bg-[var(--app-bg)] p-2 text-[var(--text-hi)] max-md:w-[68px] max-md:p-1",
+        "motion-sidebar z-20 flex h-screen w-[244px] flex-none flex-col border-r border-[var(--line-strong)] bg-[var(--app-bg)] p-2 text-[var(--text-hi)] max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:h-16 max-md:w-full max-md:flex-row max-md:border-r-0 max-md:border-t max-md:p-1",
         className
       )}
     >
-      <div className="mb-2 max-md:hidden">
-        <MiniCalendar currentDate={currentDate} onDateClick={setDate} compact />
-      </div>
-
-      <div className="mb-3 grid grid-cols-[1fr_auto] gap-1">
+      <div className="mb-3 grid grid-cols-[1fr_auto] gap-1 max-md:hidden">
         <Link
           href="/chat"
           className={cn(
@@ -97,7 +106,10 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
             pathname === "/chat" && "text-white"
           )}
         >
-          <Sparkles className="h-4 w-4 flex-none text-[var(--accent)]" strokeWidth={1.75} />
+          <Sparkles
+            className="h-4 w-4 flex-none text-[var(--accent)]"
+            strokeWidth={1.75}
+          />
           <span className="truncate max-md:hidden">AI Chat</span>
           <kbd className="ml-auto rounded bg-[var(--app-bg)] px-1.5 py-0.5 text-[10px] text-[var(--text-lo)] max-md:hidden">
             ⌘/
@@ -121,7 +133,7 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
       <button
         type="button"
         onClick={openCommandPalette}
-        className="mb-2 flex w-full items-center gap-2 rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-2.5 py-1.5 text-left text-[13px] text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
+        className="mb-2 flex w-full items-center gap-2 rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-2.5 py-1.5 text-left text-[13px] text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)] max-md:hidden"
         aria-label="Search or open command palette"
       >
         <Search className="h-4 w-4" strokeWidth={1.75} />
@@ -133,7 +145,7 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
         </kbd>
       </button>
 
-      <nav className="space-y-0.5 text-[13px]">
+      <nav className="space-y-0.5 text-[13px] max-md:flex max-md:flex-1 max-md:items-center max-md:justify-around max-md:space-y-0">
         {links.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
@@ -145,7 +157,7 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left transition-colors",
+                "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left transition-colors max-md:w-auto max-md:flex-1 max-md:justify-center max-md:py-2",
                 isActive
                   ? "bg-[var(--active)] text-[var(--text-hi)]"
                   : "text-[var(--text-lo)] hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
@@ -164,10 +176,8 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
                 <span
                   className={cn(
                     "rounded px-1.5 py-0.5 text-[10px] font-semibold max-md:hidden",
-                    (link.badge ?? 0) > 0 && link.badgeSeverity === "red"
+                    (link.badge ?? 0) > 0
                       ? "bg-red-500/20 text-red-200"
-                      : (link.badge ?? 0) > 0
-                        ? "bg-orange-500/20 text-orange-200"
                       : "bg-transparent text-transparent"
                   )}
                 >
@@ -184,26 +194,7 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
         })}
       </nav>
 
-      <div className="mt-3 max-md:hidden">
-        <div className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-[var(--text-lo)]">
-          Calendars
-        </div>
-        <div className="space-y-1 px-1">
-          {feeds.slice(0, 4).map((feed) => (
-            <div key={feed.id} className="flex items-center gap-2 rounded-md px-2 py-1 text-[12px] text-[var(--text-lo)]">
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: feed.color || "var(--accent)" }} />
-              <span className="truncate">{feed.name}</span>
-            </div>
-          ))}
-          {feeds.length === 0 && (
-            <div className="rounded-md px-2 py-1 text-[12px] text-[var(--text-lo)]">
-              No calendars connected
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-auto flex items-center justify-between gap-1 border-t border-[var(--line-strong)] pt-2">
+      <div className="mt-auto flex items-center justify-between gap-1 border-t border-[var(--line-strong)] pt-2 max-md:hidden">
         <UserMenu />
         <div className="flex items-center gap-1">
           <Tooltip>
@@ -212,7 +203,8 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
                 href="/settings"
                 className={cn(
                   "grid h-8 w-8 place-items-center rounded-md text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]",
-                  pathname === "/settings" && "bg-[var(--active)] text-[var(--text-hi)]"
+                  pathname === "/settings" &&
+                    "bg-[var(--active)] text-[var(--text-hi)]"
                 )}
                 aria-label="Settings"
               >
@@ -238,4 +230,4 @@ export function AppNav({ className, onOpenChatOverlay }: AppNavProps) {
       </div>
     </aside>
   );
-}
+});

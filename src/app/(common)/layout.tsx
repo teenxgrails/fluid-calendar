@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { AIChatOverlay } from "@/components/ai/AIChatOverlay";
 import { AIActionCursor } from "@/components/ai/AIActionCursor";
+import { AIChatOverlay } from "@/components/ai/AIChatOverlay";
 import { DndProvider } from "@/components/dnd/DndProvider";
 import { AppNav } from "@/components/navigation/AppNav";
 import { NotificationProvider } from "@/components/providers/NotificationProvider.open";
@@ -53,31 +53,31 @@ export default function RootLayout({
   return (
     <div className="relative flex min-h-screen bg-[#1A1D1E]">
       <PrivacyProvider>
-          <DndProvider>
-            <TooltipProvider delayDuration={400}>
-              <SetupCheck />
-              <CommandPalette
-                open={commandPaletteOpen}
-                onOpenChange={setCommandPaletteOpen}
-              />
-              <CommandPaletteHint />
-              <CommandPaletteFab />
-              <ShortcutsModal
-                isOpen={shortcutsOpen}
-                onClose={() => setShortcutsOpen(false)}
-              />
-              <AppNav onOpenChatOverlay={() => setChatOverlayOpen(true)} />
-              <main className="relative min-w-0 flex-1">
-                <NotificationProvider>{children}</NotificationProvider>
-              </main>
-              <AIChatOverlay
-                open={chatOverlayOpen}
-                onOpenChange={setChatOverlayOpen}
-              />
-              <AIActionCursor />
-              <Toaster />
-            </TooltipProvider>
-          </DndProvider>
+        <DndProvider>
+          <TooltipProvider delayDuration={400}>
+            <SetupCheck />
+            <CommandPalette
+              open={commandPaletteOpen}
+              onOpenChange={setCommandPaletteOpen}
+            />
+            <CommandPaletteHint />
+            <CommandPaletteFab />
+            <ShortcutsModal
+              isOpen={shortcutsOpen}
+              onClose={() => setShortcutsOpen(false)}
+            />
+            <AppNav onOpenChatOverlay={() => setChatOverlayOpen(true)} />
+            <main className="relative min-w-0 flex-1 max-md:pb-16">
+              <NotificationProvider>{children}</NotificationProvider>
+            </main>
+            <AIChatOverlay
+              open={chatOverlayOpen}
+              onOpenChange={setChatOverlayOpen}
+            />
+            <AIActionCursor />
+            <Toaster />
+          </TooltipProvider>
+        </DndProvider>
       </PrivacyProvider>
     </div>
   );

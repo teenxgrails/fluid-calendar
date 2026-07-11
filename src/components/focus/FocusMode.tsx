@@ -41,7 +41,7 @@ export function FocusMode() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-[#1A1D1E]">
+    <div className="flex h-full flex-col bg-[#1A1D1E] max-md:pb-16">
       {isProcessing && actionType && (
         <ActionOverlay
           type={actionType}

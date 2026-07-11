@@ -116,11 +116,16 @@ export default function TasksPage() {
   return (
     <div className="flex h-full bg-[#1B1D1E]">
       <ProjectSidebar />
-      <div className="flex min-w-0 flex-1 flex-col border-y border-r border-[#2B2F31] bg-[#1B1D1E]" data-task-page>
-        <div className="flex min-h-12 items-center border-b border-[#2B2F31] px-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold text-white">Projects &amp; Tasks</h1>
+      <div
+        className="flex min-w-0 flex-1 flex-col border-y border-r border-[#2B2F31] bg-[#1B1D1E]"
+        data-task-page
+      >
+        <div className="border-b border-[#2B2F31] px-3 py-2 sm:flex sm:min-h-12 sm:items-center">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+              <h1 className="text-xl font-semibold text-white">
+                Projects &amp; Tasks
+              </h1>
               <div className="flex items-center gap-0.5 rounded-md border border-[#3A3F42] bg-[#26292B] p-0.5">
                 <button
                   onClick={() => setViewMode("list")}
@@ -198,14 +203,16 @@ export default function TasksPage() {
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 pb-20 sm:p-4">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={viewMode}
               className="min-h-0 flex-1"
               initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
+              exit={
+                prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }
+              }
               transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
             >
               {viewMode === "list" ? (
