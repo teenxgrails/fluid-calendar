@@ -93,6 +93,8 @@ model User {
   schedulingPreferences SchedulingPreferences?
   energyProfileWindows  EnergyProfileWindow[]
   aiSettings            AISettings?
+  aiOAuthConnections    AIOAuthConnection[]
+  aiOAuthStates         AIOAuthState[]
   aiConversations       AiConversation[]
   aiMessages            AiMessage[]
   connectorSettings     ConnectorSettings?
@@ -457,6 +459,44 @@ model AISettings {
 
   @@index([userId])
   @@index([provider])
+}
+
+// OAuth credentials are kept separate from AISettings so API-key configuration
+// can remain intact when a user connects or disconnects an OAuth-capable custom
+// provider. Tokens are encrypted application-side before being written here.
+model AIOAuthConnection {
+  id                    String     @id @default(cuid())
+  userId                String
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider              AIProvider
+  encryptedAccessToken  String
+  encryptedRefreshToken String?
+  tokenType             String?
+  scope                 String?
+  expiresAt             DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+// Short-lived, one-use authorization-code state. The state secret is stored as
+// a hash while the PKCE verifier is encrypted because it must be sent to the
+// token endpoint after the browser returns.
+model AIOAuthState {
+  id                   String     @id @default(cuid())
+  userId               String
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider             AIProvider
+  stateHash            String     @unique
+  encryptedCodeVerifier String
+  redirectUri          String
+  expiresAt            DateTime
+  createdAt            DateTime   @default(now())
+
+  @@index([userId, provider])
+  @@index([expiresAt])
 }
 
 model AiConversation {

@@ -3,6 +3,7 @@ import { AIProvider } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 import { decryptSecret } from "./encryption";
+import { getCustomAIOAuthAccessToken, getCustomAIOAuthConfig } from "./oauth";
 import { createSchedulerAI } from "./providers";
 import { AIProviderName, SchedulerAIConfig } from "./types";
 
@@ -23,7 +24,12 @@ export async function ensureAISettings(userId: string) {
 }
 
 export function publicAISettings(
-  settings: Awaited<ReturnType<typeof ensureAISettings>>
+  settings: Awaited<ReturnType<typeof ensureAISettings>>,
+  oauth?: {
+    available: boolean;
+    connected: boolean;
+    expiresAt: string | null;
+  }
 ) {
   return {
     provider: settings.provider,
@@ -43,7 +49,35 @@ export function publicAISettings(
     allowSuggestEnergy: settings.allowSuggestEnergy,
     allowFullAuto: settings.allowFullAuto,
     requestTimeoutSeconds: settings.requestTimeoutSeconds,
+    oauth: oauth || {
+      available: false,
+      connected: false,
+      expiresAt: null,
+    },
   };
+}
+
+export async function publicAISettingsWithOAuth(
+  settings: Awaited<ReturnType<typeof ensureAISettings>>
+) {
+  const connection = await prisma.aIOAuthConnection.findUnique({
+    where: {
+      userId_provider: { userId: settings.userId, provider: AIProvider.CUSTOM },
+    },
+  });
+
+  let available = false;
+  try {
+    available = Boolean(getCustomAIOAuthConfig());
+  } catch {
+    // Bad deployment configuration must not make the whole settings page fail.
+  }
+
+  return publicAISettings(settings, {
+    available,
+    connected: Boolean(connection),
+    expiresAt: connection?.expiresAt?.toISOString() || null,
+  });
 }
 
 export function getEncryptedKeyForProvider(
@@ -83,9 +117,20 @@ export function defaultModelForProvider(provider: AIProvider | string) {
 
 export async function getConfiguredSchedulerAI(userId: string) {
   const settings = await ensureAISettings(userId);
+  let oauthToken: string | null = null;
+  if (settings.provider === AIProvider.CUSTOM) {
+    try {
+      oauthToken = await getCustomAIOAuthAccessToken(userId);
+    } catch {
+      // OAuth is optional. Key-based Custom AI and deterministic scheduling stay
+      // available even if an administrator misconfigures its OAuth endpoint.
+    }
+  }
   const config: SchedulerAIConfig = {
     provider: settings.provider as AIProviderName,
-    apiKey: decryptSecret(getEncryptedKeyForProvider(settings, settings.provider)),
+    apiKey:
+      oauthToken ||
+      decryptSecret(getEncryptedKeyForProvider(settings, settings.provider)),
     customUrl: settings.customUrl,
     model: settings.model || defaultModelForProvider(settings.provider),
     timeoutMs: settings.requestTimeoutSeconds * 1000,

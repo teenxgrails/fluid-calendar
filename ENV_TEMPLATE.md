@@ -52,7 +52,7 @@ RESEND_FROM_EMAIL=""
 
 Resend is optional for local development unless testing password reset or email notification flows.
 
-## Future AI Configuration
+## AI Configuration
 
 These are not used by the Phase 0 app yet, but are reserved for the planner AI layer:
 
@@ -63,7 +63,23 @@ AI_CUSTOM_URL=""
 AI_ENCRYPTION_KEY=""
 ```
 
-The human must supply provider API keys or a custom endpoint when the AI assistant feature is enabled in a later phase.
+The human must supply provider API keys or a custom endpoint when enabling the AI assistant. Keys entered in Settings are encrypted at rest with `AI_ENCRYPTION_KEY` (or `NEXTAUTH_SECRET` when it is omitted).
+
+### Custom AI OAuth (optional)
+
+Set these only when the Custom AI service supports OAuth 2.0 authorization-code flow with PKCE:
+
+```bash
+AI_CUSTOM_OAUTH_AUTHORIZATION_URL="https://ai.example.com/oauth/authorize"
+AI_CUSTOM_OAUTH_TOKEN_URL="https://ai.example.com/oauth/token"
+AI_CUSTOM_OAUTH_CLIENT_ID=""
+AI_CUSTOM_OAUTH_CLIENT_SECRET=""
+AI_CUSTOM_OAUTH_SCOPES="planner.read planner.write offline_access"
+```
+
+- `AI_CUSTOM_OAUTH_CLIENT_SECRET` and `AI_CUSTOM_OAUTH_SCOPES` are optional; the client secret should be omitted for public PKCE clients.
+- Register `${NEXTAUTH_URL}/api/ai/oauth/custom/callback` as the exact OAuth redirect URI.
+- OpenAI and Anthropic direct API access uses API keys, not account OAuth tokens. Use their API-key fields in Settings.
 
 ## Web Push
 

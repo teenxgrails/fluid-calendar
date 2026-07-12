@@ -35,6 +35,11 @@ interface AISettingsResponse {
   allowSuggestEnergy: boolean;
   allowFullAuto: boolean;
   requestTimeoutSeconds: number;
+  oauth: {
+    available: boolean;
+    connected: boolean;
+    expiresAt: string | null;
+  };
 }
 
 interface ParsedTaskPreview {
@@ -56,6 +61,11 @@ const DEFAULT_SETTINGS: AISettingsResponse = {
   allowSuggestEnergy: true,
   allowFullAuto: false,
   requestTimeoutSeconds: 20,
+  oauth: {
+    available: false,
+    connected: false,
+    expiresAt: null,
+  },
 };
 
 const providerDefaults: Record<Exclude<AIProvider, "NONE">, string> = {
@@ -74,6 +84,7 @@ export function AIAssistantSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [isDisconnectingOAuth, setIsDisconnectingOAuth] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +107,21 @@ export function AIAssistantSettings() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get("ai-oauth");
+    if (result === "connected") {
+      toast.success("Custom AI OAuth connected");
+    } else if (result === "failed") {
+      toast.error("Could not connect Custom AI OAuth");
+    } else {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("ai-oauth");
+    window.history.replaceState({}, "", url);
   }, []);
 
   const updateSetting = <Key extends keyof AISettingsResponse>(
@@ -146,6 +172,29 @@ export function AIAssistantSettings() {
       });
     } finally {
       setIsParsing(false);
+    }
+  };
+
+  const disconnectOAuth = async () => {
+    try {
+      setIsDisconnectingOAuth(true);
+      const response = await fetch("/api/ai/oauth/custom", {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to disconnect OAuth");
+
+      setSettings((current) => ({
+        ...current,
+        oauth: { ...current.oauth, connected: false, expiresAt: null },
+      }));
+      toast.success("Custom AI OAuth disconnected");
+    } catch (error) {
+      toast.error("Could not disconnect Custom AI OAuth", {
+        description:
+          error instanceof Error ? error.message : "Please try again later.",
+      });
+    } finally {
+      setIsDisconnectingOAuth(false);
     }
   };
 
@@ -261,14 +310,58 @@ export function AIAssistantSettings() {
                   settings.hasApiKey ? "Leave blank to keep saved key" : ""
                 }
               />
-              <button
-                type="button"
-                disabled
-                className="inline-flex items-center gap-2 rounded-md border border-[#323234] bg-[#262627] px-3 py-1.5 text-xs text-muted-foreground"
-              >
-                <KeyRound className="h-3.5 w-3.5" />
-                Connect OAuth (soon)
-              </button>
+              {settings.provider === "CUSTOM" ? (
+                <div className="space-y-2 pt-1">
+                  {settings.oauth.available ? (
+                    settings.oauth.connected ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          OAuth connected
+                          {settings.oauth.expiresAt
+                            ? ` · refreshes after ${new Date(
+                                settings.oauth.expiresAt
+                              ).toLocaleString()}`
+                            : ""}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={disconnectOAuth}
+                          disabled={isDisconnectingOAuth}
+                        >
+                          {isDisconnectingOAuth
+                            ? "Disconnecting..."
+                            : "Disconnect OAuth"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          window.location.assign(
+                            "/api/ai/oauth/custom/authorize"
+                          );
+                        }}
+                      >
+                        <KeyRound className="mr-2 h-3.5 w-3.5" />
+                        Connect OAuth
+                      </Button>
+                    )
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      OAuth is available when the Custom AI OAuth environment
+                      variables are configured.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  This provider&apos;s direct API uses an API key.
+                </p>
+              )}
             </div>
           )}
           {settings.provider === "CUSTOM" && (

@@ -4,7 +4,7 @@ import { encryptSecret } from "@/services/ai/encryption";
 import {
   defaultModelForProvider,
   ensureAISettings,
-  publicAISettings,
+  publicAISettingsWithOAuth,
 } from "@/services/ai/settings";
 import { AIProvider } from "@prisma/client";
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     if ("response" in auth) return auth.response;
 
     const settings = await ensureAISettings(auth.userId);
-    return NextResponse.json(publicAISettings(settings));
+    return NextResponse.json(await publicAISettingsWithOAuth(settings));
   } catch (error) {
     logger.error(
       "Failed to fetch AI settings",
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(publicAISettings(settings));
+    return NextResponse.json(await publicAISettingsWithOAuth(settings));
   } catch (error) {
     logger.error(
       "Failed to update AI settings",
