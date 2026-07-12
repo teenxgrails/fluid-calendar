@@ -558,6 +558,18 @@ html[data-animations="off"] *::after {
   overflow: hidden;
 }
 
+/* FullCalendar owns the outer event anchor while CalendarEventContent owns
+   the card inside it. Keep task blocks calm and neutral at both layers so the
+   generated task color can never flash as a bright calendar event. */
+.fc .fc-event.calendar-task {
+  background: #303335 !important;
+  border-color: #44494c !important;
+}
+
+.fc .fc-event.calendar-task .fc-event-main {
+  height: 100%;
+}
+
 .fc .fc-event-main {
   @apply p-0;
 }
