@@ -456,11 +456,52 @@ html[data-animations="off"] *::after {
   background: var(--text-hi) !important;
   color: var(--app-bg) !important;
   border: none !important;
+  overflow: hidden !important;
+  position: relative !important;
 }
 
 .recalc-toast [data-close-button],
 .recalc-toast [data-icon] {
   color: var(--app-bg) !important;
+}
+
+.recalc-toast [data-icon] {
+  animation: recalc-toast-spin 900ms linear infinite;
+}
+
+.recalc-toast::after {
+  animation: recalc-toast-progress 1.4s ease-in-out infinite;
+  background: var(--accent);
+  bottom: 0;
+  content: "";
+  height: 2px;
+  left: 0;
+  position: absolute;
+  transform: translateX(-110%);
+  width: 42%;
+}
+
+@keyframes recalc-toast-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes recalc-toast-progress {
+  0% {
+    transform: translateX(-110%);
+  }
+  55%,
+  100% {
+    transform: translateX(265%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recalc-toast [data-icon],
+  .recalc-toast::after {
+    animation: none;
+  }
 }
 
 /* FullCalendar Customization */

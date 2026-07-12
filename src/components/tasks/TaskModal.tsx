@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { BookTemplate, ChevronDown, Settings2 } from "lucide-react";
 import { RRule } from "rrule";
 
 import { TaskTimer } from "@/components/tasks/TaskTimer";
@@ -14,6 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -62,6 +68,47 @@ const formatEnumValue = (value: string) => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 };
+
+interface TaskTemplate {
+  id: string;
+  name: string;
+  description: string;
+  duration: string;
+  priority: Priority;
+  energyRequired: SchedulingEnergyLevel;
+  contextTag: string;
+}
+
+const TASK_TEMPLATES: TaskTemplate[] = [
+  {
+    id: "deep-work",
+    name: "Deep work block",
+    description: "Define the outcome, then work without interruption.",
+    duration: "90",
+    priority: Priority.HIGH,
+    energyRequired: SchedulingEnergyLevel.HIGH,
+    contextTag: "deep work",
+  },
+  {
+    id: "quick-admin",
+    name: "Quick admin",
+    description: "Small admin task with a clear next action.",
+    duration: "30",
+    priority: Priority.LOW,
+    energyRequired: SchedulingEnergyLevel.LOW,
+    contextTag: "admin",
+  },
+  {
+    id: "meeting-prep",
+    name: "Meeting prep",
+    description:
+      "Gather context, draft an agenda, and note the decision needed.",
+    duration: "30",
+    priority: Priority.MEDIUM,
+    energyRequired: SchedulingEnergyLevel.MEDIUM,
+    contextTag: "meetings",
+  },
+];
 
 // Helper function to convert external recurrence rule to RRule format
 function getStandardRRule(task?: Task): RRule {
@@ -140,6 +187,8 @@ export function TaskModal({
   const [calibrationFactors, setCalibrationFactors] = useState<
     Record<string, number>
   >({});
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = useCallback(() => {
@@ -171,6 +220,8 @@ export function TaskModal({
     setIsFrozen(false);
     setPriority(null);
     setPriorityLevel(SchedulingTaskPriority.MEDIUM);
+    setIsAdvancedOpen(false);
+    setIsTemplateMenuOpen(false);
   }, [initialProjectId]);
 
   // Reset form when modal opens/closes
@@ -357,23 +408,83 @@ export function TaskModal({
     }
   };
 
+  const applyTemplate = (template: TaskTemplate) => {
+    setTitle((current) => current || template.name);
+    setDescription(template.description);
+    setDuration(template.duration);
+    setEstimatedMinutes(template.duration);
+    setEstLikely(template.duration);
+    setPriority(template.priority);
+    setPriorityLevel(
+      template.priority === Priority.HIGH
+        ? SchedulingTaskPriority.HIGH
+        : template.priority === Priority.LOW
+          ? SchedulingTaskPriority.LOW
+          : SchedulingTaskPriority.MEDIUM
+    );
+    setEnergyRequired(template.energyRequired);
+    setContextTag(template.contextTag);
+    setIsAutoScheduled(true);
+    setIsTemplateMenuOpen(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[92vh] flex-col gap-0 p-0 text-white sm:max-w-[1040px]">
+      <DialogContent className="flex h-[min(760px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 text-[var(--text-hi)] sm:max-w-[1120px]">
         <div className="contents">
           {isSubmitting && <LoadingOverlay />}
-          <DialogHeader className="border-b border-[#323234] px-5 py-4">
+          <DialogHeader className="flex-row items-center justify-between space-y-0 border-b border-[var(--line-strong)] px-5 py-3.5 pr-14">
             <DialogTitle className="flex items-center gap-3 text-base">
-              <span className="rounded-md border border-[#323234] bg-[#262627] px-2.5 py-1 text-xs font-medium text-[#9AA0A6]">
+              <span className="rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-2.5 py-1 text-xs font-medium text-[var(--text-lo)]">
                 Task
               </span>
               {task ? "Edit task" : "Create task"}
             </DialogTitle>
+            {!task && (
+              <Popover
+                open={isTemplateMenuOpen}
+                onOpenChange={setIsTemplateMenuOpen}
+              >
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="ghost" size="sm">
+                    <BookTemplate className="h-3.5 w-3.5" />
+                    Use template
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  className="w-72 bg-[var(--raised)] p-2 text-[var(--text-hi)]"
+                >
+                  <div className="px-2 py-1.5 text-[13px] font-semibold">
+                    Task templates
+                  </div>
+                  <div className="my-1 h-px bg-[var(--line-strong)]" />
+                  {TASK_TEMPLATES.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => applyTemplate(template)}
+                      className="w-full rounded-md px-2 py-2 text-left transition-colors hover:bg-[var(--active)]"
+                    >
+                      <div className="text-[13px] font-medium">
+                        {template.name}
+                      </div>
+                      <div className="mt-0.5 text-xs text-[var(--text-lo)]">
+                        {template.duration} min · {template.contextTag}
+                      </div>
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            )}
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="overflow-y-auto">
+          <form
+            onSubmit={handleSubmit}
+            className="flex min-h-0 flex-1 flex-col"
+          >
             {task && (
-              <div className="px-5 pt-5">
+              <div className="flex-none px-5 pt-4">
                 <TaskTimer
                   taskId={task.id}
                   actualMinutes={task.actualMinutes}
@@ -382,8 +493,8 @@ export function TaskModal({
               </div>
             )}
 
-            <div className="grid lg:grid-cols-[minmax(0,1fr)_360px]">
-              <div className="space-y-5 p-5">
+            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="flex min-h-0 flex-col gap-3 p-5">
                 <div>
                   <Label htmlFor="title" className="sr-only">
                     Task name
@@ -395,13 +506,13 @@ export function TaskModal({
                     onChange={(e) => setTitle(e.target.value)}
                     required
                     placeholder="Task name"
-                    className="h-14 rounded-md border-[#323234] bg-[#262627] text-2xl font-normal text-white placeholder:text-[#9AA0A6]"
+                    className="h-11 border-[var(--line-strong)] bg-[var(--raised)] text-xl font-normal text-[var(--text-hi)] placeholder:text-[var(--text-lo)]"
                   />
                 </div>
 
                 <div
                   aria-label="Description toolbar"
-                  className="flex flex-wrap gap-1 rounded-md border border-[#323234] bg-[#262627] p-1.5 text-xs text-[#9AA0A6]"
+                  className="flex flex-wrap gap-1 rounded-md border border-[var(--line-strong)] bg-[var(--raised)] p-1 text-xs text-[var(--text-lo)]"
                 >
                   {[
                     "B",
@@ -419,36 +530,33 @@ export function TaskModal({
                     <button
                       key={item}
                       type="button"
-                      className="rounded px-2.5 py-1.5 hover:bg-[#2B2F31] hover:text-white"
+                      className="rounded px-2 py-1 hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
                     >
                       {item}
                     </button>
                   ))}
                 </div>
 
-                <div>
+                <div className="flex min-h-0 flex-1 flex-col">
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={10}
+                    rows={4}
                     placeholder="Add notes, links, acceptance criteria, or a quick brain dump."
-                    className="mt-2 resize-none rounded-md border-[#323234] bg-[#262627] text-white placeholder:text-[#9AA0A6]"
+                    className="mt-2 min-h-[140px] flex-1 resize-none border-[var(--line-strong)] bg-[var(--raised)] text-[var(--text-hi)] placeholder:text-[var(--text-lo)]"
                   />
                 </div>
 
-                <div className="rounded-md border border-[#323234] bg-[#262627] p-4">
-                  <div className="text-sm font-medium">Attachments</div>
-                  <p className="mt-1 text-sm text-[#9AA0A6]">
-                    Add references in the description, or attach files after
-                    saving.
-                  </p>
+                <div className="flex items-center justify-between rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2.5 text-xs text-[var(--text-lo)]">
+                  <span>Attachments</span>
+                  <span>Add files after saving</span>
                 </div>
               </div>
 
-              <div className="space-y-4 border-t border-[#323234] p-5 lg:border-l lg:border-t-0">
-                <div className="flex items-center justify-between rounded-md border border-[#323234] bg-[#262627] px-3 py-2 text-sm">
+              <div className="min-h-0 space-y-3 overflow-y-auto border-t border-[var(--line-strong)] p-5 lg:border-l lg:border-t-0">
+                <div className="flex items-center justify-between rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2 text-sm">
                   <span>Auto-scheduled</span>
                   <Switch
                     checked={isAutoScheduled}
@@ -456,7 +564,7 @@ export function TaskModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="status">Status</Label>
                     <Select
@@ -509,7 +617,7 @@ export function TaskModal({
                     />
                   </div>
 
-                  <div>
+                  <div className={cn(!isAdvancedOpen && "hidden")}>
                     <Label htmlFor="minChunkMinutes">Min chunk</Label>
                     <Input
                       type="number"
@@ -521,7 +629,7 @@ export function TaskModal({
                     />
                   </div>
 
-                  <div>
+                  <div className={cn(!isAdvancedOpen && "hidden")}>
                     <Label htmlFor="startDate">Start date</Label>
                     <Input
                       type="date"
@@ -541,17 +649,22 @@ export function TaskModal({
                     />
                   </div>
 
-                  <div className="flex items-center justify-between rounded-md border border-[#323234] bg-[#262627] px-3 py-2">
+                  <div
+                    className={cn(
+                      "col-span-full flex items-center justify-between rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2",
+                      !isAdvancedOpen && "hidden"
+                    )}
+                  >
                     <div>
                       <Label>Hard deadline</Label>
-                      <p className="text-xs text-[#9AA0A6]">
+                      <p className="text-xs text-[var(--text-lo)]">
                         Keep this block fixed when reflowing.
                       </p>
                     </div>
                     <Switch checked={isFrozen} onCheckedChange={setIsFrozen} />
                   </div>
 
-                  <div>
+                  <div className="col-span-full">
                     <Label htmlFor="preferredTime">Schedule</Label>
                     <Select
                       value={preferredTime || "none"}
@@ -578,9 +691,43 @@ export function TaskModal({
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAdvancedOpen((open) => !open)}
+                    aria-expanded={isAdvancedOpen}
+                    className="col-span-full flex items-center justify-between rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2 text-left transition-colors hover:bg-[var(--active)]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Settings2
+                        className="h-3.5 w-3.5 text-[var(--text-lo)]"
+                        strokeWidth={1.8}
+                      />
+                      <span>
+                        <span className="block text-[13px] font-medium text-[var(--text-hi)]">
+                          Advanced settings
+                        </span>
+                        <span className="block text-xs text-[var(--text-lo)]">
+                          Estimates, focus, chunks, tags, and recurrence
+                        </span>
+                      </span>
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 text-[var(--text-lo)] transition-transform duration-150",
+                        isAdvancedOpen && "rotate-180"
+                      )}
+                      strokeWidth={1.8}
+                    />
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 border-t border-[#323234] pt-4 sm:grid-cols-2 lg:grid-cols-1">
+                <div
+                  className={cn(
+                    "grid grid-cols-1 gap-3 border-t border-[var(--line-strong)] pt-3 sm:grid-cols-2",
+                    !isAdvancedOpen && "hidden"
+                  )}
+                >
                   <div>
                     <Label htmlFor="estimatedMinutes">Planner estimate</Label>
                     <Input
@@ -652,7 +799,7 @@ export function TaskModal({
                       <button
                         type="button"
                         onClick={() => setEstLikely(String(suggestedLikely))}
-                        className="mt-1 text-left text-xs text-[#8FB0FF] hover:text-white"
+                        className="mt-1 text-left text-xs text-[var(--accent)] hover:text-[var(--text-hi)]"
                       >
                         You usually run {contextFactor.toFixed(1)}x on &quot;
                         {contextTag.trim()}&quot;. Suggest {suggestedLikely}{" "}
@@ -734,12 +881,12 @@ export function TaskModal({
                   </div>
                 </div>
 
-                {isAutoScheduled && (
-                  <div className="space-y-4 border-t border-[#323234] pt-4">
+                {isAdvancedOpen && isAutoScheduled && (
+                  <div className="space-y-3 border-t border-[var(--line-strong)] pt-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <Label>Lock schedule</Label>
-                        <p className="text-sm text-[#9AA0A6]">
+                        <p className="text-sm text-[var(--text-lo)]">
                           Prevent automatic rescheduling
                         </p>
                       </div>
@@ -750,14 +897,14 @@ export function TaskModal({
                     </div>
 
                     {task?.scheduledStart && task?.scheduledEnd && (
-                      <div className="rounded-md border border-[#323234] bg-[#262627] p-3">
-                        <div className="text-sm text-white">
+                      <div className="rounded-md border border-[var(--line-strong)] bg-[var(--raised)] p-3">
+                        <div className="text-sm text-[var(--text-hi)]">
                           Scheduled for{" "}
                           {format(newDate(task.scheduledStart), "PPp")} to{" "}
                           {format(newDate(task.scheduledEnd), "p")}
                         </div>
                         {task.scheduleScore && (
-                          <div className="mt-1 text-sm text-[#9AA0A6]">
+                          <div className="mt-1 text-sm text-[var(--text-lo)]">
                             Confidence: {Math.round(task.scheduleScore * 100)}%
                           </div>
                         )}
@@ -790,7 +937,7 @@ export function TaskModal({
                   </Select>
                 </div>
 
-                <div>
+                <div className={cn(!isAdvancedOpen && "hidden")}>
                   <Label>Tags</Label>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {tags.map((tag) => (
@@ -799,8 +946,8 @@ export function TaskModal({
                         className={cn(
                           "inline-flex cursor-pointer items-center rounded-md px-3 py-1.5 text-sm transition-colors",
                           selectedTagIds.includes(tag.id)
-                            ? "bg-[#2B2F31] text-white"
-                            : "bg-[#262627] text-[#9AA0A6] hover:bg-[#2B2F31] hover:text-white"
+                            ? "bg-[var(--active)] text-[var(--text-hi)]"
+                            : "bg-[var(--raised)] text-[var(--text-lo)] hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
                         )}
                       >
                         <Checkbox
@@ -850,7 +997,12 @@ export function TaskModal({
                   </div>
                 </div>
 
-                <div className="space-y-2 border-t border-[#323234] pt-4">
+                <div
+                  className={cn(
+                    "space-y-2 border-t border-[var(--line-strong)] pt-3",
+                    !isAdvancedOpen && "hidden"
+                  )}
+                >
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="recurring"
@@ -877,7 +1029,7 @@ export function TaskModal({
                     <Label htmlFor="recurring">Recurring task</Label>
                   </div>
                   {isRecurring && !dueDate && (
-                    <div className="ml-6 mt-1 text-sm text-[#8FB0FF]">
+                    <div className="ml-6 mt-1 text-sm text-[var(--accent)]">
                       A recurring task needs a start date. Today has been set as
                       the default.
                     </div>
@@ -974,23 +1126,18 @@ export function TaskModal({
                   )}
                 </div>
               </div>
-
-              <div className="col-span-full flex justify-end gap-3 border-t border-[#323234] px-5 py-4">
-                <Button type="button" variant="outline" onClick={onClose}>
-                  Cancel (Esc)
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !title.trim()}
-                  className="rounded-md bg-[#3E63DD] text-white hover:bg-[#3658c6]"
-                >
-                  {isSubmitting
-                    ? "Saving..."
-                    : task
-                      ? "Save changes"
-                      : "Save task"}
-                </Button>
-              </div>
+            </div>
+            <div className="flex flex-none justify-end gap-3 border-t border-[var(--line-strong)] px-5 py-3">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel (Esc)
+              </Button>
+              <Button type="submit" disabled={isSubmitting || !title.trim()}>
+                {isSubmitting
+                  ? "Saving..."
+                  : task
+                    ? "Save changes"
+                    : "Save task"}
+              </Button>
             </div>
           </form>
         </div>

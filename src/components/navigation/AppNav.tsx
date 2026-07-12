@@ -1,9 +1,9 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   CalendarDays,
@@ -66,6 +66,16 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
   const isProcessing = useFocusModeStore((state) => state.isProcessing);
   const currentDate = useViewStore((state) => state.date);
   const setDate = useViewStore((state) => state.setDate);
+  const router = useRouter();
+
+  // Warm the router cache for every section so switching is instant (matters in
+  // production, where prefetch is enabled).
+  useEffect(() => {
+    ["/calendar", "/tasks", "/focus", "/settings", "/chat"].forEach((route) =>
+      router.prefetch(route)
+    );
+  }, [router]);
+
   const todayLabel = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     month: "short",
