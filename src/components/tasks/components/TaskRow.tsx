@@ -51,8 +51,14 @@ export function TaskRow({
   return (
     <tr
       key={task.id}
+      onClick={() => {
+        // Interactive cells (inline edits, selects, action buttons) stop
+        // propagation, so a click anywhere else on the row opens the task.
+        if (document.body.classList.contains("status-select-open")) return;
+        onEdit(task);
+      }}
       className={cn(
-        "transition-colors hover:bg-[var(--active)]",
+        "cursor-pointer transition-colors hover:bg-[var(--active)]",
         isDragging ? "opacity-50" : "",
         isFutureTask ? "text-[var(--text-lo)]" : ""
       )}
