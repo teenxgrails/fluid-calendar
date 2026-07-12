@@ -131,6 +131,8 @@
     @apply bg-background text-foreground;
     background: var(--app-bg);
     color: var(--text-hi);
+    /* Persistent 110% app scale — equivalent to one browser zoom increment. */
+    zoom: 1.1;
     font-size: 14px;
     font-family:
       -apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;

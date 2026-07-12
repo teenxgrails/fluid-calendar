@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Increased the default application scale to 110%, matching one browser zoom-in increment across the whole interface.
 - Rebuilt calendar task and event cards in Motion’s grid language: tasks are neutral, checkbox-led blocks with compact time metadata and a hover actions affordance; events retain a restrained color marker and their own event-specific layout.
 - Matched the Task and Event editors more closely to Motion’s actual layouts: Task now uses a wide, borderless editing canvas with property rows in the scheduling sidebar; Event uses Motion’s compact single-column creation flow with time controls, repeat controls, and Event details below.
 - Reorganized Settings into grouped Calendars, Scheduling, Tasks, Appearance, Notifications, AI, Integrations, Import / Export, and Account pages; legacy hashes now route to their consolidated home.
