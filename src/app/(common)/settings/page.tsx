@@ -27,6 +27,7 @@ import { DataSettings } from "@/components/settings/DataSettings";
 import { ImportExportSettings } from "@/components/settings/ImportExportSettings";
 import { LogViewer } from "@/components/settings/LogViewer";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { SettingsPanelBoundary } from "@/components/settings/SettingsPanelBoundary";
 import { SmartSchedulingSettings } from "@/components/settings/SmartSchedulingSettings";
 import { SystemSettings } from "@/components/settings/SystemSettings";
 import { TaskSyncSettings } from "@/components/settings/TaskSyncSettings";
@@ -322,7 +323,11 @@ export default function SettingsPage() {
                 {tabs.find((tab) => tab.id === activeTab)?.label ?? "Settings"}
               </h1>
             </div>
-            <div key={activeTab}>{renderContent()}</div>
+            <div key={activeTab}>
+              <SettingsPanelBoundary resetKey={activeTab}>
+                {renderContent()}
+              </SettingsPanelBoundary>
+            </div>
           </div>
         </div>
       </div>

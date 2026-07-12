@@ -47,15 +47,19 @@ export function AccountManager() {
         if (!res.ok) {
           throw new Error("Failed to load calendar connection status");
         }
-        return (await res.json()) as Partial<IntegrationStatus>;
+        return (await res.json()) as unknown;
       })
       .then((data) => {
+        const status =
+          data && typeof data === "object"
+            ? (data as Partial<IntegrationStatus>)
+            : DEFAULT_INTEGRATION_STATUS;
         setIntegrationStatus({
           google: {
-            configured: data.google?.configured === true,
+            configured: status.google?.configured === true,
           },
           outlook: {
-            configured: data.outlook?.configured === true,
+            configured: status.outlook?.configured === true,
           },
         });
         setIsLoading(false);
