@@ -2,13 +2,6 @@ import { useEffect, useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -22,6 +15,8 @@ import {
 
 import { logger } from "@/lib/logger";
 import { LogSettings as LogSettingsType } from "@/lib/logger/types";
+
+import { SettingRow, SettingsSection } from "../SettingsSection";
 
 const LOG_SOURCE = "LogSettings";
 
@@ -121,35 +116,34 @@ export function LogSettings() {
 
   if (loading) {
     return (
-      <Card className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-32 items-center justify-center border-t border-[#2B2F31] pt-5">
         <LoadingSpinner size="lg" />
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Log Settings</CardTitle>
-        <CardDescription>
-          Configure how logs are stored and managed in the system.
-        </CardDescription>
-      </CardHeader>
+    <SettingsSection
+      title="Log configuration"
+      description="Set the detail level, storage destination, and retention period for application logs."
+    >
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-      <CardContent className="space-y-6">
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      {saved && (
+        <Alert>
+          <AlertDescription>Settings saved successfully!</AlertDescription>
+        </Alert>
+      )}
 
-        {saved && (
-          <Alert>
-            <AlertDescription>Settings saved successfully!</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <SettingRow
+        label="Collection"
+        description="Choose which details are kept and where they are stored."
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="logLevel">Log Level</Label>
             <Select
@@ -196,41 +190,43 @@ export function LogSettings() {
             </Select>
           </div>
         </div>
+      </SettingRow>
 
-        <div className="space-y-4">
-          <Label className="text-base">Retention Periods (Days)</Label>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Object.entries(settings.logRetention).map(([level, days]) => (
-              <div key={level} className="space-y-2">
-                <Label htmlFor={`retention-${level}`} className="capitalize">
-                  {level}
-                </Label>
-                <Input
-                  type="number"
-                  id={`retention-${level}`}
-                  value={days}
-                  min={1}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      logRetention: {
-                        ...settings.logRetention,
-                        [level]: parseInt(e.target.value) || 1,
-                      },
-                    })
-                  }
-                />
-              </div>
-            ))}
-          </div>
+      <SettingRow
+        label="Retention periods"
+        description="Number of days to retain each log level."
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Object.entries(settings.logRetention).map(([level, days]) => (
+            <div key={level} className="space-y-2">
+              <Label htmlFor={`retention-${level}`} className="capitalize">
+                {level}
+              </Label>
+              <Input
+                type="number"
+                id={`retention-${level}`}
+                value={days}
+                min={1}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    logRetention: {
+                      ...settings.logRetention,
+                      [level]: parseInt(e.target.value) || 1,
+                    },
+                  })
+                }
+              />
+            </div>
+          ))}
         </div>
+      </SettingRow>
 
-        <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} disabled={loading}>
-            {loading ? "Saving..." : "Save Settings"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={loading}>
+          {loading ? "Saving..." : "Save Settings"}
+        </Button>
+      </div>
+    </SettingsSection>
   );
 }

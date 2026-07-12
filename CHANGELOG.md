@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reorganized Settings into grouped Calendars, Scheduling, Tasks, Appearance, Notifications, AI, Integrations, Import / Export, and Account pages; legacy hashes now route to their consolidated home.
 - Moved calendar display and working-hour controls out of Calendars so calendar account/default-calendar settings have a single home.
+- Consolidated calendar account management under Calendars, added an Account profile page, and restyled Tasks, Notifications, Import / Export, Integrations, and Logs with consistent Motion-style settings rows.
+- Removed duplicate legacy energy and work-hours editors so scheduling rules have one source of truth; Appearance now owns the calendar working-hours display toggle.
 - Moved the AI Chat button from the top of the sidebar to the bottom-left, just above the profile/settings row (keeps the pill styling and ⌘/ label)
 - Made switching between app sections instant: the calendar route no longer blocks on a server-side query of every event on each navigation. It now renders as a static, prefetched route and hydrates from the persistent in-memory calendar store, revalidating in the background — so revisiting the calendar shows cached data immediately with no spinner or flash
 

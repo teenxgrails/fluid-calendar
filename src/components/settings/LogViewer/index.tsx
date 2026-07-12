@@ -11,6 +11,7 @@ import { logger } from "@/lib/logger";
 
 import { useLogViewStore } from "@/store/logview";
 
+import { SettingsSection } from "../SettingsSection";
 import { LogFilters } from "./LogFilters";
 import { LogSettings } from "./LogSettings";
 import { LogTable } from "./LogTable";
@@ -113,9 +114,11 @@ export function LogViewer() {
         <AccessDeniedMessage message="You do not have permission to access application logs." />
       }
     >
-      <div className="space-y-6">
+      <SettingsSection
+        title="Logs"
+        description="Review application activity and control how diagnostic logs are retained."
+      >
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">System Logs</h2>
           <Button
             variant="destructive"
             onClick={handleCleanup}
@@ -151,7 +154,7 @@ export function LogViewer() {
           }}
           onPageChange={handlePageChange}
         />
-      </div>
+      </SettingsSection>
     </AdminOnly>
   );
 }
