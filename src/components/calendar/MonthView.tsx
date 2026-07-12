@@ -156,7 +156,7 @@ export function MonthView({ currentDate, onDateClick }: MonthViewProps) {
 
   const handleEventClick = (info: EventClickArg) => {
     const item = info.event.extendedProps;
-    const itemId = item.taskId || info.event.id;
+    const itemId = item.taskId || item.extendedProps?.taskId || info.event.id;
     const isTask = item.isTask;
 
     // Store the clicked element for positioning
