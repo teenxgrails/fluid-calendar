@@ -6,15 +6,12 @@ import {
   Bell,
   Brain,
   CalendarDays,
-  CalendarRange,
-  CircleDot,
   Download,
   ListChecks,
   Palette,
   Plug,
   ScrollText,
   Server,
-  SlidersHorizontal,
   Sparkles,
   UserRound,
 } from "lucide-react";
@@ -41,14 +38,13 @@ import { useAdmin } from "@/hooks/use-admin";
 import { useSettingsStore } from "@/store/settings";
 
 type SettingsTab =
-  | "accounts"
-  | "user"
-  | "calendar"
-  | "auto-schedule"
-  | "smart-scheduling"
-  | "ai-assistant"
-  | "connectors"
-  | "customization"
+  | "account"
+  | "calendars"
+  | "scheduling"
+  | "tasks"
+  | "appearance"
+  | "ai"
+  | "integrations"
   | "system"
   | "task-sync"
   | "task-urgency"
@@ -68,18 +64,15 @@ export default function SettingsPage() {
 
   const tabs = useMemo(() => {
     const baseTabs = [
-      { id: "calendar", label: "Calendars / Apple-iCloud", icon: CalendarDays },
-      { id: "auto-schedule", label: "Auto-scheduling", icon: CalendarRange },
-      { id: "task-sync", label: "Task defaults", icon: ListChecks },
-      { id: "task-urgency", label: "Task urgency", icon: CircleDot },
-      { id: "user", label: "Theme", icon: Palette },
-      { id: "customization", label: "Customization", icon: SlidersHorizontal },
+      { id: "calendars", label: "Calendars", icon: CalendarDays },
+      { id: "scheduling", label: "Scheduling", icon: Brain },
+      { id: "tasks", label: "Tasks", icon: ListChecks },
+      { id: "appearance", label: "Appearance", icon: Palette },
       { id: "notifications", label: "Notifications", icon: Bell },
-      { id: "smart-scheduling", label: "Energy profile", icon: Brain },
-      { id: "connectors", label: "Connectors", icon: Plug },
-      { id: "ai-assistant", label: "AI", icon: Sparkles },
-      { id: "accounts", label: "Account", icon: UserRound },
+      { id: "ai", label: "AI", icon: Sparkles },
+      { id: "integrations", label: "Integrations", icon: Plug },
       { id: "import-export", label: "Import / Export", icon: Download },
+      { id: "account", label: "Account", icon: UserRound },
     ] as const;
 
     // Add admin-only tabs
@@ -95,25 +88,35 @@ export default function SettingsPage() {
     return baseTabs;
   }, [isAdmin]);
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>("calendar");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("calendars");
 
   // Check initial hash and handle changes
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.slice(1) as SettingsTab;
+      const rawHash = window.location.hash.slice(1);
+      const legacyTabMap: Record<string, SettingsTab> = {
+        calendar: "calendars",
+        "auto-schedule": "scheduling",
+        "smart-scheduling": "scheduling",
+        "task-sync": "tasks",
+        "task-urgency": "tasks",
+        user: "appearance",
+        customization: "appearance",
+        "ai-assistant": "ai",
+        connectors: "integrations",
+        accounts: "account",
+      };
+      const hash = (legacyTabMap[rawHash] || rawHash) as SettingsTab;
 
       // Check if the hash is a valid tab ID, regardless of admin status
       const allPossibleTabIds: SettingsTab[] = [
-        "accounts",
-        "user",
-        "calendar",
-        "auto-schedule",
-        "smart-scheduling",
-        "ai-assistant",
-        "connectors",
-        "customization",
-        "task-sync",
-        "task-urgency",
+        "account",
+        "calendars",
+        "scheduling",
+        "tasks",
+        "appearance",
+        "ai",
+        "integrations",
         "system",
         "logs",
         "import-export",
@@ -171,26 +174,35 @@ export default function SettingsPage() {
     }
 
     switch (activeTab) {
-      case "accounts":
+      case "account":
         return <AccountManager />;
-      case "user":
-        return <UserSettings />;
-      case "calendar":
+      case "calendars":
         return <CalendarSettings />;
-      case "auto-schedule":
-        return <AutoScheduleSettings />;
-      case "smart-scheduling":
-        return <SmartSchedulingSettings />;
-      case "ai-assistant":
+      case "scheduling":
+        return (
+          <div className="space-y-10">
+            <AutoScheduleSettings />
+            <SmartSchedulingSettings />
+          </div>
+        );
+      case "tasks":
+        return (
+          <div className="space-y-10">
+            <TaskSyncSettings />
+            <TaskUrgencySettings />
+          </div>
+        );
+      case "appearance":
+        return (
+          <div className="space-y-10">
+            <UserSettings />
+            <CustomizationSettings />
+          </div>
+        );
+      case "ai":
         return <AIAssistantSettings />;
-      case "connectors":
+      case "integrations":
         return <ConnectorSettings />;
-      case "customization":
-        return <CustomizationSettings />;
-      case "task-sync":
-        return <TaskSyncSettings />;
-      case "task-urgency":
-        return <TaskUrgencySettings />;
       case "notifications":
         return <NotificationSettings />;
       case "system":
@@ -223,7 +235,7 @@ export default function SettingsPage() {
                 <nav className="space-y-0.5">
                   {tabs
                     .filter(
-                      (tab) => !["accounts", "system", "logs"].includes(tab.id)
+                      (tab) => !["account", "system", "logs"].includes(tab.id)
                     )
                     .map((tab) => {
                       const Icon = tab.icon;
@@ -260,7 +272,7 @@ export default function SettingsPage() {
                 <nav className="space-y-0.5">
                   {tabs
                     .filter((tab) =>
-                      ["accounts", "system", "logs"].includes(tab.id)
+                      ["account", "system", "logs"].includes(tab.id)
                     )
                     .map((tab) => {
                       const Icon = tab.icon;
