@@ -27,6 +27,7 @@ import { Task, TaskStatus } from "@/types/task";
 import { CalendarEventContent } from "./CalendarEventContent";
 import { EventModal } from "./EventModal";
 import { EventQuickView } from "./EventQuickView";
+import { resolveCalendarItemId } from "./calendar-item-id";
 import { useCalendarDragHandlers } from "./useCalendarDragHandlers";
 
 interface DayViewProps {
@@ -158,7 +159,7 @@ export function DayView({ currentDate }: DayViewProps) {
 
   const handleEventClick = (info: EventClickArg) => {
     const item = info.event.extendedProps;
-    const itemId = item.taskId || item.extendedProps?.taskId || info.event.id;
+    const itemId = resolveCalendarItemId(item, info.event.id);
     const isTask = item.isTask;
 
     // Store the clicked element for positioning
