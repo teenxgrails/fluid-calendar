@@ -450,7 +450,7 @@ export function TaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex h-[min(760px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 text-[var(--text-hi)] sm:max-w-[1120px]">
+      <DialogContent className="flex h-[min(860px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden border-[#3A3F42] bg-[#202425] p-0 text-[var(--text-hi)] sm:max-w-[1280px]">
         <div className="contents">
           {isSubmitting && <LoadingOverlay />}
           <DialogHeader className="flex-row items-center justify-between space-y-0 border-b border-[var(--line-strong)] px-5 py-3.5 pr-14">
@@ -531,8 +531,8 @@ export function TaskModal({
               </div>
             )}
 
-            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="flex min-h-0 flex-col gap-3 p-5">
+            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_400px]">
+              <div className="flex min-h-0 flex-col gap-4 px-7 py-6">
                 <div>
                   <Label htmlFor="title" className="sr-only">
                     Task name
@@ -544,13 +544,13 @@ export function TaskModal({
                     onChange={(e) => setTitle(e.target.value)}
                     required
                     placeholder="Task name"
-                    className="h-11 border-[var(--line-strong)] bg-[var(--raised)] text-xl font-normal text-[var(--text-hi)] placeholder:text-[var(--text-lo)]"
+                    className="h-12 border-0 bg-transparent px-0 text-[26px] font-medium text-[var(--text-hi)] placeholder:text-[#737A80] focus-visible:ring-0"
                   />
                 </div>
 
                 <div
                   aria-label="Description toolbar"
-                  className="flex flex-wrap gap-1 rounded-md border border-[var(--line-strong)] bg-[var(--raised)] p-1 text-xs text-[var(--text-lo)]"
+                  className="flex flex-wrap gap-1 py-1 text-xs text-[var(--text-lo)]"
                 >
                   {[
                     "B",
@@ -568,7 +568,7 @@ export function TaskModal({
                     <button
                       key={item}
                       type="button"
-                      className="rounded px-2 py-1 hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
+                      className="rounded px-2 py-1.5 hover:bg-[#2B2F31] hover:text-[var(--text-hi)]"
                     >
                       {item}
                     </button>
@@ -576,24 +576,24 @@ export function TaskModal({
                 </div>
 
                 <div className="flex min-h-0 flex-1 flex-col">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description" className="text-[16px] font-medium">Description</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
                     placeholder="Add notes, links, acceptance criteria, or a quick brain dump."
-                    className="mt-2 min-h-[140px] flex-1 resize-none border-[var(--line-strong)] bg-[var(--raised)] text-[var(--text-hi)] placeholder:text-[var(--text-lo)]"
+                    className="mt-2 min-h-[260px] flex-1 resize-none border-0 bg-transparent px-0 text-[15px] leading-6 text-[var(--text-hi)] placeholder:text-[#737A80] focus-visible:ring-0"
                   />
                 </div>
 
-                <div className="flex items-center justify-between rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2.5 text-xs text-[var(--text-lo)]">
-                  <span>Attachments</span>
-                  <span>Add files after saving</span>
+                <div className="mt-auto flex items-center justify-between border-t border-[#2B2F31] pt-4 text-sm text-[var(--text-lo)]">
+                  <span className="font-medium text-[var(--text-hi)]">Attachments</span>
+                  <span>Add attachment</span>
                 </div>
               </div>
 
-              <div className="min-h-0 space-y-3 overflow-y-auto border-t border-[var(--line-strong)] p-5 lg:border-l lg:border-t-0">
+              <div className="min-h-0 space-y-3 overflow-y-auto border-t border-[#2B2F31] bg-[#1D2021] p-5 lg:border-l lg:border-t-0">
                 {isMissedDeadline && (
                   <div className="flex items-center justify-between gap-2 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm">
                     <span className="flex items-center gap-2 font-medium text-red-300">
@@ -615,10 +615,10 @@ export function TaskModal({
 
                 <div
                   className={cn(
-                    "flex items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors",
+                    "-mx-5 flex items-center justify-between px-5 py-3 text-sm transition-colors",
                     isAutoScheduled
-                      ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_16%,var(--raised))] text-[var(--text-hi)]"
-                      : "border-[var(--line-strong)] bg-[var(--raised)]"
+                      ? "bg-[#4C2365] text-[#CE8CFF]"
+                      : "bg-[#2B2F31] text-[var(--text-hi)]"
                   )}
                 >
                   <span className="font-medium">Auto-scheduled</span>
@@ -645,14 +645,14 @@ export function TaskModal({
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="status">Status</Label>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center gap-3">
+                    <Label htmlFor="status" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Status</Label>
                     <Select
                       value={status}
                       onValueChange={(value) => setStatus(value as TaskStatus)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
                         <SelectValue>{formatEnumValue(status)}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -665,13 +665,13 @@ export function TaskModal({
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="priority">Priority</Label>
+                  <div className="flex items-center gap-3">
+                    <Label htmlFor="priority" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Priority</Label>
                     <Select
                       value={priority || Priority.NONE}
                       onValueChange={(value) => setPriority(value as Priority)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
                         <SelectValue>
                           {formatEnumValue(priority || Priority.NONE)}
                         </SelectValue>
@@ -686,8 +686,8 @@ export function TaskModal({
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="duration">Duration</Label>
+                  <div className="flex items-center gap-3">
+                    <Label htmlFor="duration" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Duration</Label>
                     <Input
                       type="number"
                       id="duration"
@@ -695,6 +695,7 @@ export function TaskModal({
                       onChange={(e) => setDuration(e.target.value)}
                       min="0"
                       placeholder="30"
+                      className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
                     />
                   </div>
 
@@ -720,13 +721,14 @@ export function TaskModal({
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="deadline">Deadline</Label>
+                  <div className="flex items-center gap-3">
+                    <Label htmlFor="deadline" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Deadline</Label>
                     <Input
                       type="datetime-local"
                       id="deadline"
                       value={deadline}
                       onChange={(e) => setDeadline(e.target.value)}
+                      className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
                     />
                   </div>
 
@@ -745,8 +747,8 @@ export function TaskModal({
                     <Switch checked={isFrozen} onCheckedChange={setIsFrozen} />
                   </div>
 
-                  <div className="col-span-full">
-                    <Label htmlFor="preferredTime">Schedule</Label>
+                  <div className="col-span-full flex items-center gap-3">
+                    <Label htmlFor="preferredTime" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Schedule</Label>
                     <Select
                       value={preferredTime || "none"}
                       onValueChange={(value) =>
@@ -755,7 +757,7 @@ export function TaskModal({
                         )
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
                         <SelectValue placeholder="Work hours">
                           {preferredTime
                             ? formatEnumValue(preferredTime)
@@ -994,15 +996,15 @@ export function TaskModal({
                   </div>
                 )}
 
-                <div>
-                  <Label htmlFor="project">Project</Label>
+                <div className="flex items-center gap-3 border-t border-[#2B2F31] pt-3">
+                  <Label htmlFor="project" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Project</Label>
                   <Select
                     value={projectId || "none"}
                     onValueChange={(value) =>
                       setProjectId(value === "none" ? null : value)
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
                       <SelectValue placeholder="No Project" />
                     </SelectTrigger>
                     <SelectContent>

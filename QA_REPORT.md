@@ -1,12 +1,13 @@
 # QA Report — Mina Design Parts 1-6
 
-## Calendar task interactions — Phase 3 (in progress, 2026-07-13)
+## Calendar task interactions — Phase 3 (complete, 2026-07-13)
 
 - PASS: live local Chrome check in Week view — clicking an empty grid slot opens the Motion-style quick creator with task, event, and expanded task-editor paths.
 - PASS: live local Chrome check — “More task options” opens the full Task editor with description workspace, scheduling sidebar, template chooser, and Advanced settings.
 - PASS: live local Chrome check — “Create event” opens the full two-column Event editor with title/time controls and a details sidebar. Empty titles disable the submit button.
 - PASS: `pnpm type-check`; full `pnpm test:unit` (43 suites passed, 1 skipped; 295 tests passed, 1 skipped); `pnpm build` compiled and generated static pages, with known non-fatal unavailable-Neon warnings during static collection.
-- PENDING: pressing Enter in the quick creator would create a real task. A live persistence check awaits explicit permission to create and remove one temporary task.
+- PASS: Enter in the quick creator created a real auto-scheduled task in the selected slot; its quick view showed the generated schedule and confidence. The one test task was removed afterward and a database check confirmed zero remaining temporary tasks.
+- PASS: the full editor layout was compared live against Motion and adjusted to its actual structure: wide, mostly borderless Task editor with right-side property rows; compact single-column Event editor with time controls followed by Event details.
 
 ## Calendar task interactions — Phase 1 (2026-07-13)
 
