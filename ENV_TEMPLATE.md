@@ -77,9 +77,11 @@ AI_CUSTOM_OAUTH_CLIENT_SECRET=""
 AI_CUSTOM_OAUTH_SCOPES="planner.read planner.write offline_access"
 ```
 
+- `AI_CUSTOM_URL` is the planner's Custom AI API endpoint and is automatically prefilled in Settings for every user.
 - `AI_CUSTOM_OAUTH_CLIENT_SECRET` and `AI_CUSTOM_OAUTH_SCOPES` are optional; the client secret should be omitted for public PKCE clients.
 - Register `${NEXTAUTH_URL}/api/ai/oauth/custom/callback` as the exact OAuth redirect URI.
-- OpenAI and Anthropic direct API access uses API keys, not account OAuth tokens. Use their API-key fields in Settings.
+- Once these values are configured, a user selects Custom and clicks **Connect** in Settings—no OAuth URLs or client credentials need to be entered by the user.
+- OpenAI and Anthropic direct API access uses API keys, not account OAuth tokens. Settings links users to the relevant key page before they paste and connect their key.
 
 ## Web Push
 

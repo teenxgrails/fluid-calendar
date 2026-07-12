@@ -4,6 +4,7 @@ import { encryptSecret } from "@/services/ai/encryption";
 import {
   defaultModelForProvider,
   ensureAISettings,
+  getDefaultCustomAIUrl,
   publicAISettingsWithOAuth,
 } from "@/services/ai/settings";
 import { AIProvider } from "@prisma/client";
@@ -88,8 +89,8 @@ export async function PATCH(request: NextRequest) {
             : defaultModelForProvider(provider),
         customUrl:
           typeof body.customUrl === "string"
-            ? body.customUrl.trim() || null
-            : null,
+            ? body.customUrl.trim() || getDefaultCustomAIUrl()
+            : getDefaultCustomAIUrl(),
         ...(apiKey && keyField && { [keyField]: apiKey }),
         soulPreset,
         allowParseTasks: Boolean(body.allowParseTasks),

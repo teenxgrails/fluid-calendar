@@ -7,6 +7,10 @@ import { getCustomAIOAuthAccessToken, getCustomAIOAuthConfig } from "./oauth";
 import { createSchedulerAI } from "./providers";
 import { AIProviderName, SchedulerAIConfig } from "./types";
 
+export function getDefaultCustomAIUrl() {
+  return process.env.AI_CUSTOM_URL?.trim() || null;
+}
+
 export async function ensureAISettings(userId: string) {
   return prisma.aISettings.upsert({
     where: { userId },
@@ -19,6 +23,7 @@ export async function ensureAISettings(userId: string) {
       allowSuggestEnergy: true,
       allowFullAuto: false,
       requestTimeoutSeconds: 20,
+      customUrl: getDefaultCustomAIUrl(),
     },
   });
 }
@@ -41,7 +46,7 @@ export function publicAISettings(
       GLM: Boolean(settings.encryptedGlmKey),
       CUSTOM: Boolean(settings.encryptedApiKey),
     },
-    customUrl: settings.customUrl,
+    customUrl: settings.customUrl || getDefaultCustomAIUrl(),
     model: settings.model,
     soulPreset: settings.soulPreset,
     allowParseTasks: settings.allowParseTasks,
@@ -131,7 +136,7 @@ export async function getConfiguredSchedulerAI(userId: string) {
     apiKey:
       oauthToken ||
       decryptSecret(getEncryptedKeyForProvider(settings, settings.provider)),
-    customUrl: settings.customUrl,
+    customUrl: settings.customUrl || getDefaultCustomAIUrl(),
     model: settings.model || defaultModelForProvider(settings.provider),
     timeoutMs: settings.requestTimeoutSeconds * 1000,
     soulPreset:

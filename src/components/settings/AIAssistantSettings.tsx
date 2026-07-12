@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-import { Bot, ClipboardList, KeyRound, Save } from "lucide-react";
+import {
+  ArrowUpRight,
+  Bot,
+  CheckCircle2,
+  ClipboardList,
+  KeyRound,
+  Save,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -76,6 +83,29 @@ const providerDefaults: Record<Exclude<AIProvider, "NONE">, string> = {
   CUSTOM: "optional",
 };
 
+const providerLabels: Record<AIProvider, string> = {
+  NONE: "None",
+  ANTHROPIC: "Anthropic",
+  OPENAI: "OpenAI",
+  GROK: "Grok",
+  GLM: "GLM",
+  CUSTOM: "Custom AI",
+};
+
+const providerKeyLinks: Partial<
+  Record<Exclude<AIProvider, "NONE" | "CUSTOM">, string>
+> = {
+  OPENAI: "https://platform.openai.com/api-keys",
+  ANTHROPIC: "https://console.anthropic.com/settings/keys",
+};
+
+function getProviderKeyLink(provider: AIProvider) {
+  if (provider === "OPENAI" || provider === "ANTHROPIC") {
+    return providerKeyLinks[provider];
+  }
+  return undefined;
+}
+
 export function AIAssistantSettings() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [apiKey, setApiKey] = useState("");
@@ -85,6 +115,7 @@ export function AIAssistantSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [isDisconnectingOAuth, setIsDisconnectingOAuth] = useState(false);
+  const [isConnectingOAuth, setIsConnectingOAuth] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,18 +162,23 @@ export function AIAssistantSettings() {
     setSettings((current) => ({ ...current, [key]: value }));
   };
 
+  const persistSettings = async () => {
+    const response = await fetch("/api/ai-settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...settings, apiKey }),
+    });
+    if (!response.ok) throw new Error("Failed to save AI settings");
+    const data = (await response.json()) as AISettingsResponse;
+    setSettings(data);
+    setApiKey("");
+    return data;
+  };
+
   const saveSettings = async () => {
     try {
       setIsSaving(true);
-      const response = await fetch("/api/ai-settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...settings, apiKey }),
-      });
-      if (!response.ok) throw new Error("Failed to save AI settings");
-      const data = (await response.json()) as AISettingsResponse;
-      setSettings(data);
-      setApiKey("");
+      await persistSettings();
       toast.success("AI assistant settings saved");
     } catch (error) {
       toast.error("Could not save AI settings", {
@@ -198,6 +234,25 @@ export function AIAssistantSettings() {
     }
   };
 
+  const connectCustomOAuth = async () => {
+    if (!settings.customUrl?.trim()) {
+      toast.error("Add your Custom AI endpoint before connecting");
+      return;
+    }
+
+    try {
+      setIsConnectingOAuth(true);
+      await persistSettings();
+      window.location.assign("/api/ai/oauth/custom/authorize");
+    } catch (error) {
+      toast.error("Could not start Custom AI connection", {
+        description:
+          error instanceof Error ? error.message : "Please try again later.",
+      });
+      setIsConnectingOAuth(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <SettingsSection
@@ -208,6 +263,11 @@ export function AIAssistantSettings() {
       </SettingsSection>
     );
   }
+
+  const providerKeyLink = getProviderKeyLink(settings.provider);
+  const hasSavedProviderKey =
+    settings.provider !== "NONE" &&
+    Boolean(settings.providerKeys?.[settings.provider] || settings.hasApiKey);
 
   return (
     <SettingsSection
@@ -292,14 +352,84 @@ export function AIAssistantSettings() {
               />
             </div>
           </div>
+          {settings.provider === "CUSTOM" && (
+            <div className="space-y-2">
+              <Label htmlFor="custom-url">Custom AI endpoint</Label>
+              <Input
+                id="custom-url"
+                value={settings.customUrl || ""}
+                onChange={(event) =>
+                  updateSetting("customUrl", event.target.value)
+                }
+                placeholder="https://ai.example.com"
+              />
+              <p className="text-xs text-[var(--text-lo)]">
+                This is usually prefilled by your planner administrator.
+              </p>
+            </div>
+          )}
+          {settings.provider === "CUSTOM" && (
+            <div className="rounded-md border border-[var(--line-strong)] bg-[var(--raised)] p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium">Connect Custom AI</div>
+                  <p className="mt-1 text-xs leading-5 text-[var(--text-lo)]">
+                    Sign in once. Your encrypted connection refreshes itself.
+                  </p>
+                </div>
+                {settings.oauth.connected && (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--acc-blue)]" />
+                )}
+              </div>
+              <div className="mt-3">
+                {settings.oauth.available ? (
+                  settings.oauth.connected ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-[var(--text-lo)]">
+                        Connected
+                        {settings.oauth.expiresAt
+                          ? ` · refreshes after ${new Date(
+                              settings.oauth.expiresAt
+                            ).toLocaleString()}`
+                          : ""}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={disconnectOAuth}
+                        disabled={isDisconnectingOAuth}
+                      >
+                        {isDisconnectingOAuth
+                          ? "Disconnecting..."
+                          : "Disconnect"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={connectCustomOAuth}
+                      disabled={
+                        isConnectingOAuth || !settings.customUrl?.trim()
+                      }
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      {isConnectingOAuth ? "Connecting..." : "Connect"}
+                    </Button>
+                  )
+                ) : (
+                  <p className="text-xs text-[var(--text-lo)]">
+                    Ask your planner administrator to enable Custom AI OAuth.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
           {settings.provider !== "NONE" && (
             <div className="space-y-2">
               <Label htmlFor="ai-key">
-                API key{" "}
-                {settings.providerKeys?.[settings.provider] ||
-                settings.hasApiKey
-                  ? "(saved)"
-                  : ""}
+                API key {hasSavedProviderKey ? "(saved)" : ""}
               </Label>
               <Input
                 id="ai-key"
@@ -311,70 +441,26 @@ export function AIAssistantSettings() {
                 }
               />
               {settings.provider === "CUSTOM" ? (
-                <div className="space-y-2 pt-1">
-                  {settings.oauth.available ? (
-                    settings.oauth.connected ? (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          OAuth connected
-                          {settings.oauth.expiresAt
-                            ? ` · refreshes after ${new Date(
-                                settings.oauth.expiresAt
-                              ).toLocaleString()}`
-                            : ""}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={disconnectOAuth}
-                          disabled={isDisconnectingOAuth}
-                        >
-                          {isDisconnectingOAuth
-                            ? "Disconnecting..."
-                            : "Disconnect OAuth"}
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          window.location.assign(
-                            "/api/ai/oauth/custom/authorize"
-                          );
-                        }}
-                      >
-                        <KeyRound className="mr-2 h-3.5 w-3.5" />
-                        Connect OAuth
-                      </Button>
-                    )
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      OAuth is available when the Custom AI OAuth environment
-                      variables are configured.
-                    </p>
+                <p className="text-xs text-[var(--text-lo)]">
+                  Optional fallback if your Custom AI service also supports API
+                  keys.
+                </p>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-[var(--text-lo)]">
+                  <span>Paste a key once, then use the planner normally.</span>
+                  {providerKeyLink && (
+                    <a
+                      href={providerKeyLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[var(--accent)] hover:opacity-80"
+                    >
+                      Get an API key
+                      <ArrowUpRight className="h-3 w-3" />
+                    </a>
                   )}
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  This provider&apos;s direct API uses an API key.
-                </p>
               )}
-            </div>
-          )}
-          {settings.provider === "CUSTOM" && (
-            <div className="space-y-2">
-              <Label htmlFor="custom-url">Custom endpoint</Label>
-              <Input
-                id="custom-url"
-                value={settings.customUrl || ""}
-                onChange={(event) =>
-                  updateSetting("customUrl", event.target.value)
-                }
-                placeholder="http://localhost:8787"
-              />
             </div>
           )}
         </div>
@@ -459,7 +545,15 @@ export function AIAssistantSettings() {
           ) : (
             <Save className="mr-2 h-4 w-4" />
           )}
-          {isSaving ? "Saving..." : "Save AI Assistant"}
+          {isSaving
+            ? "Saving..."
+            : settings.provider === "NONE"
+              ? "Save AI Assistant"
+              : settings.provider === "CUSTOM"
+                ? "Save Custom AI settings"
+                : hasSavedProviderKey
+                  ? "Save changes"
+                  : `Connect ${providerLabels[settings.provider]}`}
         </Button>
       </div>
     </SettingsSection>
