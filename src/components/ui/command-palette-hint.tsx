@@ -2,85 +2,185 @@
 
 import { useEffect, useState } from "react";
 
-import { HiOutlineSearch } from "react-icons/hi";
-import { IoClose } from "react-icons/io5";
+import { CalendarDays, Command, Focus, X } from "lucide-react";
 
-export function CommandPaletteHint() {
-  const [isVisible, setIsVisible] = useState(false);
+import { Button } from "@/components/ui/button";
 
-  useEffect(() => {
-    // Check if the user has seen the hint before
-    const hasSeenHint = localStorage.getItem("hasSeenCommandPaletteHint");
+const TIP_DELAY_MS = 4_000;
+const TIP_INTERVAL_MS = 3 * 24 * 60 * 60 * 1_000;
+const LAST_SHOWN_KEY = "mina:quick-tip:last-shown-at";
+const NEXT_TIP_KEY = "mina:quick-tip:next-index";
 
-    if (!hasSeenHint) {
-      // Show the hint after a short delay
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-      }, 2000);
+type TipAction = "command" | "calendar" | "focus";
 
-      return () => clearTimeout(timer);
-    }
-  }, []);
+interface QuickTip {
+  id: string;
+  title: string;
+  actionLabel: string;
+  action: TipAction;
+  body: React.ReactNode;
+}
 
-  const dismissHint = () => {
-    setIsVisible(false);
-    // Mark that the user has seen the hint
-    localStorage.setItem("hasSeenCommandPaletteHint", "true");
-  };
+function TipKey({ children }: { children: React.ReactNode }) {
+  return (
+    <kbd className="mx-0.5 inline-flex rounded border border-[var(--line-strong)] bg-[var(--app-bg)] px-1.5 py-0.5 text-[11px] font-medium leading-none text-[var(--text-hi)]">
+      {children}
+    </kbd>
+  );
+}
 
-  // Trigger command palette
-  const openCommandPalette = () => {
-    dismissHint();
-    // Simulate Cmd+K / Ctrl+K
-    const event = new KeyboardEvent("keydown", {
+const QUICK_TIPS: QuickTip[] = [
+  {
+    id: "command-palette",
+    title: "Quick Tip",
+    actionLabel: "Try it",
+    action: "command",
+    body: (
+      <>
+        Press <TipKey>⌘K</TipKey> (or <TipKey>Ctrl+K</TipKey>) to open the
+        command palette and quickly access features.
+      </>
+    ),
+  },
+  {
+    id: "calendar-shortcut",
+    title: "Quick Tip",
+    actionLabel: "Open calendar",
+    action: "calendar",
+    body: (
+      <>
+        Use <TipKey>G</TipKey> then <TipKey>C</TipKey> to jump back to your
+        calendar without reaching for the mouse.
+      </>
+    ),
+  },
+  {
+    id: "focus-shortcut",
+    title: "Quick Tip",
+    actionLabel: "Open Focus",
+    action: "focus",
+    body: (
+      <>
+        Need one calm next step? Use <TipKey>G</TipKey> then <TipKey>F</TipKey>
+        to jump straight into Focus.
+      </>
+    ),
+  },
+];
+
+function getNextTipIndex(): number {
+  const stored = Number(localStorage.getItem(NEXT_TIP_KEY));
+  return Number.isInteger(stored) && stored >= 0
+    ? stored % QUICK_TIPS.length
+    : 0;
+}
+
+function openCommandPalette() {
+  document.dispatchEvent(
+    new KeyboardEvent("keydown", {
       key: "k",
       metaKey: true,
       bubbles: true,
-    });
-    document.dispatchEvent(event);
+    })
+  );
+}
+
+export function CommandPaletteHint() {
+  const [tipIndex, setTipIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const lastShownAt = Number(localStorage.getItem(LAST_SHOWN_KEY));
+    if (
+      Number.isFinite(lastShownAt) &&
+      Date.now() - lastShownAt < TIP_INTERVAL_MS
+    ) {
+      return;
+    }
+
+    const nextTipIndex = getNextTipIndex();
+    const timer = window.setTimeout(() => {
+      setTipIndex(nextTipIndex);
+      setIsVisible(true);
+      localStorage.setItem(LAST_SHOWN_KEY, String(Date.now()));
+      localStorage.setItem(
+        NEXT_TIP_KEY,
+        String((nextTipIndex + 1) % QUICK_TIPS.length)
+      );
+    }, TIP_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const dismissHint = () => setIsVisible(false);
+
+  const runTipAction = () => {
+    const tip = QUICK_TIPS[tipIndex];
+    dismissHint();
+
+    if (tip.action === "command") {
+      openCommandPalette();
+      return;
+    }
+
+    window.location.assign(tip.action === "calendar" ? "/calendar" : "/focus");
   };
 
   if (!isVisible) return null;
 
+  const tip = QUICK_TIPS[tipIndex];
+  const Icon =
+    tip.action === "command"
+      ? Command
+      : tip.action === "calendar"
+        ? CalendarDays
+        : Focus;
+
   return (
-    <div className="fixed bottom-4 right-4 z-50 duration-300 animate-in fade-in slide-in-from-bottom-4">
-      <div className="max-w-xs rounded-lg border bg-background p-4 shadow-lg">
-        <div className="mb-2 flex items-start justify-between">
-          <div className="flex items-center gap-2 font-medium text-primary">
-            <HiOutlineSearch className="h-5 w-5" />
-            <span>Quick Tip</span>
+    <aside
+      aria-live="polite"
+      aria-label={tip.title}
+      className="fixed bottom-16 right-4 z-50 w-[min(22rem,calc(100vw-2rem))] animate-in fade-in slide-in-from-bottom-2 duration-200 motion-reduce:animate-none md:bottom-5 md:right-5"
+    >
+      <div className="overflow-hidden rounded-lg border border-[var(--line-strong)] bg-[var(--raised)] text-[var(--text-hi)] shadow-lg">
+        <div className="h-0.5 bg-[var(--accent)]" />
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2 text-[13px] font-semibold">
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--active)] text-[var(--accent)]">
+                <Icon className="h-4 w-4" strokeWidth={1.8} />
+              </span>
+              {tip.title}
+            </div>
+            <button
+              type="button"
+              onClick={dismissHint}
+              className="-mr-1 -mt-1 rounded-md p-1 text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)] focus:outline-none"
+              aria-label="Dismiss quick tip"
+            >
+              <X className="h-4 w-4" strokeWidth={1.8} />
+            </button>
           </div>
-          <button
-            onClick={dismissHint}
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Dismiss hint"
-          >
-            <IoClose className="h-5 w-5" />
-          </button>
-        </div>
 
-        <p className="mb-3 text-sm text-foreground">
-          Press <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs">⌘K</kbd>{" "}
-          (or{" "}
-          <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs">Ctrl+K</kbd>)
-          to open the command palette and quickly access features.
-        </p>
+          <p className="mt-3 text-[13px] leading-5 text-[var(--text-lo)]">
+            {tip.body}
+          </p>
 
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={dismissHint}
-            className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
-          >
-            Dismiss
-          </button>
-          <button
-            onClick={openCommandPalette}
-            className="rounded-md bg-primary px-3 py-1 text-xs text-primary-foreground hover:bg-primary/90"
-          >
-            Try it now
-          </button>
+          <div className="mt-4 flex items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={dismissHint}
+            >
+              Dismiss
+            </Button>
+            <Button type="button" size="sm" onClick={runTipAction}>
+              {tip.actionLabel}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
