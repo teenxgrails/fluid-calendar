@@ -18,10 +18,12 @@ import {
 
 import { AIAssistantSettings } from "@/components/settings/AIAssistantSettings";
 import { AccountManager } from "@/components/settings/AccountManager";
+import { AccountSettings } from "@/components/settings/AccountSettings";
 import { AutoScheduleSettings } from "@/components/settings/AutoScheduleSettings";
 import { CalendarSettings } from "@/components/settings/CalendarSettings";
 import { ConnectorSettings } from "@/components/settings/ConnectorSettings";
 import { CustomizationSettings } from "@/components/settings/CustomizationSettings";
+import { DataSettings } from "@/components/settings/DataSettings";
 import { ImportExportSettings } from "@/components/settings/ImportExportSettings";
 import { LogViewer } from "@/components/settings/LogViewer";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
@@ -46,8 +48,6 @@ type SettingsTab =
   | "ai"
   | "integrations"
   | "system"
-  | "task-sync"
-  | "task-urgency"
   | "logs"
   | "import-export"
   | "notifications";
@@ -175,9 +175,14 @@ export default function SettingsPage() {
 
     switch (activeTab) {
       case "account":
-        return <AccountManager />;
+        return <AccountSettings />;
       case "calendars":
-        return <CalendarSettings />;
+        return (
+          <div className="space-y-10">
+            <AccountManager />
+            <CalendarSettings />
+          </div>
+        );
       case "scheduling":
         return (
           <div className="space-y-10">
@@ -210,7 +215,12 @@ export default function SettingsPage() {
       case "logs":
         return <LogViewer />;
       case "import-export":
-        return <ImportExportSettings />;
+        return (
+          <div className="space-y-10">
+            <ImportExportSettings />
+            <DataSettings />
+          </div>
+        );
       default:
         return null;
     }

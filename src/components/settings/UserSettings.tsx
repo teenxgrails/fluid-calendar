@@ -1,6 +1,3 @@
-import { useSession } from "next-auth/react";
-import Image from "next/image";
-
 import {
   Select,
   SelectContent,
@@ -8,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 import { useSettingsStore } from "@/store/settings";
 
@@ -16,8 +14,8 @@ import { TimeFormat, WeekStartDay } from "@/types/settings";
 import { SettingRow, SettingsSection } from "./SettingsSection";
 
 export function UserSettings() {
-  const { data: session } = useSession();
-  const { user, updateUserSettings } = useSettingsStore();
+  const { calendar, updateCalendarSettings, updateUserSettings, user } =
+    useSettingsStore();
 
   const timeFormats: { value: TimeFormat; label: string }[] = [
     { value: "12h", label: "12-hour" },
@@ -28,6 +26,12 @@ export function UserSettings() {
     { value: "sunday", label: "Sunday" },
     { value: "monday", label: "Monday" },
   ];
+
+  const themes = [
+    { value: "dark", label: "Dark" },
+    { value: "light", label: "Light" },
+    { value: "system", label: "Use system setting" },
+  ] as const;
 
   // Comprehensive list of common timezones
   const timeZones = [
@@ -112,30 +116,28 @@ export function UserSettings() {
 
   return (
     <SettingsSection
-      title="User Settings"
-      description="Manage your personal preferences for the calendar application."
+      title="Appearance"
+      description="Control how the calendar looks and how time is displayed."
     >
-      {session?.user && (
-        <SettingRow label="Profile" description="Your account information">
-          <div className="flex items-center space-x-3">
-            {session.user.image && (
-              <Image
-                src={session.user.image}
-                alt={session.user.name || ""}
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-            )}
-            <div>
-              <div className="font-medium">{session.user.name}</div>
-              <div className="text-sm text-muted-foreground">
-                {session.user.email}
-              </div>
-            </div>
-          </div>
-        </SettingRow>
-      )}
+      <SettingRow label="Theme" description="Choose the app color mode.">
+        <Select
+          value={user.theme}
+          onValueChange={(value) =>
+            updateUserSettings({ theme: value as typeof user.theme })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {themes.map((theme) => (
+              <SelectItem key={theme.value} value={theme.value}>
+                {theme.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </SettingRow>
 
       <SettingRow
         label="Time Format"
@@ -162,7 +164,7 @@ export function UserSettings() {
 
       <SettingRow
         label="Week Starts On"
-        description="Choose which day your week starts on"
+        description="Choose the first day shown in week views."
       >
         <Select
           value={user.weekStartDay}
@@ -181,6 +183,20 @@ export function UserSettings() {
             ))}
           </SelectContent>
         </Select>
+      </SettingRow>
+
+      <SettingRow
+        label="Show working hours"
+        description="Display the working-hours range on the calendar without changing scheduling rules."
+      >
+        <Switch
+          checked={calendar.workingHours.enabled}
+          onCheckedChange={(enabled) =>
+            updateCalendarSettings({
+              workingHours: { ...calendar.workingHours, enabled },
+            })
+          }
+        />
       </SettingRow>
 
       <SettingRow
