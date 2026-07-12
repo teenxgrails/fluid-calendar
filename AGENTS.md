@@ -4,6 +4,12 @@
 > You are working inside a fork of **dotnetfactory/fluid-calendar** (MIT). Base stack:
 > Next.js 15 (App Router), TypeScript, Prisma, FullCalendar, NextAuth.js, Tailwind CSS, PostgreSQL.
 
+> **UI format is fixed — see [`design-refs/ui-conventions.md`](design-refs/ui-conventions.md).**
+> Popups/options panels, pickers (Select), toggles (Switch), and modals all
+> have an established "house format" (dark, Motion-style, token-based colors, no
+> glows, no backdrop blur). Reuse the shared `@/components/ui/*` components and
+> those patterns — do not invent new dropdown/modal/toggle styles.
+
 ---
 
 ## 0. Mission

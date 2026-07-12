@@ -70,6 +70,7 @@ The private SAAS repo is the superset; the public open-source repo is generated 
 - **API route handlers** (Next 15): `params` is a Promise - `async function GET(req, { params }: { params: Promise<{ id: string }> }) { const { id } = await params; }`.
 - **Admin-only**: API routes use `requireAdmin` middleware from `@/lib/auth/api-auth` (do not call `getServerSession` and check role by hand); UI uses the `useAdmin` hook or `<AdminOnly>` wrapper with `<AccessDeniedMessage>`.
 - **shadcn/ui**: add components with `npx shadcn@latest add`. Icons via `react-icons`.
+- **UI "house format"**: popups/options panels, pickers (Select), toggles (Switch), and modals follow a fixed Motion-style format documented in `design-refs/ui-conventions.md`. Reuse the shared `@/components/ui/*` components and those patterns (token-based colors, no glows, no backdrop blur) — don't invent new dropdown/modal/toggle styles.
 - **JSX text**: escape quotes/apostrophes as `&apos;` / `&quot;`.
 - Keep changes minimal and scoped; don't refactor unrelated code. Don't remove `//todo` comments; add them for deferred work.
 - Update `CHANGELOG.md` under `[unreleased]` as you make user-facing changes.
