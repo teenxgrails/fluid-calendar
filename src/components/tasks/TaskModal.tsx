@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { BookTemplate, ChevronDown, Settings2 } from "lucide-react";
+import { BookTemplate, Check, ChevronDown, Settings2 } from "lucide-react";
 import { RRule } from "rrule";
 import { toast } from "sonner";
 
@@ -338,55 +338,55 @@ export function TaskModal({
       ? Math.max(1, Math.round(parsedLikely * contextFactor))
       : null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
+  const buildPayload = (statusValue: TaskStatus): NewTask => {
+    return {
+      title: title.trim(),
+      description: description.trim() || undefined,
+      status: statusValue,
+      dueDate: dueDate ? newDate(dueDate) : null,
+      startDate: startDate ? newDate(startDate) : null,
+      duration: duration ? parseInt(duration, 10) : undefined,
+      estimatedMinutes: estimatedMinutes
+        ? parseInt(estimatedMinutes, 10)
+        : duration
+          ? parseInt(duration, 10)
+          : undefined,
+      estOptimistic: estOptimistic ? parseInt(estOptimistic, 10) : undefined,
+      estLikely: parsedLikely ?? undefined,
+      estPessimistic: estPessimistic ? parseInt(estPessimistic, 10) : undefined,
+      minChunkMinutes: minChunkMinutes
+        ? parseInt(minChunkMinutes, 10)
+        : undefined,
+      maxChunkMinutes: maxChunkMinutes
+        ? parseInt(maxChunkMinutes, 10)
+        : undefined,
+      deadline: deadline
+        ? newDate(deadline)
+        : dueDate
+          ? newDate(dueDate)
+          : null,
+      energyLevel: energyLevel || undefined,
+      energyRequired,
+      preferredTime: preferredTime || undefined,
+      priorityLevel,
+      contextTag: contextTag.trim() || undefined,
+      tagIds: selectedTagIds,
+      projectId: projectId,
+      isRecurring,
+      recurrenceRule: isRecurring ? recurrenceRule : undefined,
+      isAutoScheduled,
+      autoScheduled: isAutoScheduled,
+      scheduleLocked,
+      isFrozen,
+      priority,
+    };
+  };
 
+  const save = async (statusValue: TaskStatus) => {
+    if (!title.trim()) return;
     setIsSubmitting(true);
     try {
-      await onSave({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        status,
-        dueDate: dueDate ? newDate(dueDate) : null,
-        startDate: startDate ? newDate(startDate) : null,
-        duration: duration ? parseInt(duration, 10) : undefined,
-        estimatedMinutes: estimatedMinutes
-          ? parseInt(estimatedMinutes, 10)
-          : duration
-            ? parseInt(duration, 10)
-            : undefined,
-        estOptimistic: estOptimistic ? parseInt(estOptimistic, 10) : undefined,
-        estLikely: parsedLikely ?? undefined,
-        estPessimistic: estPessimistic
-          ? parseInt(estPessimistic, 10)
-          : undefined,
-        minChunkMinutes: minChunkMinutes
-          ? parseInt(minChunkMinutes, 10)
-          : undefined,
-        maxChunkMinutes: maxChunkMinutes
-          ? parseInt(maxChunkMinutes, 10)
-          : undefined,
-        deadline: deadline
-          ? newDate(deadline)
-          : dueDate
-            ? newDate(dueDate)
-            : null,
-        energyLevel: energyLevel || undefined,
-        energyRequired,
-        preferredTime: preferredTime || undefined,
-        priorityLevel,
-        contextTag: contextTag.trim() || undefined,
-        tagIds: selectedTagIds,
-        projectId: projectId,
-        isRecurring,
-        recurrenceRule: isRecurring ? recurrenceRule : undefined,
-        isAutoScheduled,
-        autoScheduled: isAutoScheduled,
-        scheduleLocked,
-        isFrozen,
-        priority,
-      });
+      await onSave(buildPayload(statusValue));
       onClose();
     } catch (error) {
       console.error("Error saving task:", error);
@@ -397,6 +397,22 @@ export function TaskModal({
       setIsSubmitting(false);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await save(status);
+  };
+
+  const handleMarkComplete = async () => {
+    await save(TaskStatus.COMPLETED);
+  };
+
+  // Missed deadline: an incomplete task whose deadline is in the past.
+  const isMissedDeadline =
+    !!task &&
+    !!task.deadline &&
+    status !== TaskStatus.COMPLETED &&
+    newDate(task.deadline).getTime() < Date.now();
 
   const handleCreateTag = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -444,6 +460,24 @@ export function TaskModal({
               </span>
               {task ? "Edit task" : "Create task"}
             </DialogTitle>
+            {task && status !== TaskStatus.COMPLETED && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleMarkComplete}
+                disabled={isSubmitting}
+              >
+                <Check className="h-3.5 w-3.5" />
+                Mark complete
+              </Button>
+            )}
+            {task && status === TaskStatus.COMPLETED && (
+              <span className="flex items-center gap-1.5 rounded-md border border-[var(--acc-teal)]/40 bg-[var(--acc-teal)]/10 px-2.5 py-1 text-xs font-medium text-[var(--acc-teal)]">
+                <Check className="h-3.5 w-3.5" />
+                Completed
+              </span>
+            )}
             {!task && (
               <Popover
                 open={isTemplateMenuOpen}
@@ -560,6 +594,25 @@ export function TaskModal({
               </div>
 
               <div className="min-h-0 space-y-3 overflow-y-auto border-t border-[var(--line-strong)] p-5 lg:border-l lg:border-t-0">
+                {isMissedDeadline && (
+                  <div className="flex items-center justify-between gap-2 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm">
+                    <span className="flex items-center gap-2 font-medium text-red-300">
+                      <span className="grid h-4 w-4 place-items-center rounded-sm bg-red-500/80 text-[10px] font-bold text-white">
+                        !
+                      </span>
+                      Missed deadline
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => save(status)}
+                      disabled={isSubmitting}
+                      className="text-[13px] font-medium text-[var(--accent)] transition-colors hover:text-[var(--text-hi)]"
+                    >
+                      Resolve
+                    </button>
+                  </div>
+                )}
+
                 <div
                   className={cn(
                     "flex items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors",
@@ -574,6 +627,23 @@ export function TaskModal({
                     onCheckedChange={setIsAutoScheduled}
                   />
                 </div>
+
+                {task?.isAutoScheduled && task?.scheduledStart && (
+                  <div
+                    className={cn(
+                      "text-xs",
+                      isMissedDeadline
+                        ? "text-red-300"
+                        : "text-[var(--text-lo)]"
+                    )}
+                  >
+                    Auto-scheduled on{" "}
+                    {format(
+                      newDate(task.scheduledStart),
+                      "EEE MMM d 'at' h:mm a"
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>

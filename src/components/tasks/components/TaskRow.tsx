@@ -52,9 +52,9 @@ export function TaskRow({
     <tr
       key={task.id}
       className={cn(
-        "transition-all hover:bg-white/[0.055]",
+        "transition-colors hover:bg-[var(--active)]",
         isDragging ? "opacity-50" : "",
-        isFutureTask ? "bg-white/[0.025] text-muted-foreground" : ""
+        isFutureTask ? "text-[var(--text-lo)]" : ""
       )}
     >
       <td className="px-3 py-2">
