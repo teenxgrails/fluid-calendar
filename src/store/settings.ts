@@ -15,6 +15,20 @@ interface ConnectedAccount {
   calendars: Array<{ id: string; name: string }>;
 }
 
+function normalizeConnectedAccounts(value: unknown): ConnectedAccount[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter(
+    (account): account is ConnectedAccount =>
+      typeof account === "object" &&
+      account !== null &&
+      typeof (account as ConnectedAccount).id === "string" &&
+      typeof (account as ConnectedAccount).provider === "string" &&
+      typeof (account as ConnectedAccount).email === "string" &&
+      Array.isArray((account as ConnectedAccount).calendars)
+  );
+}
+
 interface SettingsStore extends Settings {
   accounts: ConnectedAccount[];
   initialized: boolean;
@@ -352,8 +366,11 @@ export const useSettingsStore = create<SettingsStore>()(
       refreshAccounts: async () => {
         try {
           const response = await fetch("/api/accounts");
-          const accounts = await response.json();
-          set({ accounts });
+          if (!response.ok) {
+            throw new Error("Failed to load connected accounts");
+          }
+          const accounts: unknown = await response.json();
+          set({ accounts: normalizeConnectedAccounts(accounts) });
         } catch (error) {
           logger.error(
             "Failed to refresh accounts",
@@ -387,7 +404,10 @@ export const useSettingsStore = create<SettingsStore>()(
           ]);
 
           // Set initialized flag
-          set({ initialized: true, accounts });
+          set({
+            initialized: true,
+            accounts: normalizeConnectedAccounts(accounts),
+          });
 
           // Update all settings
           get().updateUserSettings({

@@ -16,6 +16,11 @@ import { SettingRow, SettingsSection } from "./SettingsSection";
 
 const LOG_SOURCE = "AccountManager";
 
+const DEFAULT_INTEGRATION_STATUS: IntegrationStatus = {
+  google: { configured: false },
+  outlook: { configured: false },
+};
+
 interface IntegrationStatus {
   google: { configured: boolean };
   outlook: { configured: boolean };
@@ -23,13 +28,11 @@ interface IntegrationStatus {
 
 export function AccountManager() {
   const { accounts, refreshAccounts, removeAccount } = useSettingsStore();
+  const connectedAccounts = Array.isArray(accounts) ? accounts : [];
   const [showAvailableFor, setShowAvailableFor] = useState<string | null>(null);
   const [showCalDAVForm, setShowCalDAVForm] = useState(false);
   const [integrationStatus, setIntegrationStatus] = useState<IntegrationStatus>(
-    {
-      google: { configured: false },
-      outlook: { configured: false },
-    }
+    DEFAULT_INTEGRATION_STATUS
   );
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,9 +43,21 @@ export function AccountManager() {
   useEffect(() => {
     // Fetch integration status
     fetch("/api/integration-status")
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load calendar connection status");
+        }
+        return (await res.json()) as Partial<IntegrationStatus>;
+      })
       .then((data) => {
-        setIntegrationStatus(data);
+        setIntegrationStatus({
+          google: {
+            configured: data.google?.configured === true,
+          },
+          outlook: {
+            configured: data.outlook?.configured === true,
+          },
+        });
         setIsLoading(false);
       })
       .catch((error) => {
@@ -145,7 +160,7 @@ export function AccountManager() {
       )}
 
       <div className="space-y-5">
-        {accounts?.map((account) => (
+        {connectedAccounts.map((account) => (
           <div key={account.id} className="space-y-4">
             <SettingRow
               label={`${account.provider === "CALDAV" ? "Apple / iCloud" : account.provider[0] + account.provider.slice(1).toLowerCase()} Calendar`}

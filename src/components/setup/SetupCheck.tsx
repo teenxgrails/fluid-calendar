@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { usePathname, useRouter } from "next/navigation";
 
@@ -15,8 +15,6 @@ const CHECK_INTERVAL = 60 * 60 * 1000;
 export function SetupCheck() {
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
-
   // Get setup state from Zustand store
   const { hasChecked, needsSetup, lastChecked, setSetupStatus, markAsChecked } =
     useSetupStore();
@@ -24,19 +22,16 @@ export function SetupCheck() {
   useEffect(() => {
     // Skip check if already on setup page
     if (pathname === "/setup") {
-      setLoading(false);
       return;
     }
 
     // Skip check if on the signin page to prevent redirect loops
     if (pathname === "/auth/signin") {
-      setLoading(false);
       return;
     }
 
     // Skip check for API routes
     if (pathname.startsWith("/api")) {
-      setLoading(false);
       return;
     }
 
@@ -67,7 +62,6 @@ export function SetupCheck() {
       try {
         // If we don't need to check, just mark as loaded
         if (!shouldCheckSetup()) {
-          setLoading(false);
           return;
         }
 
@@ -89,8 +83,6 @@ export function SetupCheck() {
         console.error("Failed to check setup status:", error);
         // Mark as checked even if there was an error
         markAsChecked();
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -105,6 +97,6 @@ export function SetupCheck() {
     markAsChecked,
   ]);
 
-  // Show loading state or render nothing
-  return loading ? <div>Loading...</div> : null;
+  // Setup checks run unobtrusively; navigation only changes when setup is needed.
+  return null;
 }
