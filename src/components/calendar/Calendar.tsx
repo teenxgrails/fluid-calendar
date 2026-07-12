@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Settings } from "lucide-react";
+import { CheckSquare2, Clock3, Settings } from "lucide-react";
 import {
   IoAddOutline,
   IoChevronBack,
@@ -332,12 +332,37 @@ export function Calendar({
                   <IoAddOutline className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem onClick={handleNewTask}>
-                  New Task
+              <DropdownMenuContent
+                align="end"
+                className="w-60 border-[#2B2F31] bg-[#202425] p-1 text-[#F2F2F2]"
+              >
+                <DropdownMenuItem
+                  onClick={handleNewTask}
+                  className="group flex cursor-pointer items-start gap-3 rounded-[4px] px-3 py-2.5 focus:bg-[#2B2F31]"
+                >
+                  <CheckSquare2 className="mt-0.5 h-4 w-4 text-[#9BA1A6] transition-colors group-data-[highlighted]:text-[#F2F2F2]" />
+                  <span className="space-y-0.5">
+                    <span className="block text-[13px] font-medium">
+                      Create task
+                    </span>
+                    <span className="block text-[12px] text-[#9BA1A6]">
+                      Add work for the planner to schedule.
+                    </span>
+                  </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleNewEvent}>
-                  New Meeting or Event
+                <DropdownMenuItem
+                  onClick={handleNewEvent}
+                  className="group flex cursor-pointer items-start gap-3 rounded-[4px] px-3 py-2.5 focus:bg-[#2B2F31]"
+                >
+                  <Clock3 className="mt-0.5 h-4 w-4 text-[#9BA1A6] transition-colors group-data-[highlighted]:text-[#F2F2F2]" />
+                  <span className="space-y-0.5">
+                    <span className="block text-[13px] font-medium">
+                      Create event
+                    </span>
+                    <span className="block text-[12px] text-[#9BA1A6]">
+                      Block a fixed time on a calendar.
+                    </span>
+                  </span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
