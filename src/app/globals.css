@@ -389,6 +389,67 @@ html[data-animations="off"] *::after {
   }
 }
 
+/* Motion-style dialog animation. The centering translate is baked into the
+   keyframes so the scale/rise doesn't fight the -translate-x/y-1/2 utilities
+   (which is what made the old zoom/slide feel janky). Uses Motion's ease-out
+   curve for a smooth, premium open. */
+@keyframes dialog-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dialog-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes dialog-content-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes dialog-content-out {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+}
+
+.dialog-overlay-anim[data-state="open"] {
+  animation: dialog-overlay-in 200ms ease-out;
+}
+.dialog-overlay-anim[data-state="closed"] {
+  animation: dialog-overlay-out 150ms ease-in;
+}
+.dialog-content-anim[data-state="open"] {
+  animation: dialog-content-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dialog-content-anim[data-state="closed"] {
+  animation: dialog-content-out 150ms cubic-bezier(0.3, 0, 0.8, 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog-overlay-anim[data-state],
+  .dialog-content-anim[data-state] {
+    animation-duration: 0.01ms;
+  }
+}
+
 /* "Recalculating tasks..." toast: inverse of the theme (white pill on the dark
    theme, dark pill on the light theme), matching the Motion reference. */
 .recalc-toast {
