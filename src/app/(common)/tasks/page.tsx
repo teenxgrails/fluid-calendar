@@ -13,7 +13,6 @@ import { TaskModal } from "@/components/tasks/TaskModal";
 import { TimelineView } from "@/components/tasks/TimelineView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { cn } from "@/lib/utils";
 
@@ -28,7 +27,6 @@ export default function TasksPage() {
   const {
     tasks,
     tags,
-    loading,
     error,
     fetchTasks,
     fetchTags,
@@ -256,14 +254,6 @@ export default function TasksPage() {
           onCreateTag={handleCreateTag}
           initialProjectId={initialProjectId}
         />
-
-        {loading && (
-          <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-            <div className="rounded-lg border bg-background p-4 shadow-lg">
-              <LoadingSpinner size="lg" />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
