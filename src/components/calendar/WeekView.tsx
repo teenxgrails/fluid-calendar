@@ -284,10 +284,8 @@ export function WeekView({ currentDate }: WeekViewProps) {
 
     setSelectedDate(start);
     setSelectedEndDate(end);
-    setSelectedEvent({
-      allDay,
-    });
-    setIsEventModalOpen(true);
+    setSelectedEvent({ allDay });
+    setIsNewTaskModalOpen(true);
   };
 
   const handleSlotClick = (arg: {
@@ -299,7 +297,7 @@ export function WeekView({ currentDate }: WeekViewProps) {
     setSelectedDate(arg.date);
     setSelectedEndDate(end);
     setSelectedEvent({ allDay: arg.allDay });
-    setIsEventModalOpen(true);
+    setIsNewTaskModalOpen(true);
   };
 
   const handleEventModalClose = () => {
