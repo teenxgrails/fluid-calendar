@@ -608,15 +608,15 @@ html[data-animations="off"] *::after {
   pointer-events: none;
 }
 
-/* Calendar color hierarchy is calculated from the app canvas (#1B1D1E):
-   today stays on the canvas; working hours in other days are 10% lighter;
-   non-working hours are 30% lighter. */
+/* Calendar color hierarchy follows Photoshop-style brightness increments from
+   the app canvas (#1B1D1E): today stays on the canvas; other working hours
+   are +10 and non-working hours are +30. */
 .fc .fc-timegrid-col-frame {
-  background: #323435;
+  background: #252728;
 }
 
 .fc .fc-timegrid-col-bg .fc-non-business {
-  background: #5f6162 !important;
+  background: #393b3c !important;
 }
 
 .fc .fc-day-today {
