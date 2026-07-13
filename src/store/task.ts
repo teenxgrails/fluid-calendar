@@ -3,6 +3,23 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { isSaasEnabled } from "@/lib/config";
+import { logger } from "@/lib/logger";
+import {
+  beginTaskMutation,
+  buildOptimisticTask,
+  createOptimisticTaskId,
+  enqueueTaskMutation,
+  insertOptimisticTask,
+  isLatestTaskMutation,
+  reconcileOptimisticTask,
+  removeOptimisticTask,
+  updateOptimisticTask,
+} from "@/lib/optimistic-tasks";
+import {
+  createTaskRequest,
+  deleteTaskRequest,
+  updateTaskRequest,
+} from "@/lib/task-api";
 
 import { useDurationMemoryStore } from "@/store/durationMemory";
 
@@ -14,6 +31,8 @@ import {
   TaskFilters,
   UpdateTask,
 } from "@/types/task";
+
+const LOG_SOURCE = "TaskStore";
 
 interface TaskState {
   tasks: Task[];
@@ -99,6 +118,9 @@ export const useTaskStore = create<TaskState>()(
 
       createTask: async (task: NewTask) => {
         set({ loading: true, error: null });
+        const previousTasks = get().tasks;
+        const optimisticId = createOptimisticTaskId();
+        const version = beginTaskMutation(optimisticId);
         try {
           // Prefill a learned duration for similar tasks when none was set,
           // so new tasks are auto-created with a familiar time budget.
@@ -111,14 +133,25 @@ export const useTaskStore = create<TaskState>()(
             }
           }
 
-          const response = await fetch("/api/tasks", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(task),
-          });
-          if (!response.ok) throw new Error("Failed to create task");
-          const newTask = await response.json();
-          set((state) => ({ tasks: [...state.tasks, newTask] }));
+          const optimisticTask = buildOptimisticTask(
+            task,
+            get().tags,
+            optimisticId
+          );
+          set({ tasks: insertOptimisticTask(previousTasks, optimisticTask) });
+
+          const newTask = await enqueueTaskMutation(optimisticId, () =>
+            createTaskRequest(task)
+          );
+          if (isLatestTaskMutation(optimisticId, version)) {
+            set((state) => ({
+              tasks: reconcileOptimisticTask(
+                state.tasks,
+                newTask,
+                optimisticId
+              ),
+            }));
+          }
           // Reschedule in the background with a status toast so the modal can
           // close immediately and a scheduling failure never blocks (or
           // duplicates) task creation.
@@ -130,14 +163,27 @@ export const useTaskStore = create<TaskState>()(
             try {
               await get().triggerScheduleAllTasks();
             } catch (scheduleError) {
-              console.error("Background rescheduling failed:", scheduleError);
+              void logger.error(
+                "Background rescheduling failed",
+                {
+                  error:
+                    scheduleError instanceof Error
+                      ? scheduleError.message
+                      : String(scheduleError),
+                },
+                LOG_SOURCE
+              );
             } finally {
               toast.dismiss(toastId);
             }
           })();
           return newTask;
         } catch (error) {
+          if (isLatestTaskMutation(optimisticId, version)) {
+            set({ tasks: previousTasks });
+          }
           set({ error: error as Error });
+          toast.error("Could not create task. Your changes were reverted.");
           throw error;
         } finally {
           set({ loading: false });
@@ -146,28 +192,42 @@ export const useTaskStore = create<TaskState>()(
 
       updateTask: async (id: string, updates: UpdateTask) => {
         set({ loading: true, error: null });
+        const previousTasks = get().tasks;
+        const version = beginTaskMutation(id);
+        set({
+          tasks: updateOptimisticTask(previousTasks, id, updates, get().tags),
+        });
         try {
-          const response = await fetch(`/api/tasks/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updates),
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to update task: ${errorText}`);
+          const updatedTask = await enqueueTaskMutation(id, () =>
+            updateTaskRequest(id, updates)
+          );
+          if (isLatestTaskMutation(id, version)) {
+            set((state) => ({
+              tasks: reconcileOptimisticTask(state.tasks, updatedTask),
+            }));
           }
-
-          const updatedTask = await response.json();
-          set((state) => ({
-            tasks: state.tasks.map((task) =>
-              task.id === id ? updatedTask : task
-            ),
-          }));
-          await get().triggerScheduleAllTasks();
+          void get()
+            .triggerScheduleAllTasks()
+            .catch((scheduleError: unknown) => {
+              void logger.error(
+                "Background rescheduling failed",
+                {
+                  taskId: id,
+                  error:
+                    scheduleError instanceof Error
+                      ? scheduleError.message
+                      : String(scheduleError),
+                },
+                LOG_SOURCE
+              );
+            });
           return updatedTask;
         } catch (error) {
+          if (isLatestTaskMutation(id, version)) {
+            set({ tasks: previousTasks });
+          }
           set({ error: error as Error });
+          toast.error("Could not update task. Your changes were reverted.");
           throw error;
         } finally {
           set({ loading: false });
@@ -176,17 +236,32 @@ export const useTaskStore = create<TaskState>()(
 
       deleteTask: async (id: string) => {
         set({ loading: true, error: null });
+        const previousTasks = get().tasks;
+        const version = beginTaskMutation(id);
+        set({ tasks: removeOptimisticTask(previousTasks, id) });
         try {
-          const response = await fetch(`/api/tasks/${id}`, {
-            method: "DELETE",
-          });
-          if (!response.ok) throw new Error("Failed to delete task");
-          set((state) => ({
-            tasks: state.tasks.filter((task) => task.id !== id),
-          }));
-          await get().triggerScheduleAllTasks();
+          await enqueueTaskMutation(id, () => deleteTaskRequest(id));
+          void get()
+            .triggerScheduleAllTasks()
+            .catch((scheduleError: unknown) => {
+              void logger.error(
+                "Background rescheduling failed",
+                {
+                  taskId: id,
+                  error:
+                    scheduleError instanceof Error
+                      ? scheduleError.message
+                      : String(scheduleError),
+                },
+                LOG_SOURCE
+              );
+            });
         } catch (error) {
+          if (isLatestTaskMutation(id, version)) {
+            set({ tasks: previousTasks });
+          }
           set({ error: error as Error });
+          toast.error("Could not delete task. Your changes were reverted.");
           throw error;
         } finally {
           set({ loading: false });
@@ -275,26 +350,7 @@ export const useTaskStore = create<TaskState>()(
       },
 
       assignToProject: async (taskId: string, projectId: string | null) => {
-        set({ loading: true, error: null });
-        try {
-          const response = await fetch(`/api/tasks/${taskId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ projectId }),
-          });
-          if (!response.ok) throw new Error("Failed to assign task to project");
-          const updatedTask = await response.json();
-          set((state) => ({
-            tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
-          }));
-          await get().triggerScheduleAllTasks();
-          return updatedTask;
-        } catch (error) {
-          set({ error: error as Error });
-          throw error;
-        } finally {
-          set({ loading: false });
-        }
+        return get().updateTask(taskId, { projectId });
       },
 
       bulkAssignToProject: async (
@@ -366,15 +422,23 @@ export const useTaskStore = create<TaskState>()(
                     );
                   }
                 } catch (error) {
-                  console.error(
-                    "Error parsing SSE message in task store:",
-                    error
+                  void logger.error(
+                    "Error parsing task scheduling event",
+                    {
+                      error:
+                        error instanceof Error ? error.message : String(error),
+                    },
+                    LOG_SOURCE
                   );
                 }
               };
 
               eventSource.onerror = () => {
-                console.error("SSE connection error");
+                void logger.error(
+                  "Task scheduling event stream disconnected",
+                  undefined,
+                  LOG_SOURCE
+                );
                 eventSource.close();
                 // Try to reconnect after a delay
                 setTimeout(setupSSE, 5000);

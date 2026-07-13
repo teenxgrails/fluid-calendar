@@ -45,6 +45,8 @@ import { useEventModalStore } from "@/lib/commands/groups/calendar";
 import { addDays, newDate, subDays } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useCalendarStore, useViewStore } from "@/store/calendar";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
@@ -75,7 +77,8 @@ export function Calendar({
   initialEvents = [],
 }: CalendarProps) {
   const { date: currentDate, setDate, view, setView } = useViewStore();
-  const { scheduleAllTasks } = useTaskStore();
+  const { scheduleAllTasks, tags } = useTaskStore();
+  const { createTask } = useTaskMutations();
   const { setFeeds, setEvents } = useCalendarStore();
   const {
     user: userSettings,
@@ -86,7 +89,6 @@ export function Calendar({
   const eventModalStore = useEventModalStore();
   const prefersReducedMotion = useReducedMotion();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const { createTask, tags } = useTaskStore();
 
   const titlePrimary =
     view === "day"

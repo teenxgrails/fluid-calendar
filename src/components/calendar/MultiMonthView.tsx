@@ -16,6 +16,8 @@ import { getSelectionRange } from "@/lib/calendar-selection";
 import { useEventModalStore } from "@/lib/commands/groups/calendar";
 import { newDate } from "@/lib/date-utils";
 
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useCalendarStore } from "@/store/calendar";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
@@ -39,7 +41,7 @@ export function MultiMonthView({
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
   const { user: userSettings } = useSettingsStore();
-  const { updateTask } = useTaskStore();
+  const { updateTask, completeTask, deleteTask } = useTaskMutations();
   const [selectedEvent, setSelectedEvent] = useState<Partial<CalendarEvent>>();
   const [selectedTask, setSelectedTask] = useState<Task>();
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -65,7 +67,9 @@ export function MultiMonthView({
   const [quickViewItem, setQuickViewItem] = useState<CalendarEvent | Task>();
   const [isTask, setIsTask] = useState(false);
   const eventModalStore = useEventModalStore();
-  const [clickedElement, setClickedElement] = useState<HTMLElement | null>(null);
+  const [clickedElement, setClickedElement] = useState<HTMLElement | null>(
+    null
+  );
 
   // Update events when the calendar view changes
   const handleDatesSet = useCallback(
@@ -219,7 +223,7 @@ export function MultiMonthView({
 
     if (isTask) {
       if (confirm("Are you sure you want to delete this task?")) {
-        await useTaskStore.getState().deleteTask(quickViewItem.id);
+        await deleteTask(quickViewItem.id);
         handleQuickViewClose();
       }
     } else {
@@ -239,7 +243,11 @@ export function MultiMonthView({
   ) => {
     if (!quickViewItem) return;
 
-    await updateTask(taskId, { status });
+    if (status === TaskStatus.COMPLETED) {
+      await completeTask(taskId, status);
+    } else {
+      await updateTask(taskId, { status });
+    }
 
     // Update the quick view item to reflect the new status
     if (isTask) {
@@ -298,7 +306,7 @@ export function MultiMonthView({
           task={selectedTask}
           tags={useTaskStore.getState().tags}
           onSave={async (updates) => {
-            await useTaskStore.getState().updateTask(selectedTask.id, updates);
+            await updateTask(selectedTask.id, updates);
             handleTaskModalClose();
           }}
           onCreateTag={async (name: string, color?: string) => {

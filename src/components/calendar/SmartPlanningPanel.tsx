@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { newDate } from "@/lib/date-utils";
 
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useTaskStore } from "@/store/task";
 
 import {
@@ -68,7 +70,8 @@ function minutesLabel(minutes: number) {
 }
 
 export function SmartPlanningPanel() {
-  const { tasks, createTask, updateTask, scheduleAllTasks } = useTaskStore();
+  const { tasks, scheduleAllTasks } = useTaskStore();
+  const { createTask, moveTask } = useTaskMutations();
   const [brainDump, setBrainDump] = useState("");
   const [parsedTasks, setParsedTasks] = useState<ParsedTask[]>([]);
   const [energyWindows, setEnergyWindows] = useState<EnergyWindow[]>([]);
@@ -206,7 +209,7 @@ export function SmartPlanningPanel() {
 
     for (const task of unfinished) {
       if (newDate(task.scheduledStart!) < newDate()) {
-        await updateTask(task.id, {
+        await moveTask(task.id, {
           startDate: tomorrow,
           dueDate: task.dueDate ? newDate(task.dueDate) : tomorrow,
           scheduledStart: null,
@@ -316,8 +319,8 @@ export function SmartPlanningPanel() {
           Time-Blindness Buffer
         </div>
         <div className="rounded-md bg-[#1B1D1E] p-2 text-xs text-[#9AA0A6]">
-          Flowday places tasks at {bufferMultiplier.toFixed(1)}x estimates when no
-          personal category data exists.
+          Flowday places tasks at {bufferMultiplier.toFixed(1)}x estimates when
+          no personal category data exists.
         </div>
         {nextTask && (
           <div className="rounded-md border border-[#323234] bg-[#1B1D1E] p-2">

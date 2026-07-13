@@ -23,6 +23,8 @@ import { getSelectionRange } from "@/lib/calendar-selection";
 import { useEventModalStore } from "@/lib/commands/groups/calendar";
 import { newDate } from "@/lib/date-utils";
 
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useCalendarStore } from "@/store/calendar";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
@@ -48,7 +50,8 @@ export function WeekView({ currentDate }: WeekViewProps) {
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
   const { user: userSettings, calendar: calendarSettings } = useSettingsStore();
-  const { createTask, updateTask } = useTaskStore();
+  const { createTask, updateTask, completeTask, deleteTask } =
+    useTaskMutations();
   const [selectedEvent, setSelectedEvent] = useState<Partial<CalendarEvent>>();
   const [selectedTask, setSelectedTask] = useState<Task>();
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -369,7 +372,7 @@ export function WeekView({ currentDate }: WeekViewProps) {
     if (isTask) {
       // It's a task
       if (confirm("Are you sure you want to delete this task?")) {
-        await useTaskStore.getState().deleteTask(quickViewItem.id);
+        await deleteTask(quickViewItem.id);
         handleQuickViewClose();
       }
     } else {
@@ -390,7 +393,11 @@ export function WeekView({ currentDate }: WeekViewProps) {
   ) => {
     if (!quickViewItem) return;
 
-    await updateTask(taskId, { status });
+    if (status === TaskStatus.COMPLETED) {
+      await completeTask(taskId, status);
+    } else {
+      await updateTask(taskId, { status });
+    }
 
     // Update the quick view item to reflect the new status
     if (isTask) {

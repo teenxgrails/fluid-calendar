@@ -22,9 +22,10 @@ import {
 import { newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useDurationMemoryStore } from "@/store/durationMemory";
 import { useFocusModeStore } from "@/store/focusMode";
-import { useTaskStore } from "@/store/task";
 
 import { Task, TaskStatus } from "@/types/task";
 
@@ -43,7 +44,7 @@ export function StartTaskModal({
   open,
   onOpenChange,
 }: StartTaskModalProps) {
-  const updateTask = useTaskStore((state) => state.updateTask);
+  const { moveTask } = useTaskMutations();
   const remember = useDurationMemoryStore((state) => state.remember);
   const recall = useDurationMemoryStore((state) => state.recall);
   const switchToTask = useFocusModeStore((state) => state.switchToTask);
@@ -74,7 +75,7 @@ export function StartTaskModal({
 
       // Allocate this block now and let the existing scheduling engine move
       // other tasks around the locked block (updateTask triggers a reschedule).
-      await updateTask(task.id, {
+      await moveTask(task.id, {
         duration,
         scheduledStart: now,
         scheduledEnd: end,

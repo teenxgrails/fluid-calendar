@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added instant optimistic task creation, editing, completion, movement, and deletion across Tasks, Calendar, Focus, Smart Planning, and project drag-and-drop, with server reconciliation and automatic rollback when a request fails.
 - Added Motion-style calendar creation: clicking or dragging an empty Week/Day time slot now opens a lightweight task-first quick creator. Press Enter to create an auto-scheduled task, choose Event for a fixed block, or open the full Task editor for advanced options.
 - Rebuilt the Event creator as a full Motion-style, two-column editor with time controls, repeat settings, and a dedicated Event details panel.
 - Restored the month mini-calendar in the left sidebar (above the navigation list). Clicking a day moves the main calendar, the ‹ › arrows change month, today is shown with an accent-filled pill, and the selected day with a grey pill

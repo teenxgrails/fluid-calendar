@@ -17,6 +17,8 @@ import { getSelectionRange } from "@/lib/calendar-selection";
 import { useEventModalStore } from "@/lib/commands/groups/calendar";
 import { newDate } from "@/lib/date-utils";
 
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useCalendarStore } from "@/store/calendar";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
@@ -42,7 +44,8 @@ export function DayView({ currentDate }: DayViewProps) {
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
   const { user: userSettings, calendar: calendarSettings } = useSettingsStore();
-  const { updateTask } = useTaskStore();
+  const { createTask, updateTask, completeTask, deleteTask } =
+    useTaskMutations();
   const [selectedEvent, setSelectedEvent] = useState<Partial<CalendarEvent>>();
   const [selectedTask, setSelectedTask] = useState<Task>();
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -271,7 +274,7 @@ export function DayView({ currentDate }: DayViewProps) {
 
     if (isTask) {
       if (confirm("Are you sure you want to delete this task?")) {
-        await useTaskStore.getState().deleteTask(quickViewItem.id);
+        await deleteTask(quickViewItem.id);
         handleQuickViewClose();
       }
     } else {
@@ -291,7 +294,11 @@ export function DayView({ currentDate }: DayViewProps) {
   ) => {
     if (!quickViewItem) return;
 
-    await updateTask(taskId, { status });
+    if (status === TaskStatus.COMPLETED) {
+      await completeTask(taskId, status);
+    } else {
+      await updateTask(taskId, { status });
+    }
 
     // Update the quick view item to reflect the new status
     if (isTask) {
@@ -424,7 +431,7 @@ export function DayView({ currentDate }: DayViewProps) {
           initialStart={selectedDate}
           initialEnd={selectedEndDate}
           onSave={async (updates) => {
-            await useTaskStore.getState().createTask(updates);
+            await createTask(updates);
             handleTaskModalClose();
           }}
           onCreateTag={async (name: string, color?: string) => {

@@ -2,12 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { CalendarDays, CheckSquare2, Clock3, CornerDownLeft } from "lucide-react";
+import {
+  CalendarDays,
+  CheckSquare2,
+  Clock3,
+  CornerDownLeft,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
+
 import { cn } from "@/lib/utils";
-import { useTaskStore } from "@/store/task";
-import { SchedulingEnergyLevel, SchedulingTaskPriority, TaskStatus } from "@/types/task";
+
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
+import {
+  SchedulingEnergyLevel,
+  SchedulingTaskPriority,
+  TaskStatus,
+} from "@/types/task";
 
 export interface QuickCreateSelection {
   start: Date;
@@ -29,7 +41,7 @@ export function CalendarQuickCreate({
   onOpenTaskEditor,
   onOpenEventEditor,
 }: CalendarQuickCreateProps) {
-  const createTask = useTaskStore((state) => state.createTask);
+  const { createTask } = useTaskMutations();
   const inputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -56,7 +68,9 @@ export function CalendarQuickCreate({
     try {
       const duration = Math.max(
         15,
-        Math.round((selection.end.getTime() - selection.start.getTime()) / 60000)
+        Math.round(
+          (selection.end.getTime() - selection.start.getTime()) / 60000
+        )
       );
       await createTask({
         title: title.trim(),
@@ -84,8 +98,14 @@ export function CalendarQuickCreate({
 
   if (!selection) return null;
 
-  const top = Math.min(Math.max(selection.point?.y ?? 220, 84), window.innerHeight - 214);
-  const left = Math.min(Math.max(selection.point?.x ?? 320, 16), window.innerWidth - 352);
+  const top = Math.min(
+    Math.max(selection.point?.y ?? 220, 84),
+    window.innerHeight - 214
+  );
+  const left = Math.min(
+    Math.max(selection.point?.x ?? 320, 16),
+    window.innerWidth - 352
+  );
 
   return (
     <div

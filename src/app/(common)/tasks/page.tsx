@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CalendarRange, Kanban, ListTodo } from "lucide-react";
-import { toast } from "sonner";
 
 import { ProjectSidebar } from "@/components/projects/ProjectSidebar";
 import { BoardView } from "@/components/tasks/BoardView/BoardView";
@@ -14,7 +13,10 @@ import { TimelineView } from "@/components/tasks/TimelineView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
+
+import { useTaskMutations } from "@/hooks/useTaskMutations";
 
 import { useProjectStore } from "@/store/project";
 import { useTaskStore } from "@/store/task";
@@ -23,6 +25,8 @@ import { useTaskPageSettings } from "@/store/taskPageSettings";
 
 import { NewTask, Task, TaskStatus } from "@/types/task";
 
+const LOG_SOURCE = "TasksPage";
+
 export default function TasksPage() {
   const {
     tasks,
@@ -30,12 +34,11 @@ export default function TasksPage() {
     error,
     fetchTasks,
     fetchTags,
-    createTask,
-    updateTask,
-    deleteTask,
     createTag,
     scheduleAllTasks,
   } = useTaskStore();
+  const { createTask, updateTask, completeTask, deleteTask } =
+    useTaskMutations();
   const { fetchProjects, activeProject } = useProjectStore();
   const { viewMode, setViewMode } = useTaskPageSettings();
   const { isOpen, setOpen } = useTaskModalStore();
@@ -55,14 +58,12 @@ export default function TasksPage() {
 
   const handleCreateTask = async (task: NewTask) => {
     await createTask(task);
-    await fetchTasks();
     await fetchProjects();
   };
 
   const handleUpdateTask = async (task: NewTask) => {
     if (selectedTask) {
       await updateTask(selectedTask.id, task);
-      await fetchTasks();
       await fetchProjects();
     }
   };
@@ -70,14 +71,16 @@ export default function TasksPage() {
   const handleDeleteTask = async (taskId: string) => {
     if (confirm("Are you sure you want to delete this task?")) {
       await deleteTask(taskId);
-      await fetchTasks();
       await fetchProjects();
     }
   };
 
   const handleStatusChange = async (taskId: string, status: TaskStatus) => {
-    await updateTask(taskId, { status });
-    await fetchTasks();
+    if (status === TaskStatus.COMPLETED) {
+      await completeTask(taskId, status);
+    } else {
+      await updateTask(taskId, { status });
+    }
     await fetchProjects();
   };
 
@@ -87,7 +90,11 @@ export default function TasksPage() {
       await fetchTags(); // Refresh tags after creation
       return newTag;
     } catch (error) {
-      console.error("Error creating tag:", error);
+      void logger.error(
+        "Failed to create task tag",
+        { error: error instanceof Error ? error.message : String(error) },
+        LOG_SOURCE
+      );
       throw error;
     }
   };
@@ -95,19 +102,21 @@ export default function TasksPage() {
   const handleInlineEdit = async (task: Task) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, tags, createdAt, updatedAt, project, ...updates } = task;
-    console.log("Updating task:", { id, updates });
     try {
       await updateTask(id, updates);
-      await fetchTasks();
       // If projectId was changed, refresh projects to update task counts
       if ("projectId" in updates) {
         await fetchProjects();
       }
     } catch (error) {
-      console.error("Error updating task:", error);
-      toast.error("Failed to update task", {
-        description: "Please try again later.",
-      });
+      void logger.error(
+        "Failed to update task inline",
+        {
+          taskId: id,
+          error: error instanceof Error ? error.message : String(error),
+        },
+        LOG_SOURCE
+      );
     }
   };
 

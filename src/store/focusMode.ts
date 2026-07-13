@@ -235,9 +235,13 @@ export const useFocusModeStore = create<FocusModeStore>()(
               get().stopProcessing();
             }, 3000);
 
-            console.error(
-              "Error handling task completion:",
-              error instanceof Error ? error.message : String(error)
+            void logger.error(
+              "Error handling task completion",
+              {
+                taskId: currentTaskId,
+                error: error instanceof Error ? error.message : String(error),
+              },
+              LOG_SOURCE
             );
           }
         })();
@@ -340,9 +344,13 @@ export const useFocusModeStore = create<FocusModeStore>()(
               get().stopProcessing();
             }, 3000);
 
-            console.error(
-              "Error handling task postponing:",
-              error instanceof Error ? error.message : String(error)
+            void logger.error(
+              "Error handling task postponing",
+              {
+                taskId: currentTaskId,
+                error: error instanceof Error ? error.message : String(error),
+              },
+              LOG_SOURCE
             );
           }
         })();

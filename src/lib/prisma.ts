@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -31,14 +31,15 @@ function createPrismaClient() {
   const neonAdapter = isNeonPooledUrl(process.env.DATABASE_URL)
     ? createNeonAdapter(process.env.DATABASE_URL!)
     : null;
-  const client = new PrismaClient({
+  const options: NonNullable<ConstructorParameters<typeof PrismaClient>[0]> = {
     ...(neonAdapter
       ? {
-          adapter: neonAdapter as Prisma.PrismaClientOptions["adapter"],
+          adapter: neonAdapter,
         }
       : {}),
     log: ["error"],
-  });
+  };
+  const client = new PrismaClient(options);
 
   // Ensure connection is properly closed before process exits
   process.on("beforeExit", async () => {

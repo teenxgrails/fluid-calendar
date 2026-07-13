@@ -9,16 +9,20 @@ import { Button } from "@/components/ui/button";
 
 import { logger } from "@/lib/logger";
 
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useFocusModeStore } from "@/store/focusMode";
 import { useTaskStore } from "@/store/task";
 
 import { NewTask } from "@/types/task";
 
+const LOG_SOURCE = "FocusQuickActions";
+
 export function QuickActions() {
   const { completeCurrentTask, postponeTask, getCurrentTask } =
     useFocusModeStore();
-  const { updateTask, deleteTask, fetchTasks, tags, createTag } =
-    useTaskStore();
+  const { tags, createTag } = useTaskStore();
+  const { updateTask, deleteTask } = useTaskMutations();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const currentTask = getCurrentTask();
@@ -28,13 +32,16 @@ export function QuickActions() {
 
     try {
       await updateTask(currentTask.id, taskData);
-      await fetchTasks();
       setIsEditModalOpen(false);
     } catch (error) {
-      logger.error("Failed to update task in focus mode", {
-        error: error instanceof Error ? error.message : String(error),
-        taskId: currentTask.id,
-      });
+      logger.error(
+        "Failed to update task in focus mode",
+        {
+          error: error instanceof Error ? error.message : String(error),
+          taskId: currentTask.id,
+        },
+        LOG_SOURCE
+      );
     }
   };
 
@@ -44,12 +51,15 @@ export function QuickActions() {
     if (confirm("Are you sure you want to delete this task?")) {
       try {
         await deleteTask(currentTask.id);
-        await fetchTasks();
       } catch (error) {
-        logger.error("Failed to delete task in focus mode", {
-          error: error instanceof Error ? error.message : String(error),
-          taskId: currentTask.id,
-        });
+        logger.error(
+          "Failed to delete task in focus mode",
+          {
+            error: error instanceof Error ? error.message : String(error),
+            taskId: currentTask.id,
+          },
+          LOG_SOURCE
+        );
       }
     }
   };

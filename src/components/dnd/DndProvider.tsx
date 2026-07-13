@@ -12,15 +12,20 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 
+import { logger } from "@/lib/logger";
+
+import { useTaskMutations } from "@/hooks/useTaskMutations";
+
 import { useProjectStore } from "@/store/project";
-import { useTaskStore } from "@/store/task";
+
+const LOG_SOURCE = "DndProvider";
 
 interface DndProviderProps {
   children: ReactNode;
 }
 
 export function DndProvider({ children }: DndProviderProps) {
-  const { updateTask } = useTaskStore();
+  const { moveTask } = useTaskMutations();
   const { fetchProjects } = useProjectStore();
 
   const sensors = useSensors(
@@ -51,11 +56,20 @@ export function DndProvider({ children }: DndProviderProps) {
       const projectId =
         over.id === "remove-project" ? null : (over.id as string);
 
-      // Optimistically update the task
-      await updateTask(taskId, { projectId });
-
-      // Refetch projects to update task counts
-      fetchProjects();
+      try {
+        await moveTask(taskId, { projectId });
+        await fetchProjects();
+      } catch (error) {
+        void logger.error(
+          "Failed to move task to project",
+          {
+            taskId,
+            projectId,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          LOG_SOURCE
+        );
+      }
     }
   };
 
