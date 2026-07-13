@@ -597,27 +597,30 @@ html[data-animations="off"] *::after {
   pointer-events: none;
 }
 
-.fc .fc-timegrid-now-indicator-arrow {
-  z-index: 7;
+.fc .fc-timegrid-now-indicator-line::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: -7px;
   width: 14px;
   height: 14px;
-  margin-top: -7px;
-  border: 0 !important;
   border-radius: 9999px;
   background: #f4f5f6;
-  pointer-events: none;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  display: none;
 }
 
 /* Calendar color hierarchy stays intentionally close to the app canvas
    (#1B1D1E): today is flat, while working and non-working hours are subtly
    stepped without turning the calendar into grey blocks. */
 .fc .fc-timegrid-col-frame {
-  background: #1e2021;
-  box-shadow: inset 1px 0 0 #2b2f31;
+  background: #1d1f20;
 }
 
 .fc .fc-timegrid-col-bg .fc-non-business {
-  background: #242627 !important;
+  background: #202223 !important;
 }
 
 .fc .fc-day-today {
@@ -629,7 +632,7 @@ html[data-animations="off"] *::after {
 }
 
 .fc .fc-day-today .fc-timegrid-col-bg .fc-non-business {
-  background: transparent !important;
+  background: #1e2021 !important;
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
@@ -671,12 +674,16 @@ html[data-animations="off"] *::after {
   border-left: 1px solid #2b2f31 !important;
 }
 
-.fc .fc-col-header-cell {
-  background: #1b1d1e !important;
-  height: 44px;
+.fc .fc-timegrid-cols .fc-timegrid-axis + .fc-timegrid-col {
+  border-left: 0 !important;
 }
 
-/* All-day row uses the same canvas, with no divider tint. */
+.fc .fc-col-header-cell {
+  background: #1b1d1e !important;
+  height: 45px;
+}
+
+/* Motion-sized all-day rail between the day header and timed grid. */
 .fc .fc-timegrid-axis-cushion {
   font-size: 0 !important;
 }
@@ -694,6 +701,32 @@ html[data-animations="off"] *::after {
   background: #1b1d1e !important;
 }
 
+.fc-tz-corner .fc-scrollgrid-section-body:first-of-type > td,
+.fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-daygrid-body,
+.fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-daygrid-day,
+.fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-daygrid-day-frame {
+  min-height: 21px !important;
+  height: 21px !important;
+  background: #202425 !important;
+}
+
+.fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-timegrid-axis,
+.fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-daygrid-day {
+  border-top: 1px solid #2b2f31 !important;
+  border-bottom: 1px solid #2b2f31 !important;
+}
+
+.fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-daygrid-day {
+  border-left: 1px solid #2b2f31 !important;
+}
+
+.fc-tz-corner
+  .fc-scrollgrid-section-body:first-of-type
+  .fc-timegrid-axis
+  + .fc-daygrid-day {
+  border-left: 0 !important;
+}
+
 .fc .fc-timegrid-divider {
   border-color: #2b2f31 !important;
 }
@@ -704,7 +737,8 @@ html[data-animations="off"] *::after {
 }
 
 .fc .fc-col-header-cell-cushion {
-  padding: 6px 6px !important;
+  width: 100%;
+  padding: 10px 6px !important;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-hi);
@@ -719,12 +753,30 @@ html[data-animations="off"] *::after {
 .fc-tz-corner .fc-scrollgrid-section-header .fc-timegrid-axis::after {
   content: var(--tz-label, "");
   position: absolute;
-  bottom: 4px;
+  top: 50%;
   left: 8px;
+  transform: translateY(-50%);
   font-size: 12px;
   font-weight: 500;
   color: #9ba1a6;
   pointer-events: none;
+}
+
+/* Keep the time gutter aligned with Motion's compact 56px axis. Making the
+   label cushion explicit also keeps the timezone corner and now-dot stable. */
+.fc-tz-corner .fc-timegrid-axis,
+.fc-tz-corner .fc-timegrid-slot-label {
+  width: 56px !important;
+  min-width: 56px !important;
+}
+
+.fc-tz-corner .fc-timegrid-slot-label-cushion {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 56px;
+  padding-right: 8px;
+  text-align: right;
+  font-size: 12px;
 }
 
 /* Motion shows only hourly lines - hide the half-hour (minor) slot border.
@@ -773,8 +825,8 @@ html[data-animations="off"] *::after {
    them the calendar canvas color and a little more room for 12-hour labels. */
 .fc .fc-timegrid-axis,
 .fc .fc-timegrid-slot-label {
-  width: 72px !important;
-  min-width: 72px !important;
+  width: 56px !important;
+  min-width: 56px !important;
   box-sizing: border-box;
   background: #1b1d1e !important;
   border-right: 0 !important;
@@ -794,7 +846,7 @@ html[data-animations="off"] *::after {
 }
 
 .fc .fc-day-today .fc-timegrid-col-bg .fc-non-business:hover {
-  background: transparent !important;
+  background: #1e2021 !important;
 }
 
 /* Uniform Flowday canvas behind columns, gutter and gaps. */

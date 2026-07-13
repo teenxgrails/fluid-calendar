@@ -10,8 +10,8 @@ import {
 } from "react-icons/io5";
 
 import { getMonthEventDisplay } from "@/lib/calendar-event-display";
-import { isTaskOverdue } from "@/lib/task-utils";
 import { springSnappy, springSoft } from "@/lib/motion";
+import { isTaskOverdue } from "@/lib/task-utils";
 import { cn } from "@/lib/utils";
 
 import { useSettingsStore } from "@/store/settings";
@@ -19,10 +19,13 @@ import { useTaskStore } from "@/store/task";
 
 import { Priority, TaskStatus } from "@/types/task";
 
+import { resolveCalendarItemId } from "./calendar-item-id";
+
 const DEFAULT_EVENT_COLOR = "#6366F1";
 
 interface CalendarEventContentProps {
   eventInfo: EventContentArg;
+  onTaskComplete?: (taskId: string) => Promise<unknown>;
 }
 
 const priorityColors = {
@@ -34,6 +37,7 @@ const priorityColors = {
 
 export const CalendarEventContent = memo(function CalendarEventContent({
   eventInfo,
+  onTaskComplete,
 }: CalendarEventContentProps) {
   const prefersReducedMotion = useReducedMotion();
   const { user: userSettings } = useSettingsStore();
@@ -42,10 +46,11 @@ export const CalendarEventContent = memo(function CalendarEventContent({
   );
   const isTask = eventInfo.event.extendedProps.isTask;
   const isAutoScheduled = eventInfo.event.extendedProps.isAutoScheduled;
-  const taskId = eventInfo.event.extendedProps.taskId as string | undefined;
+  const taskId = isTask
+    ? resolveCalendarItemId(eventInfo.event.extendedProps, eventInfo.event.id)
+    : undefined;
   const chunkIndex = eventInfo.event.extendedProps.chunkIndex as
-    | number
-    | undefined;
+    number | undefined;
   const isRecurring = eventInfo.event.extendedProps.isRecurring;
   const status = eventInfo.event.extendedProps.status;
   const priority = eventInfo.event.extendedProps.priority;
@@ -109,6 +114,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
       transition={settleTransition}
       whileHover={prefersReducedMotion ? undefined : { y: -1 }}
       data-testid={isTask ? "calendar-task" : "calendar-event"}
+      data-task-id={taskId}
       style={{
         backgroundColor: isTask
           ? "#303335"
@@ -128,11 +134,30 @@ export const CalendarEventContent = memo(function CalendarEventContent({
     >
       <div className="flex min-w-0 items-start gap-1.5">
         {isTask ? (
-          status === TaskStatus.COMPLETED ? (
-            <IoCheckmarkCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#9AA0A6]" />
-          ) : (
-            <IoCheckmarkCircleOutline className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#A9B0B5]" />
-          )
+          <button
+            type="button"
+            aria-label={
+              status === TaskStatus.COMPLETED
+                ? `${title} completed`
+                : `Complete task ${title}`
+            }
+            disabled={status === TaskStatus.COMPLETED}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (taskId && status !== TaskStatus.COMPLETED) {
+                void onTaskComplete?.(taskId);
+              }
+            }}
+            className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full text-[#A9B0B5] transition-colors hover:text-white disabled:cursor-default disabled:text-[#9AA0A6]"
+          >
+            {status === TaskStatus.COMPLETED ? (
+              <IoCheckmarkCircle className="h-4 w-4" />
+            ) : (
+              <IoCheckmarkCircleOutline className="h-4 w-4" />
+            )}
+          </button>
         ) : showTimeChip || isRecurring ? (
           isRecurring ? (
             <IoRepeat

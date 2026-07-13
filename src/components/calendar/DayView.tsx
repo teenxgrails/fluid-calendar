@@ -174,16 +174,15 @@ export function DayView({ currentDate }: DayViewProps) {
     const itemId = resolveCalendarItemId(item, info.event.id);
     const isTask = item.isTask;
 
-    // Store the clicked element for positioning
-    setClickedElement(info.el);
-
     if (isTask) {
       const task = useTaskStore.getState().tasks.find((t) => t.id === itemId);
       if (task) {
-        setQuickViewItem(task);
-        setIsTask(true);
+        setSelectedTask(task);
+        setIsTaskModalOpen(true);
+        setQuickViewItem(undefined);
       }
     } else {
+      setClickedElement(info.el);
       const event = useCalendarStore
         .getState()
         .events.find((e) => e.id === itemId);
@@ -314,8 +313,10 @@ export function DayView({ currentDate }: DayViewProps) {
   };
 
   const renderEventContent = useCallback(
-    (arg: EventContentArg) => <CalendarEventContent eventInfo={arg} />,
-    []
+    (arg: EventContentArg) => (
+      <CalendarEventContent eventInfo={arg} onTaskComplete={completeTask} />
+    ),
+    [completeTask]
   );
 
   return (

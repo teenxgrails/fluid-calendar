@@ -15,6 +15,7 @@ import type { DateSelectArg } from "@fullcalendar/core";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import { Clock3 } from "lucide-react";
 
 import { TaskModal } from "@/components/tasks/TaskModal";
 
@@ -272,16 +273,15 @@ export function WeekView({ currentDate }: WeekViewProps) {
     const itemId = resolveCalendarItemId(item, info.event.id);
     const isTask = item.isTask;
 
-    // Store the clicked element for positioning
-    setClickedElement(info.el);
-
     if (isTask) {
       const task = useTaskStore.getState().tasks.find((t) => t.id === itemId);
       if (task) {
-        setQuickViewItem(task);
-        setIsTask(true);
+        setSelectedTask(task);
+        setIsTaskModalOpen(true);
+        setQuickViewItem(undefined);
       }
     } else {
+      setClickedElement(info.el);
       const event = useCalendarStore
         .getState()
         .events.find((e) => e.id === itemId);
@@ -416,15 +416,17 @@ export function WeekView({ currentDate }: WeekViewProps) {
   };
 
   const renderEventContent = useCallback(
-    (arg: EventContentArg) => <CalendarEventContent eventInfo={arg} />,
-    []
+    (arg: EventContentArg) => (
+      <CalendarEventContent eventInfo={arg} onTaskComplete={completeTask} />
+    ),
+    [completeTask]
   );
 
   return (
     <div
       ref={wrapperRef}
       className="fc-tz-corner h-full [&_.fc-daygrid-day-events]:!min-h-0 [&_.fc-daygrid-day-frame]:!min-h-0 [&_.fc-timegrid-axis-cushion]:!py-0.5 [&_.fc-timegrid-slot-label]:!py-0.5 [&_.fc-timegrid-slot]:!h-[32px]"
-      style={{ "--tz-label": JSON.stringify(tzLabel) } as CSSProperties}
+      style={{ "--tz-label": JSON.stringify(`${tzLabel}  +`) } as CSSProperties}
     >
       <FullCalendar
         ref={calendarRef}
@@ -469,19 +471,29 @@ export function WeekView({ currentDate }: WeekViewProps) {
           }).format(arg.date);
           const day = arg.date.getDate();
           return (
-            <div className="flex items-center justify-center gap-1.5">
-              <span className="text-[13px] font-medium text-[#9BA1A6]">
+            <div className="relative flex w-full items-center justify-center gap-1.5">
+              <span
+                className={
+                  arg.isToday
+                    ? "text-[13px] font-semibold text-[#F2F2F2]"
+                    : "text-[13px] font-medium text-[#9BA1A6]"
+                }
+              >
                 {weekday}
               </span>
               <span
                 className={
                   arg.isToday
-                    ? "flex h-[22px] min-w-[22px] items-center justify-center rounded-md bg-[var(--accent)] px-1 text-[13px] font-semibold text-white"
+                    ? "flex h-[24px] min-w-[24px] items-center justify-center rounded-md bg-[var(--accent)] px-1 text-[13px] font-semibold text-white"
                     : "text-[14px] font-semibold text-[#9BA1A6]"
                 }
               >
                 {day}
               </span>
+              <Clock3
+                aria-hidden="true"
+                className="absolute right-2.5 h-3.5 w-3.5 text-[#555B5F]"
+              />
             </div>
           );
         }}

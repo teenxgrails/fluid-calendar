@@ -28,6 +28,7 @@ import { Task, TaskStatus } from "@/types/task";
 import { CalendarEventContent } from "./CalendarEventContent";
 import { EventModal } from "./EventModal";
 import { EventQuickView } from "./EventQuickView";
+import { resolveCalendarItemId } from "./calendar-item-id";
 
 interface MultiMonthViewProps {
   currentDate: Date;
@@ -153,19 +154,18 @@ export function MultiMonthView({
 
   const handleEventClick = (info: EventClickArg) => {
     const item = info.event.extendedProps;
-    const itemId = info.event.id;
+    const itemId = resolveCalendarItemId(item, info.event.id);
     const isTask = item.isTask;
-
-    // Store the clicked element for positioning
-    setClickedElement(info.el);
 
     if (isTask) {
       const task = useTaskStore.getState().tasks.find((t) => t.id === itemId);
       if (task) {
-        setQuickViewItem(task);
-        setIsTask(true);
+        setSelectedTask(task);
+        setIsTaskModalOpen(true);
+        setQuickViewItem(undefined);
       }
     } else {
+      setClickedElement(info.el);
       const event = useCalendarStore
         .getState()
         .events.find((e) => e.id === itemId);
@@ -261,8 +261,10 @@ export function MultiMonthView({
   };
 
   const renderEventContent = useCallback(
-    (arg: EventContentArg) => <CalendarEventContent eventInfo={arg} />,
-    []
+    (arg: EventContentArg) => (
+      <CalendarEventContent eventInfo={arg} onTaskComplete={completeTask} />
+    ),
+    [completeTask]
   );
 
   return (

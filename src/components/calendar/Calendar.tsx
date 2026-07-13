@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
+import { CheckSquare2, Clock3, Settings } from "lucide-react";
 import {
   AnimatePresence,
   LayoutGroup,
   motion,
   useReducedMotion,
 } from "motion/react";
-import { CheckSquare2, Clock3, Settings } from "lucide-react";
 import {
   IoAddOutline,
   IoChevronBack,
@@ -48,6 +48,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { useEventModalStore } from "@/lib/commands/groups/calendar";
 import { addDays, newDate, subDays } from "@/lib/date-utils";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 import { useTaskMutations } from "@/hooks/useTaskMutations";
@@ -72,6 +73,12 @@ const VIEW_ORDER: Array<"day" | "week" | "month" | "multiMonth"> = [
   "multiMonth",
 ];
 
+const LOG_SOURCE = "Calendar";
+const TOOLBAR_BUTTON_CLASS =
+  "flex h-8 items-center gap-2 rounded-md border border-[#3A3F42] bg-[#313538] px-2.5 text-[14px] font-medium leading-5 text-white transition-colors duration-150 ease-out hover:bg-[#383D40] disabled:cursor-wait disabled:opacity-70";
+const TOOLBAR_ICON_BUTTON_CLASS =
+  "grid h-8 w-8 place-items-center rounded-md border border-[#3A3F42] bg-[#313538] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]";
+
 interface CalendarProps {
   initialFeeds?: CalendarFeed[];
   initialEvents?: CalendarEvent[];
@@ -94,6 +101,7 @@ export function Calendar({
   const eventModalStore = useEventModalStore();
   const prefersReducedMotion = useReducedMotion();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isRefreshingTasks, setIsRefreshingTasks] = useState(false);
 
   const titlePrimary =
     view === "day"
@@ -150,6 +158,8 @@ export function Calendar({
   };
 
   const handleAutoSchedule = async () => {
+    if (isRefreshingTasks) return;
+    setIsRefreshingTasks(true);
     // Inverse-themed "Recalculating tasks..." toast (white on dark, dark on
     // light), matching the Motion reference.
     const toastId = toast.loading("Recalculating tasks...", {
@@ -157,9 +167,24 @@ export function Calendar({
       closeButton: true,
     });
     try {
-      await scheduleAllTasks();
+      const scheduledCount = await scheduleAllTasks();
+      toast.success(
+        scheduledCount > 0
+          ? `${scheduledCount} tasks refreshed on your calendar.`
+          : "All tasks are already up to date."
+      );
+    } catch (error) {
+      toast.error("Couldn't refresh tasks. Please try again.");
+      void logger.error(
+        "Calendar task refresh failed",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+        LOG_SOURCE
+      );
     } finally {
       toast.dismiss(toastId);
+      setIsRefreshingTasks(false);
     }
   };
 
@@ -189,11 +214,11 @@ export function Calendar({
       {/* Main Content */}
       <main className="flex min-w-0 flex-1 flex-col bg-[#1B1D1E]">
         {/* Header */}
-        <header className="flex h-12 flex-none items-center px-2">
-          <div className="flex items-center gap-1.5">
+        <header className="flex h-14 flex-none items-center px-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={handleToday}
-              className="h-[25px] rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
+              className={TOOLBAR_BUTTON_CLASS}
               title="Go to Today (t)"
             >
               Today
@@ -202,23 +227,23 @@ export function Calendar({
             <div className="flex items-center gap-0.5">
               <button
                 onClick={handlePrevWeek}
-                className="rounded-md p-1 text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
+                className="grid h-8 w-8 place-items-center rounded-md text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
                 data-testid="calendar-prev-week"
                 title="Previous Week (←)"
               >
-                <IoChevronBack className="h-4 w-4" />
+                <IoChevronBack className="h-[18px] w-[18px]" />
               </button>
               <button
                 onClick={handleNextWeek}
-                className="rounded-md p-1 text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
+                className="grid h-8 w-8 place-items-center rounded-md text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
                 data-testid="calendar-next-week"
                 title="Next Week (→)"
               >
-                <IoChevronForward className="h-4 w-4" />
+                <IoChevronForward className="h-[18px] w-[18px]" />
               </button>
             </div>
 
-            <h1 className="px-1.5 text-[20px] leading-none text-white">
+            <h1 className="px-1.5 text-[22px] leading-none text-white">
               <span className="font-semibold">{titlePrimary}</span>{" "}
               <span className="font-normal text-[#9BA1A6]">
                 {titleSecondary}
@@ -227,15 +252,15 @@ export function Calendar({
           </div>
 
           {/* Right-side actions */}
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-1.5">
             {/* Calendar options panel (Motion-style) */}
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  className="flex h-[25px] items-center gap-1.5 rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
+                  className={TOOLBAR_BUTTON_CLASS}
                   title="Calendar options"
                 >
-                  <IoOptionsOutline className="h-4 w-4" />
+                  <IoOptionsOutline className="h-[18px] w-[18px]" />
                   <span className="hidden sm:inline">Calendar options</span>
                 </button>
               </PopoverTrigger>
@@ -322,26 +347,35 @@ export function Calendar({
             {/* Refresh all tasks (auto-schedule) */}
             <button
               onClick={handleAutoSchedule}
-              className="flex h-[25px] items-center gap-1.5 rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
+              disabled={isRefreshingTasks}
+              aria-busy={isRefreshingTasks}
+              className={TOOLBAR_BUTTON_CLASS}
               title="Refresh all tasks"
+              data-testid="refresh-all-tasks"
             >
-              <IoRefreshOutline className="h-4 w-4" />
+              <IoRefreshOutline
+                className={cn(
+                  "h-[18px] w-[18px]",
+                  isRefreshingTasks && "animate-spin"
+                )}
+              />
               <span className="hidden md:inline">Refresh all tasks</span>
             </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="grid h-[25px] w-[25px] place-items-center rounded-md border border-[#3A3F42] bg-[#313538] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]"
+                  className={TOOLBAR_ICON_BUTTON_CLASS}
                   title="Create"
                   aria-label="Create task or event"
                 >
-                  <IoAddOutline className="h-4 w-4" />
+                  <IoAddOutline className="h-[18px] w-[18px]" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-60 border-[#2B2F31] bg-[#202425] p-1 text-[#F2F2F2]"
+                sideOffset={6}
+                className="w-60 origin-[var(--radix-dropdown-menu-content-transform-origin)] border-[#2B2F31] bg-[#202425] p-1 text-[#F2F2F2] data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-1"
               >
                 <DropdownMenuItem
                   onClick={handleNewTask}
@@ -377,7 +411,7 @@ export function Calendar({
             {/* View switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex h-[25px] items-center gap-1 rounded-md border border-[#3A3F42] bg-[#313538] px-1.5 py-[3px] text-[13px] font-medium leading-[17px] text-white transition-colors duration-150 ease-out hover:bg-[#383D40]">
+                <button className={TOOLBAR_BUTTON_CLASS}>
                   {VIEW_LABELS[view]}
                   <IoChevronDown className="h-3.5 w-3.5 text-[#9AA0A6]" />
                 </button>

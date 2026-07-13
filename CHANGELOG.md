@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Increased the calendar toolbar controls for clearer text and easier targets, aligned the week header/time gutter with Motion, and added a compact gridded all-day rail.
+- Refined calendar working and non-working hour shades while preserving the current-day hierarchy and consistent one-pixel grid lines.
 - Reduced the full Create task editor to Motion-like compact proportions with a 1080×720 desktop frame and a narrower scheduling sidebar.
 - Recolored the calendar canvas and time gutter to #1B1D1E, with subtle stepped shades for non-current working and non-working hours while preserving every grid line.
 - Rebuilt calendar task and event cards in Motion’s grid language: tasks are neutral, checkbox-led blocks with compact time metadata and a hover actions affordance; events retain a restrained color marker and their own event-specific layout.
@@ -37,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Calendar tasks now open their full editor on click, while their checkbox completes them directly without opening the editor.
+- Made Refresh all tasks run the scheduler, reload the calendar, animate the updated layout, and report success or rollback errors clearly.
+- Fixed the current-time indicator gap, removed the extra time-gutter divider, and added matching open/close motion to the Create Task / Event menu.
 - Fixed the Week calendar's full task editor occasionally refusing to close because its grid-creation state remained active after Close, Cancel, or Escape.
 - Fixed the command palette keeping an invisible modal scroll lock mounted after closing, which could prevent calendar scrolling and pointer interaction.
 - Fixed calendar task quick views for auto-scheduled chunks: click handlers now resolve the underlying task id instead of the generated calendar-block id, and the popover anchors to the clicked item.

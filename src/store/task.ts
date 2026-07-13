@@ -63,7 +63,7 @@ interface TaskState {
   ) => Promise<void>;
 
   // Auto-scheduling actions
-  scheduleAllTasks: () => Promise<void>;
+  scheduleAllTasks: () => Promise<number>;
   triggerScheduleAllTasks: () => Promise<void>;
   notifyScheduleAnimation: () => void;
 }
@@ -476,9 +476,10 @@ export const useTaskStore = create<TaskState>()(
             headers: { "Content-Type": "application/json" },
           });
           if (!response.ok) throw new Error("Failed to schedule tasks");
-          await response.json();
+          const scheduledTasks = await response.json();
           await get().fetchTasks();
           get().notifyScheduleAnimation();
+          return Array.isArray(scheduledTasks) ? scheduledTasks.length : 0;
         } catch (error) {
           set({ error: error as Error });
           throw error;
