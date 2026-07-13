@@ -335,7 +335,10 @@ export function WeekView({ currentDate }: WeekViewProps) {
 
   const handleTaskModalClose = () => {
     setIsTaskModalOpen(false);
+    setIsNewTaskModalOpen(false);
     setSelectedTask(undefined);
+    setSelectedDate(undefined);
+    setSelectedEndDate(undefined);
   };
 
   const openTaskEditorFromQuickCreate = () => {

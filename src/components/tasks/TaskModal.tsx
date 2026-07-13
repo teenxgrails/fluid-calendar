@@ -450,7 +450,10 @@ export function TaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex h-[min(860px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden border-[#3A3F42] bg-[#202425] p-0 text-[var(--text-hi)] sm:max-w-[1280px]">
+      <DialogContent
+        data-testid="task-modal"
+        className="flex h-[min(720px,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] !w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden border-[#3A3F42] bg-[#202425] p-0 text-[var(--text-hi)] sm:h-[min(720px,calc(100dvh-3rem))] sm:max-h-[calc(100dvh-3rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1080px]"
+      >
         <div className="contents">
           {isSubmitting && <LoadingOverlay />}
           <DialogHeader className="flex-row items-center justify-between space-y-0 border-b border-[var(--line-strong)] px-5 py-3.5 pr-14">
@@ -531,8 +534,8 @@ export function TaskModal({
               </div>
             )}
 
-            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_400px]">
-              <div className="flex min-h-0 flex-col gap-4 px-7 py-6">
+            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="flex min-h-0 flex-col gap-4 px-6 py-5">
                 <div>
                   <Label htmlFor="title" className="sr-only">
                     Task name
@@ -576,24 +579,31 @@ export function TaskModal({
                 </div>
 
                 <div className="flex min-h-0 flex-1 flex-col">
-                  <Label htmlFor="description" className="text-[16px] font-medium">Description</Label>
+                  <Label
+                    htmlFor="description"
+                    className="text-[16px] font-medium"
+                  >
+                    Description
+                  </Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
                     placeholder="Add notes, links, acceptance criteria, or a quick brain dump."
-                    className="mt-2 min-h-[260px] flex-1 resize-none border-0 bg-transparent px-0 text-[15px] leading-6 text-[var(--text-hi)] placeholder:text-[#737A80] focus-visible:ring-0"
+                    className="mt-2 min-h-[180px] flex-1 resize-none border-0 bg-transparent px-0 text-[15px] leading-6 text-[var(--text-hi)] placeholder:text-[#737A80] focus-visible:ring-0"
                   />
                 </div>
 
                 <div className="mt-auto flex items-center justify-between border-t border-[#2B2F31] pt-4 text-sm text-[var(--text-lo)]">
-                  <span className="font-medium text-[var(--text-hi)]">Attachments</span>
+                  <span className="font-medium text-[var(--text-hi)]">
+                    Attachments
+                  </span>
                   <span>Add attachment</span>
                 </div>
               </div>
 
-              <div className="min-h-0 space-y-3 overflow-y-auto border-t border-[#2B2F31] bg-[#1D2021] p-5 lg:border-l lg:border-t-0">
+              <div className="min-h-0 space-y-3 overflow-y-auto border-t border-[#2B2F31] bg-[#1D2021] p-4 lg:border-l lg:border-t-0">
                 {isMissedDeadline && (
                   <div className="flex items-center justify-between gap-2 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm">
                     <span className="flex items-center gap-2 font-medium text-red-300">
@@ -615,7 +625,7 @@ export function TaskModal({
 
                 <div
                   className={cn(
-                    "-mx-5 flex items-center justify-between px-5 py-3 text-sm transition-colors",
+                    "-mx-4 flex items-center justify-between px-4 py-3 text-sm transition-colors",
                     isAutoScheduled
                       ? "bg-[#4C2365] text-[#CE8CFF]"
                       : "bg-[#2B2F31] text-[var(--text-hi)]"
@@ -647,7 +657,12 @@ export function TaskModal({
 
                 <div className="grid grid-cols-1 gap-3">
                   <div className="flex items-center gap-3">
-                    <Label htmlFor="status" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Status</Label>
+                    <Label
+                      htmlFor="status"
+                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
+                    >
+                      Status
+                    </Label>
                     <Select
                       value={status}
                       onValueChange={(value) => setStatus(value as TaskStatus)}
@@ -666,7 +681,12 @@ export function TaskModal({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Label htmlFor="priority" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Priority</Label>
+                    <Label
+                      htmlFor="priority"
+                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
+                    >
+                      Priority
+                    </Label>
                     <Select
                       value={priority || Priority.NONE}
                       onValueChange={(value) => setPriority(value as Priority)}
@@ -687,7 +707,12 @@ export function TaskModal({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Label htmlFor="duration" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Duration</Label>
+                    <Label
+                      htmlFor="duration"
+                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
+                    >
+                      Duration
+                    </Label>
                     <Input
                       type="number"
                       id="duration"
@@ -722,7 +747,12 @@ export function TaskModal({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Label htmlFor="deadline" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Deadline</Label>
+                    <Label
+                      htmlFor="deadline"
+                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
+                    >
+                      Deadline
+                    </Label>
                     <Input
                       type="datetime-local"
                       id="deadline"
@@ -748,7 +778,12 @@ export function TaskModal({
                   </div>
 
                   <div className="col-span-full flex items-center gap-3">
-                    <Label htmlFor="preferredTime" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Schedule</Label>
+                    <Label
+                      htmlFor="preferredTime"
+                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
+                    >
+                      Schedule
+                    </Label>
                     <Select
                       value={preferredTime || "none"}
                       onValueChange={(value) =>
@@ -997,7 +1032,12 @@ export function TaskModal({
                 )}
 
                 <div className="flex items-center gap-3 border-t border-[#2B2F31] pt-3">
-                  <Label htmlFor="project" className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]">Project</Label>
+                  <Label
+                    htmlFor="project"
+                    className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
+                  >
+                    Project
+                  </Label>
                   <Select
                     value={projectId || "none"}
                     onValueChange={(value) =>
