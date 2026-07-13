@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Play } from "lucide-react";
 
 import { newDate } from "@/lib/date-utils";
@@ -28,6 +29,7 @@ function formatDueTime(dueDate: Date): string {
 }
 
 export function TodaysTasksPanel({ className }: { className?: string }) {
+  const [taskListRef] = useAutoAnimate<HTMLUListElement>({ duration: 180 });
   const tasks = useTaskStore((state) => state.tasks);
   const redThresholdHours = useTaskUrgencyStore(
     (state) => state.redThresholdHours
@@ -70,7 +72,7 @@ export function TodaysTasksPanel({ className }: { className?: string }) {
             Nothing due today.
           </p>
         ) : (
-          <ul className="space-y-0.5">
+          <ul ref={taskListRef} className="space-y-0.5">
             {todaysTasks.map((task) => {
               const urgency = getTaskUrgency(task, {
                 redThresholdHours,

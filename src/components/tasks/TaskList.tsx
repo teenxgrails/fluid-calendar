@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { HiX } from "react-icons/hi";
 
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,9 @@ export function TaskList({
   onStatusChange,
   onInlineEdit,
 }: TaskListProps) {
+  const [taskListRef] = useAutoAnimate<HTMLTableSectionElement>({
+    duration: 180,
+  });
   const {
     sortBy,
     sortDirection,
@@ -364,7 +368,10 @@ export function TaskList({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--line)] bg-transparent">
+            <tbody
+              ref={taskListRef}
+              className="divide-y divide-[var(--line)] bg-transparent"
+            >
               {sortedTasks.map((task) => (
                 <TaskRow
                   key={task.id}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ const formatEnumValue = (value: string) => {
 };
 
 export function Column({ status, tasks, onEdit, onDelete }: ColumnProps) {
+  const [taskListRef] = useAutoAnimate<HTMLDivElement>({ duration: 180 });
   const { setNodeRef, isOver } = useDroppable({
     id: status,
   });
@@ -68,7 +70,7 @@ export function Column({ status, tasks, onEdit, onDelete }: ColumnProps) {
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
-        <div className="space-y-2">
+        <div ref={taskListRef} className="space-y-2">
           {tasks.map((task) => (
             <BoardTask
               key={task.id}
