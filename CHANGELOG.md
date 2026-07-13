@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a Motion-matched calendar task actions menu with completion, cancellation, link, scheduling, duplication, project, template, archive, and delete actions.
 - Added spring-based task dragging with a Motion-style lift preview, reduced-motion fallbacks, and direct Today-sidebar drops onto the Day and Week calendar grids.
 - Added a lightly staggered spring settle animation when auto-scheduling moves task chips into their new calendar slots.
 - Added an immersive Focus transition that dims side content without blur, centers a Liquid Glass focus card, and animates the timer with an accessible SVG progress ring.
@@ -24,7 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Increased the calendar toolbar controls for clearer text and easier targets, aligned the week header/time gutter with Motion, and added a compact gridded all-day rail.
+- Matched calendar toolbar controls to Motion's exact 25px height, 13px type, and compact padding, and replaced the app's blue primary accent with a neutral graphite accent.
+- Aligned the week header/time gutter with Motion and added a compact gridded all-day rail.
 - Refined calendar working and non-working hour shades while preserving the current-day hierarchy and consistent one-pixel grid lines.
 - Reduced the full Create task editor to Motion-like compact proportions with a 1080×720 desktop frame and a narrower scheduling sidebar.
 - Recolored the calendar canvas and time gutter to #1B1D1E, with subtle stepped shades for non-current working and non-working hours while preserving every grid line.

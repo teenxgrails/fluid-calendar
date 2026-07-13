@@ -32,6 +32,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 import { format, newDate } from "@/lib/date-utils";
+import { logger } from "@/lib/logger";
 import { RecurrenceConverterFactory } from "@/lib/task-sync/recurrence/recurrence-converter-factory";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +111,9 @@ const TASK_TEMPLATES: TaskTemplate[] = [
     contextTag: "meetings",
   },
 ];
+
+const LOG_SOURCE = "TaskModal";
+const SAVED_TASK_TEMPLATES_KEY = "needt-task-templates";
 
 // Helper function to convert external recurrence rule to RRule format
 function getStandardRRule(task?: Task): RRule {
@@ -190,6 +194,7 @@ export function TaskModal({
   >({});
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
+  const [savedTemplates, setSavedTemplates] = useState<TaskTemplate[]>([]);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = useCallback(() => {
@@ -231,6 +236,23 @@ export function TaskModal({
       resetForm();
     }
   }, [isOpen, resetForm]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const parsed = JSON.parse(
+        localStorage.getItem(SAVED_TASK_TEMPLATES_KEY) ?? "[]"
+      );
+      setSavedTemplates(Array.isArray(parsed) ? parsed : []);
+    } catch (error) {
+      setSavedTemplates([]);
+      void logger.warn(
+        "Could not load saved task templates",
+        { error: error instanceof Error ? error.message : String(error) },
+        LOG_SOURCE
+      );
+    }
+  }, [isOpen]);
 
   // Populate form with task data when editing
   useEffect(() => {
@@ -500,7 +522,7 @@ export function TaskModal({
                     Task templates
                   </div>
                   <div className="my-1 h-px bg-[var(--line-strong)]" />
-                  {TASK_TEMPLATES.map((template) => (
+                  {[...savedTemplates, ...TASK_TEMPLATES].map((template) => (
                     <button
                       key={template.id}
                       type="button"

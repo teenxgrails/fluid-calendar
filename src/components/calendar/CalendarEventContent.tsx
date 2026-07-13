@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from "motion/react";
 import {
   IoCheckmarkCircle,
   IoCheckmarkCircleOutline,
-  IoEllipsisHorizontal,
   IoRepeat,
 } from "react-icons/io5";
 
@@ -19,6 +18,7 @@ import { useTaskStore } from "@/store/task";
 
 import { Priority, TaskStatus } from "@/types/task";
 
+import { CalendarTaskActionsMenu } from "./CalendarTaskActionsMenu";
 import { resolveCalendarItemId } from "./calendar-item-id";
 
 const DEFAULT_EVENT_COLOR = "#6366F1";
@@ -26,6 +26,7 @@ const DEFAULT_EVENT_COLOR = "#6366F1";
 interface CalendarEventContentProps {
   eventInfo: EventContentArg;
   onTaskComplete?: (taskId: string) => Promise<unknown>;
+  onTaskOpen?: (taskId: string) => void;
 }
 
 const priorityColors = {
@@ -38,6 +39,7 @@ const priorityColors = {
 export const CalendarEventContent = memo(function CalendarEventContent({
   eventInfo,
   onTaskComplete,
+  onTaskOpen,
 }: CalendarEventContentProps) {
   const prefersReducedMotion = useReducedMotion();
   const { user: userSettings } = useSettingsStore();
@@ -49,6 +51,11 @@ export const CalendarEventContent = memo(function CalendarEventContent({
   const taskId = isTask
     ? resolveCalendarItemId(eventInfo.event.extendedProps, eventInfo.event.id)
     : undefined;
+  const task = useTaskStore((state) =>
+    taskId
+      ? state.tasks.find((candidate) => candidate.id === taskId)
+      : undefined
+  );
   const chunkIndex = eventInfo.event.extendedProps.chunkIndex as
     number | undefined;
   const isRecurring = eventInfo.event.extendedProps.isRecurring;
@@ -197,14 +204,8 @@ export const CalendarEventContent = memo(function CalendarEventContent({
             </div>
           )}
         </div>
-        {isTask && (
-          <button
-            type="button"
-            aria-label="Task actions"
-            className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded text-[#A9B0B5] opacity-0 transition-opacity hover:bg-[#4A4F52] hover:text-white group-hover:opacity-100"
-          >
-            <IoEllipsisHorizontal className="h-3.5 w-3.5" />
-          </button>
+        {isTask && task && onTaskOpen && (
+          <CalendarTaskActionsMenu task={task} onOpenTask={onTaskOpen} />
         )}
       </div>
       {location && !isTask && duration > 1800000 && (

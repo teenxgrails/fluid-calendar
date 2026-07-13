@@ -157,18 +157,23 @@ export function MonthView({ currentDate, onDateClick }: MonthViewProps) {
     }
   }, [currentDate]);
 
+  const openTaskEditor = useCallback((taskId: string) => {
+    const task = useTaskStore
+      .getState()
+      .tasks.find((item) => item.id === taskId);
+    if (!task) return;
+    setSelectedTask(task);
+    setIsTaskModalOpen(true);
+    setQuickViewItem(undefined);
+  }, []);
+
   const handleEventClick = (info: EventClickArg) => {
     const item = info.event.extendedProps;
     const itemId = resolveCalendarItemId(item, info.event.id);
     const isTask = item.isTask;
 
     if (isTask) {
-      const task = useTaskStore.getState().tasks.find((t) => t.id === itemId);
-      if (task) {
-        setSelectedTask(task);
-        setIsTaskModalOpen(true);
-        setQuickViewItem(undefined);
-      }
+      openTaskEditor(itemId);
     } else {
       setClickedElement(info.el);
       const event = useCalendarStore
@@ -267,9 +272,13 @@ export function MonthView({ currentDate, onDateClick }: MonthViewProps) {
 
   const renderEventContent = useCallback(
     (arg: EventContentArg) => (
-      <CalendarEventContent eventInfo={arg} onTaskComplete={completeTask} />
+      <CalendarEventContent
+        eventInfo={arg}
+        onTaskComplete={completeTask}
+        onTaskOpen={openTaskEditor}
+      />
     ),
-    [completeTask]
+    [completeTask, openTaskEditor]
   );
 
   return (

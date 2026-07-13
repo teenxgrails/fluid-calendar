@@ -31,7 +31,7 @@ interface CustomizationState {
 }
 
 const DEFAULTS: CustomizationState = {
-  accentColor: "#6366F1",
+  accentColor: "#555B5F",
   backgroundTint: "#1B1D1E",
   density: "comfortable",
   sidebarWidth: 244,
@@ -40,8 +40,6 @@ const DEFAULTS: CustomizationState = {
   eventChipStyle: "flat",
   animationsEnabled: true,
 };
-
-const accentSwatches = ["#6366F1", "#14B8A6", "#F97316", "#EC4899", "#84CC16"];
 
 const lockedThemes = [
   ["Aurora", "Layered gradients and softer panels."],
@@ -70,10 +68,13 @@ export function CustomizationSettings() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty("--accent", settings.accentColor);
+    root.style.removeProperty("--accent");
     root.style.setProperty("--app-bg", settings.backgroundTint);
     root.style.setProperty("--radius", `${settings.radius}px`);
-    root.style.setProperty("--flowday-sidebar-width", `${settings.sidebarWidth}px`);
+    root.style.setProperty(
+      "--flowday-sidebar-width",
+      `${settings.sidebarWidth}px`
+    );
     root.dataset.density = settings.density;
     root.dataset.animations = settings.animationsEnabled ? "on" : "off";
   }, [settings]);
@@ -82,7 +83,7 @@ export function CustomizationSettings() {
     () => ({
       borderRadius: settings.radius,
       backgroundColor: settings.backgroundTint,
-      borderColor: settings.accentColor,
+      borderColor: "var(--line-strong)",
     }),
     [settings]
   );
@@ -106,7 +107,8 @@ export function CustomizationSettings() {
       toast.success("Customization saved");
     } catch (error) {
       toast.error("Could not save customization", {
-        description: error instanceof Error ? error.message : "Try again later.",
+        description:
+          error instanceof Error ? error.message : "Try again later.",
       });
     } finally {
       setIsSaving(false);
@@ -116,43 +118,24 @@ export function CustomizationSettings() {
   return (
     <SettingsSection
       title="Customization"
-      description="Tune Flowday's accent, density, radius, sidebar, and motion behavior."
+      description="Tune density, radius, sidebar, and motion behavior."
     >
-      <SettingRow label="Accent" description="Applies live to primary actions, focus states, today, and AI affordances.">
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {accentSwatches.map((color) => (
-              <button
-                key={color}
-                type="button"
-                aria-label={`Use accent ${color}`}
-                onClick={() => update("accentColor", color)}
-                className="h-8 w-8 rounded-md border"
-                style={{
-                  backgroundColor: color,
-                  borderColor:
-                    settings.accentColor === color ? "#F4F5F6" : "var(--line-strong)",
-                }}
-              />
-            ))}
-          </div>
-          <Input
-            value={settings.accentColor}
-            onChange={(event) => update("accentColor", event.target.value)}
-            aria-label="Custom accent color"
-          />
-        </div>
-      </SettingRow>
-
-      <SettingRow label="Layout" description="Keep the Motion-style density, with room for personal preference.">
+      <SettingRow
+        label="Layout"
+        description="Keep the Motion-style density, with room for personal preference."
+      >
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label>Density</Label>
             <Select
               value={settings.density}
-              onValueChange={(value) => update("density", value as CustomizationState["density"])}
+              onValueChange={(value) =>
+                update("density", value as CustomizationState["density"])
+              }
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="compact">Compact</SelectItem>
                 <SelectItem value="comfortable">Comfortable</SelectItem>
@@ -167,7 +150,9 @@ export function CustomizationSettings() {
               min={220}
               max={320}
               value={settings.sidebarWidth}
-              onChange={(event) => update("sidebarWidth", Number(event.target.value))}
+              onChange={(event) =>
+                update("sidebarWidth", Number(event.target.value))
+              }
             />
           </div>
           <div className="space-y-2">
@@ -184,9 +169,16 @@ export function CustomizationSettings() {
             <Label>Event chips</Label>
             <Select
               value={settings.eventChipStyle}
-              onValueChange={(value) => update("eventChipStyle", value as CustomizationState["eventChipStyle"])}
+              onValueChange={(value) =>
+                update(
+                  "eventChipStyle",
+                  value as CustomizationState["eventChipStyle"]
+                )
+              }
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="flat">Flat</SelectItem>
                 <SelectItem value="outlined">Outlined</SelectItem>
@@ -197,7 +189,10 @@ export function CustomizationSettings() {
         </div>
       </SettingRow>
 
-      <SettingRow label="Background and motion" description="Flowday stays flat by default; animations can be disabled globally.">
+      <SettingRow
+        label="Background and motion"
+        description="Flowday stays flat by default; animations can be disabled globally."
+      >
         <div className="space-y-3">
           <Input
             value={settings.backgroundTint}
@@ -208,7 +203,9 @@ export function CustomizationSettings() {
             <span className="text-sm">Animations</span>
             <Switch
               checked={settings.animationsEnabled}
-              onCheckedChange={(checked) => update("animationsEnabled", checked)}
+              onCheckedChange={(checked) =>
+                update("animationsEnabled", checked)
+              }
             />
           </label>
           <div className="rounded-md border p-3" style={previewStyle}>
@@ -220,7 +217,10 @@ export function CustomizationSettings() {
         </div>
       </SettingRow>
 
-      <SettingRow label="Themes" description="Three future visual systems are reserved without changing the current product.">
+      <SettingRow
+        label="Themes"
+        description="Three future visual systems are reserved without changing the current product."
+      >
         <div className="grid gap-2 sm:grid-cols-3">
           {lockedThemes.map(([name, description]) => (
             <button

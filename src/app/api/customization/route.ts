@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 const LOG_SOURCE = "customization-api";
 
 const DEFAULT_CUSTOMIZATION = {
-  accentColor: "#6366F1",
+  accentColor: "#555B5F",
   backgroundTint: "#1B1D1E",
   density: "comfortable",
   sidebarWidth: 244,
@@ -65,22 +65,39 @@ export async function PATCH(request: NextRequest) {
     const radius = Number(body.radius);
 
     const data = {
-      accentColor: cleanHex(body.accentColor, DEFAULT_CUSTOMIZATION.accentColor),
+      accentColor: cleanHex(
+        body.accentColor,
+        DEFAULT_CUSTOMIZATION.accentColor
+      ),
       backgroundTint: cleanHex(
         body.backgroundTint,
         DEFAULT_CUSTOMIZATION.backgroundTint
       ),
-      density: cleanChoice(body.density, ["compact", "comfortable", "spacious"], "comfortable"),
+      density: cleanChoice(
+        body.density,
+        ["compact", "comfortable", "spacious"],
+        "comfortable"
+      ),
       sidebarWidth:
-        Number.isFinite(sidebarWidth) && sidebarWidth >= 220 && sidebarWidth <= 320
+        Number.isFinite(sidebarWidth) &&
+        sidebarWidth >= 220 &&
+        sidebarWidth <= 320
           ? Math.round(sidebarWidth)
           : DEFAULT_CUSTOMIZATION.sidebarWidth,
       radius:
         Number.isFinite(radius) && radius >= 4 && radius <= 16
           ? Math.round(radius)
           : DEFAULT_CUSTOMIZATION.radius,
-      fontFamily: cleanChoice(body.fontFamily, ["system", "rounded", "mono"], "system"),
-      eventChipStyle: cleanChoice(body.eventChipStyle, ["flat", "outlined", "filled"], "flat"),
+      fontFamily: cleanChoice(
+        body.fontFamily,
+        ["system", "rounded", "mono"],
+        "system"
+      ),
+      eventChipStyle: cleanChoice(
+        body.eventChipStyle,
+        ["flat", "outlined", "filled"],
+        "flat"
+      ),
       animationsEnabled: body.animationsEnabled !== false,
       themePreset: "flowday",
     };
