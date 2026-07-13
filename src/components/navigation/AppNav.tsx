@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import { APP_NAME } from "@/lib/app-config";
+import { newDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 
 import { useViewStore } from "@/store/calendar";
@@ -59,7 +60,7 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
         (task) =>
           task.status !== TaskStatus.COMPLETED &&
           task.dueDate &&
-          new Date(task.dueDate) < new Date()
+          newDate(task.dueDate) < newDate()
       ).length
   );
   const currentTaskId = useFocusModeStore((state) => state.currentTaskId);
@@ -80,7 +81,7 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
     weekday: "short",
     month: "short",
     day: "numeric",
-  }).format(new Date());
+  }).format(newDate());
 
   // Motion swaps its product rail for the settings rail on settings pages.
   // Keeping both creates an unnecessary second navigation column.
@@ -145,7 +146,7 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
               className={cn(
                 "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left transition-colors max-md:w-auto max-md:flex-1 max-md:justify-center max-md:py-2",
                 isActive
-                  ? "bg-[var(--active)] text-[var(--text-hi)]"
+                  ? "needt-active-nav-item bg-[var(--active)] text-[var(--text-hi)]"
                   : "text-[var(--text-lo)] hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
               )}
             >

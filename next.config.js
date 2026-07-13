@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    viewTransition: true,
+  },
+
   // Expose the package version to the client so the UI can display it.
   // package.json stays the single source of truth for the version.
   env: {

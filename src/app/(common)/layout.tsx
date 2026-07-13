@@ -67,7 +67,7 @@ export default function RootLayout({
               onClose={() => setShortcutsOpen(false)}
             />
             <AppNav onOpenChatOverlay={() => setChatOverlayOpen(true)} />
-            <main className="relative min-w-0 flex-1 max-md:pb-16">
+            <main className="needt-route-content relative min-w-0 flex-1 max-md:pb-16">
               <NotificationProvider>{children}</NotificationProvider>
             </main>
             <AIChatOverlay
