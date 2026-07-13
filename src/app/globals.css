@@ -608,16 +608,15 @@ html[data-animations="off"] *::after {
   pointer-events: none;
 }
 
-/* Motion-style column shading. Lightness order: today (darkest) < working
-   hours < non-working hours (lightest). Working hours come from the column
-   frame; non-working hours from the .fc-non-business overlay; the today
-   column stays flat #202425 with no working/non-working split. */
+/* Calendar color hierarchy is calculated from the app canvas (#1B1D1E):
+   today stays on the canvas; working hours in other days are 10% lighter;
+   non-working hours are 30% lighter. */
 .fc .fc-timegrid-col-frame {
-  background: #24282a;
+  background: #323435;
 }
 
 .fc .fc-timegrid-col-bg .fc-non-business {
-  background: #282c2e !important;
+  background: #5f6162 !important;
 }
 
 .fc .fc-day-today {
@@ -625,7 +624,7 @@ html[data-animations="off"] *::after {
 }
 
 .fc .fc-day-today .fc-timegrid-col-frame {
-  background: #202425;
+  background: #1b1d1e;
 }
 
 .fc .fc-day-today .fc-timegrid-col-bg .fc-non-business {
@@ -684,6 +683,14 @@ html[data-animations="off"] *::after {
 .fc .fc-scrollgrid-section-header > td,
 .fc .fc-timegrid-divider,
 .fc .fc-daygrid-body {
+  background: #1b1d1e !important;
+}
+
+/* Keep every calendar canvas on the same base color. Grid and event borders
+   are deliberately left untouched. */
+.fc .fc-daygrid-day,
+.fc .fc-daygrid-day-frame,
+.fc .fc-timegrid-slots {
   background: #1b1d1e !important;
 }
 
@@ -762,9 +769,14 @@ html[data-animations="off"] *::after {
   white-space: nowrap;
 }
 
-/* The timezone and hour gutter are labels, not boxed calendar columns. */
+/* The timezone and hour gutter are labels, not boxed calendar columns. Give
+   them the calendar canvas color and a little more room for 12-hour labels. */
 .fc .fc-timegrid-axis,
 .fc .fc-timegrid-slot-label {
+  width: 72px !important;
+  min-width: 72px !important;
+  box-sizing: border-box;
+  background: #1b1d1e !important;
   border-right: 0 !important;
   border-left: 0 !important;
   border-top-color: transparent !important;
@@ -775,7 +787,7 @@ html[data-animations="off"] *::after {
   border: 0 !important;
 }
 
-/* Don't let hover repaint the non-working shading; keep the two-step tint. */
+/* Don't let hover repaint the non-working shading; keep the three-step tint. */
 .fc .fc-timegrid-col-bg .fc-non-business:hover,
 .fc .fc-bg-event:hover {
   filter: none !important;
@@ -836,7 +848,7 @@ html[data-animations="off"] *::after {
 }
 
 .dark .fc .fc-daygrid-day.fc-day-other {
-  background: var(--fc-neutral-bg-color);
+  background: #1b1d1e;
 }
 
 .dark .fc .fc-scrollgrid-section-sticky > * {
@@ -846,7 +858,7 @@ html[data-animations="off"] *::after {
 }
 
 .dark :not(td[aria-labelledby]) > .fc-daygrid-day-frame {
-  background: var(--fc-neutral-bg-color);
+  background: #1b1d1e;
 }
 
 .dark .fc .fc-scrollgrid-section-body {
@@ -855,7 +867,7 @@ html[data-animations="off"] *::after {
 
 .dark .fc .fc-timegrid-slot-label,
 .dark .fc .fc-timegrid-axis-frame {
-  background-color: transparent;
+  background-color: #1b1d1e !important;
 }
 
 .dark .fc .fc-col-header-cell {
