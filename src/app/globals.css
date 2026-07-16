@@ -143,6 +143,10 @@
     --calendar-task-bg: var(--surface-control);
     --calendar-task-border: var(--border-control);
     --calendar-now-indicator: var(--text-primary);
+    --calendar-now-dot-size: 16px;
+    --calendar-now-line-end-inset: 8px;
+    --calendar-week-slot-label-offset: -16px;
+    --calendar-day-slot-label-offset: -17.5px;
     --calendar-hover-guide: var(--primitive-neutral-525);
     --calendar-hover-guide-label: var(--primitive-neutral-250);
 
@@ -746,19 +750,24 @@ html[data-animations="off"] *::after {
    than the library's default accent line and triangle. */
 .fc .fc-timegrid-now-indicator-line {
   z-index: 6;
+  right: var(--calendar-now-line-end-inset) !important;
   border-color: var(--calendar-now-indicator) !important;
   border-top-width: 1px !important;
-  opacity: 0.96;
+  opacity: 1;
   pointer-events: none;
+}
+
+.fc .fc-timegrid-now-indicator-container {
+  overflow: visible !important;
 }
 
 .fc .fc-timegrid-now-indicator-line::before {
   content: "";
   position: absolute;
-  top: -7px;
-  left: -7px;
-  width: 14px;
-  height: 14px;
+  top: calc(var(--calendar-now-dot-size) / -2);
+  left: calc(var(--calendar-now-dot-size) / -2);
+  width: var(--calendar-now-dot-size);
+  height: var(--calendar-now-dot-size);
   border-radius: 9999px;
   background: var(--calendar-now-indicator);
 }
@@ -941,6 +950,20 @@ html[data-animations="off"] *::after {
   padding-right: 8px;
   text-align: right;
   font-size: 12px;
+}
+
+/* FullCalendar centers labels inside the first half-hour slot. Motion places
+   each hour label directly on the matching horizontal rule instead. */
+.calendar-week-view {
+  --calendar-slot-label-offset: var(--calendar-week-slot-label-offset);
+}
+
+.calendar-day-view {
+  --calendar-slot-label-offset: var(--calendar-day-slot-label-offset);
+}
+
+.fc .fc-timegrid-slot-label-frame {
+  transform: translateY(var(--calendar-slot-label-offset, -16px));
 }
 
 /* Motion shows only hourly lines - hide the half-hour (minor) slot border.

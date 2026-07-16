@@ -91,6 +91,14 @@ export function WeekView({ currentDate }: WeekViewProps) {
   const { handleEventDrop, handleEventResize } = useCalendarDragHandlers();
   const handleExternalTaskDrop = useCalendarExternalTaskDrop();
 
+  const cancelQuickCreate = useCallback(() => {
+    calendarRef.current?.getApi().unselect();
+    setQuickCreateSelection(undefined);
+    setSelectedDate(undefined);
+    setSelectedEndDate(undefined);
+    setSelectedEvent(undefined);
+  }, []);
+
   // Motion-style dashed guide line that follows the cursor's time across the
   // whole grid, separate from FullCalendar's live current-time indicator.
   useEffect(() => {
@@ -347,11 +355,13 @@ export function WeekView({ currentDate }: WeekViewProps) {
   };
 
   const openTaskEditorFromQuickCreate = () => {
+    calendarRef.current?.getApi().unselect();
     setQuickCreateSelection(undefined);
     setIsNewTaskModalOpen(true);
   };
 
   const openEventEditorFromQuickCreate = () => {
+    calendarRef.current?.getApi().unselect();
     setQuickCreateSelection(undefined);
     setIsEventModalOpen(true);
   };
@@ -434,7 +444,7 @@ export function WeekView({ currentDate }: WeekViewProps) {
   return (
     <div
       ref={wrapperRef}
-      className="fc-tz-corner h-full [&_.fc-daygrid-day-events]:!min-h-0 [&_.fc-daygrid-day-frame]:!min-h-0 [&_.fc-timegrid-axis-cushion]:!py-0.5 [&_.fc-timegrid-slot-label]:!py-0.5 [&_.fc-timegrid-slot]:!h-[32px]"
+      className="calendar-week-view fc-tz-corner h-full [&_.fc-daygrid-day-events]:!min-h-0 [&_.fc-daygrid-day-frame]:!min-h-0 [&_.fc-timegrid-axis-cushion]:!py-0.5 [&_.fc-timegrid-slot-label]:!py-0.5 [&_.fc-timegrid-slot]:!h-[32px]"
       style={{ "--tz-label": JSON.stringify(`${tzLabel}  +`) } as CSSProperties}
     >
       <FullCalendar
@@ -536,7 +546,7 @@ export function WeekView({ currentDate }: WeekViewProps) {
       )}
       <CalendarQuickCreate
         selection={quickCreateSelection}
-        onClose={() => setQuickCreateSelection(undefined)}
+        onClose={cancelQuickCreate}
         onOpenTaskEditor={openTaskEditorFromQuickCreate}
         onOpenEventEditor={openEventEditorFromQuickCreate}
       />

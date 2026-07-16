@@ -83,6 +83,14 @@ export function DayView({ currentDate }: DayViewProps) {
   const { handleEventDrop, handleEventResize } = useCalendarDragHandlers();
   const handleExternalTaskDrop = useCalendarExternalTaskDrop();
 
+  const cancelQuickCreate = useCallback(() => {
+    calendarRef.current?.getApi().unselect();
+    setQuickCreateSelection(undefined);
+    setSelectedDate(undefined);
+    setSelectedEndDate(undefined);
+    setSelectedEvent(undefined);
+  }, []);
+
   // Update events when the calendar view changes
   const handleDatesSet = useCallback(
     async (arg: DatesSetArg) => {
@@ -245,14 +253,18 @@ export function DayView({ currentDate }: DayViewProps) {
     setIsTaskModalOpen(false);
     setIsNewTaskModalOpen(false);
     setSelectedTask(undefined);
+    setSelectedDate(undefined);
+    setSelectedEndDate(undefined);
   };
 
   const openTaskEditorFromQuickCreate = () => {
+    calendarRef.current?.getApi().unselect();
     setQuickCreateSelection(undefined);
     setIsNewTaskModalOpen(true);
   };
 
   const openEventEditorFromQuickCreate = () => {
+    calendarRef.current?.getApi().unselect();
     setQuickCreateSelection(undefined);
     setIsEventModalOpen(true);
   };
@@ -329,7 +341,7 @@ export function DayView({ currentDate }: DayViewProps) {
   );
 
   return (
-    <div className="h-full [&_.fc-daygrid-day-events]:!min-h-0 [&_.fc-daygrid-day-frame]:!min-h-0 [&_.fc-timegrid-axis-cushion]:!py-1 [&_.fc-timegrid-slot-label]:!py-1 [&_.fc-timegrid-slot]:!h-[35px]">
+    <div className="calendar-day-view h-full [&_.fc-daygrid-day-events]:!min-h-0 [&_.fc-daygrid-day-frame]:!min-h-0 [&_.fc-timegrid-axis-cushion]:!py-1 [&_.fc-timegrid-slot-label]:!py-1 [&_.fc-timegrid-slot]:!h-[35px]">
       <FullCalendar
         ref={calendarRef}
         plugins={[timeGridPlugin, interactionPlugin]}
@@ -416,7 +428,7 @@ export function DayView({ currentDate }: DayViewProps) {
 
       <CalendarQuickCreate
         selection={quickCreateSelection}
-        onClose={() => setQuickCreateSelection(undefined)}
+        onClose={cancelQuickCreate}
         onOpenTaskEditor={openTaskEditorFromQuickCreate}
         onOpenEventEditor={openEventEditorFromQuickCreate}
       />

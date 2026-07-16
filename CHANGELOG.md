@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Reworked calendar quick-create with the shared Needt popover, input, control, and focus tokens; matched the current-time dot/rule to Motion and aligned hour labels directly with their horizontal grid lines.
 - Restyled the calendar task-actions menu and Start task dialog with the shared Needt menu, dialog, control, and status tokens.
 - Moved the today-only task list above the sidebar mini-calendar, removed its redundant heading/count, and replaced the accent start control with a compact neutral action button.
 - Established the finished Calendar palette and controls as the Needt design system, with primitive, semantic, and component tokens, theme-ready root switching, and shared buttons, inputs, pickers, menus, dialogs, switches, checkboxes, and tooltips consuming the same source of truth.
@@ -44,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Escape and outside-click now dismiss calendar quick-create and clear its temporary FullCalendar selection instead of leaving the draft block behind.
 - Calendar tasks now open their full editor on click, while their checkbox completes them directly without opening the editor.
 - Made Refresh all tasks run the scheduler, reload the calendar, animate the updated layout, and report success or rollback errors clearly.
 - Fixed the current-time indicator gap, removed the extra time-gutter divider, and added matching open/close motion to the Create Task / Event menu.

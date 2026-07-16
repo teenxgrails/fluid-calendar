@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   CalendarDays,
@@ -46,6 +46,11 @@ export function CalendarQuickCreate({
   const [title, setTitle] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
+  const close = useCallback(() => {
+    setTitle("");
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (!selection) {
       setTitle("");
@@ -53,13 +58,17 @@ export function CalendarQuickCreate({
     }
 
     const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 0);
-    return () => window.clearTimeout(focusTimer);
-  }, [selection]);
-
-  const close = () => {
-    setTitle("");
-    onClose();
-  };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      close();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selection, close]);
 
   const create = async () => {
     if (!selection || !title.trim() || isCreating) return;
@@ -100,81 +109,87 @@ export function CalendarQuickCreate({
 
   const top = Math.min(
     Math.max(selection.point?.y ?? 220, 84),
-    window.innerHeight - 214
+    window.innerHeight - 184
   );
   const left = Math.min(
     Math.max(selection.point?.x ?? 320, 16),
-    window.innerWidth - 352
+    window.innerWidth - 336
   );
 
   return (
-    <div
-      role="dialog"
-      aria-label="Create task or event"
-      className="fixed z-[70] w-[336px] rounded-[8px] border border-[#3A3F42] bg-[#202425] p-2 text-[#F2F2F2] shadow-2xl"
-      style={{ left, top }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          close();
-        }
-      }}
-    >
-      <div className="flex items-center gap-2 px-2 pb-2 pt-1 text-[12px] text-[#9BA1A6]">
-        <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.8} />
-        <span>{selection.allDay ? "All day" : "Selected time"}</span>
-      </div>
-      <Input
-        ref={inputRef}
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            void create();
-          }
-        }}
-        placeholder="What needs to happen?"
-        className="h-10 border-[#3A3F42] bg-[#1B1D1E] px-3 text-[14px] text-white placeholder:text-[#737A80] focus-visible:ring-1 focus-visible:ring-[var(--accent)]"
+    <>
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 z-[69] cursor-default bg-transparent"
+        onPointerDown={close}
       />
-      <div className="mt-1.5 grid grid-cols-2 gap-1">
-        <button
-          type="button"
-          onClick={() => void create()}
-          disabled={!title.trim() || isCreating}
-          className={cn(
-            "flex items-center gap-2 rounded-[5px] px-2.5 py-2 text-left text-[13px] transition-colors",
-            title.trim()
-              ? "bg-[var(--accent)] text-white hover:brightness-110"
-              : "bg-[#2B2F31] text-[#737A80]"
-          )}
-        >
-          <CheckSquare2 className="h-3.5 w-3.5" strokeWidth={1.8} />
-          {isCreating ? "Creating…" : "Create task"}
-        </button>
+      <div
+        role="dialog"
+        aria-modal="false"
+        aria-label="Create task or event"
+        className="fixed z-[70] w-[320px] animate-in rounded-[var(--popover-radius)] border border-[var(--popover-border)] bg-[var(--popover-bg)] p-1.5 text-[var(--text-primary)] shadow-lg fade-in-0 slide-in-from-top-1 duration-150 motion-reduce:animate-none"
+        style={{ left, top }}
+      >
+        <div className="flex h-7 items-center gap-2 px-2 text-[12px] text-[var(--text-secondary)]">
+          <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.8} />
+          <span>{selection.allDay ? "All day" : "Selected time"}</span>
+        </div>
+        <Input
+          ref={inputRef}
+          aria-label="Task title"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void create();
+            }
+          }}
+          placeholder="What needs to happen?"
+          className="h-9 px-3 text-[13px]"
+        />
+        <div className="mt-1.5 grid grid-cols-2 gap-1">
+          <button
+            type="button"
+            onClick={() => void create()}
+            disabled={!title.trim() || isCreating}
+            className={cn(
+              "flex h-9 items-center gap-2 rounded-md border px-2.5 text-left text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]",
+              title.trim()
+                ? "border-[var(--control-border)] bg-[var(--control-bg)] text-[var(--text-primary)] hover:bg-[var(--control-bg-hover)]"
+                : "cursor-not-allowed border-[var(--border-subtle)] bg-[var(--surface-hover)] text-[var(--text-muted)]"
+            )}
+          >
+            <CheckSquare2 className="h-3.5 w-3.5" strokeWidth={1.8} />
+            {isCreating ? "Creating…" : "Create task"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTitle("");
+              onOpenEventEditor();
+            }}
+            className="flex h-9 items-center gap-2 rounded-md px-2.5 text-left text-[13px] text-[var(--text-primary)] transition-colors hover:bg-[var(--menu-item-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
+          >
+            <Clock3
+              className="h-3.5 w-3.5 text-[var(--text-secondary)]"
+              strokeWidth={1.8}
+            />
+            Create event
+          </button>
+        </div>
         <button
           type="button"
           onClick={() => {
-            close();
-            onOpenEventEditor();
+            setTitle("");
+            onOpenTaskEditor();
           }}
-          className="flex items-center gap-2 rounded-[5px] px-2.5 py-2 text-left text-[13px] text-[#D7DBDE] transition-colors hover:bg-[#2B2F31]"
+          className="mt-1 flex h-9 w-full items-center justify-between rounded-md border-t border-[var(--border-subtle)] px-2.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
         >
-          <Clock3 className="h-3.5 w-3.5 text-[#9BA1A6]" strokeWidth={1.8} />
-          Create event
+          <span>More task options</span>
+          <CornerDownLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
         </button>
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          close();
-          onOpenTaskEditor();
-        }}
-        className="mt-1 flex w-full items-center justify-between rounded-[5px] px-2.5 py-2 text-left text-[13px] text-[#9BA1A6] transition-colors hover:bg-[#2B2F31] hover:text-white"
-      >
-        <span>More task options</span>
-        <CornerDownLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
-      </button>
-    </div>
+    </>
   );
 }
