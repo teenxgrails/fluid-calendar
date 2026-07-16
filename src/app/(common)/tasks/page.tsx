@@ -1,17 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CalendarRange, Kanban, ListTodo } from "lucide-react";
+import {
+  Box,
+  CalendarRange,
+  ChevronDown,
+  Kanban,
+  ListTodo,
+  MoreHorizontal,
+  Plus,
+  RotateCw,
+  Sparkles,
+} from "lucide-react";
 
-import { ProjectSidebar } from "@/components/projects/ProjectSidebar";
+import { ProjectModal } from "@/components/projects/ProjectModal";
 import { BoardView } from "@/components/tasks/BoardView/BoardView";
+import { SpaceView } from "@/components/tasks/SpaceView";
 import { TaskList } from "@/components/tasks/TaskList";
 import { TaskModal } from "@/components/tasks/TaskModal";
 import { TimelineView } from "@/components/tasks/TimelineView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
@@ -21,11 +39,23 @@ import { useTaskMutations } from "@/hooks/useTaskMutations";
 import { useProjectStore } from "@/store/project";
 import { useTaskStore } from "@/store/task";
 import { useTaskModalStore } from "@/store/taskModal";
-import { useTaskPageSettings } from "@/store/taskPageSettings";
+import { ViewMode, useTaskPageSettings } from "@/store/taskPageSettings";
 
 import { NewTask, Task, TaskStatus } from "@/types/task";
 
 const LOG_SOURCE = "TasksPage";
+const VIEW_BUTTON_CLASS =
+  "relative flex h-9 items-center gap-1.5 border-b-2 px-3 text-[12px] font-medium transition-colors duration-150";
+
+const PRIMARY_VIEWS: Array<{
+  id: ViewMode;
+  label: string;
+  icon: typeof Sparkles;
+}> = [
+  { id: "space", label: "Space", icon: Sparkles },
+  { id: "list", label: "Task List", icon: ListTodo },
+  { id: "timeline", label: "Timeline", icon: CalendarRange },
+];
 
 export default function TasksPage() {
   const {
@@ -39,7 +69,7 @@ export default function TasksPage() {
   } = useTaskStore();
   const { createTask, updateTask, completeTask, deleteTask } =
     useTaskMutations();
-  const { fetchProjects, activeProject } = useProjectStore();
+  const { projects, fetchProjects, activeProject } = useProjectStore();
   const { viewMode, setViewMode } = useTaskPageSettings();
   const { isOpen, setOpen } = useTaskModalStore();
   const prefersReducedMotion = useReducedMotion();
@@ -48,13 +78,36 @@ export default function TasksPage() {
   const [initialProjectId, setInitialProjectId] = useState<
     string | null | undefined
   >(undefined);
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
 
-  // Fetch tasks and tags on mount
   useEffect(() => {
     fetchTasks();
     fetchTags();
     fetchProjects();
-  }, [fetchTasks, fetchTags, fetchProjects]);
+  }, [fetchProjects, fetchTags, fetchTasks]);
+
+  const deadlineTasks = useMemo(
+    () => tasks.filter((task) => task.deadline || task.dueDate),
+    [tasks]
+  );
+
+  const openTask = (task: Task) => {
+    setSelectedTask(task);
+    setInitialProjectId(undefined);
+    setOpen(true);
+  };
+
+  const openCreateTask = () => {
+    setSelectedTask(undefined);
+    setInitialProjectId(
+      activeProject
+        ? activeProject.id === "no-project"
+          ? null
+          : activeProject.id
+        : undefined
+    );
+    setOpen(true);
+  };
 
   const handleCreateTask = async (task: NewTask) => {
     await createTask(task);
@@ -62,17 +115,14 @@ export default function TasksPage() {
   };
 
   const handleUpdateTask = async (task: NewTask) => {
-    if (selectedTask) {
-      await updateTask(selectedTask.id, task);
-      await fetchProjects();
-    }
+    if (!selectedTask) return;
+    await updateTask(selectedTask.id, task);
+    await fetchProjects();
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (confirm("Are you sure you want to delete this task?")) {
-      await deleteTask(taskId);
-      await fetchProjects();
-    }
+    await deleteTask(taskId);
+    await fetchProjects();
   };
 
   const handleStatusChange = async (taskId: string, status: TaskStatus) => {
@@ -84,186 +134,276 @@ export default function TasksPage() {
     await fetchProjects();
   };
 
-  const handleCreateTag = async (name: string, color?: string) => {
-    try {
-      const newTag = await createTag({ name, color });
-      await fetchTags(); // Refresh tags after creation
-      return newTag;
-    } catch (error) {
+  const handleSpaceReschedule = (task: Task, start: Date, end: Date) => {
+    void updateTask(task.id, {
+      startDate: start,
+      scheduledStart: start,
+      scheduledEnd: end,
+      isAutoScheduled: true,
+      autoScheduled: false,
+      scheduleLocked: true,
+      isFrozen: true,
+    }).catch((scheduleError: unknown) => {
       void logger.error(
-        "Failed to create task tag",
-        { error: error instanceof Error ? error.message : String(error) },
-        LOG_SOURCE
-      );
-      throw error;
-    }
-  };
-
-  const handleInlineEdit = async (task: Task) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, tags, createdAt, updatedAt, project, ...updates } = task;
-    try {
-      await updateTask(id, updates);
-      // If projectId was changed, refresh projects to update task counts
-      if ("projectId" in updates) {
-        await fetchProjects();
-      }
-    } catch (error) {
-      void logger.error(
-        "Failed to update task inline",
+        "Failed to reschedule task from Space",
         {
-          taskId: id,
-          error: error instanceof Error ? error.message : String(error),
+          taskId: task.id,
+          error:
+            scheduleError instanceof Error
+              ? scheduleError.message
+              : String(scheduleError),
         },
         LOG_SOURCE
       );
+    });
+  };
+
+  const handleCreateTag = async (name: string, color?: string) => {
+    try {
+      const newTag = await createTag({ name, color });
+      await fetchTags();
+      return newTag;
+    } catch (tagError) {
+      void logger.error(
+        "Failed to create task tag",
+        {
+          error:
+            tagError instanceof Error ? tagError.message : String(tagError),
+        },
+        LOG_SOURCE
+      );
+      throw tagError;
     }
   };
 
+  const activePrimaryView =
+    viewMode === "board" || viewMode === "deadlines" ? "list" : viewMode;
+
   return (
-    <div className="flex h-full bg-[#1B1D1E]">
-      <ProjectSidebar />
-      <div
-        className="flex min-w-0 flex-1 flex-col border-y border-r border-[#2B2F31] bg-[#1B1D1E]"
-        data-task-page
-      >
-        <div className="border-b border-[#2B2F31] px-3 py-2 sm:flex sm:min-h-12 sm:items-center">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2 sm:gap-4">
-              <h1 className="text-xl font-semibold text-white">
-                Projects &amp; Tasks
-              </h1>
-              <div className="flex items-center gap-0.5 rounded-md border border-[#3A3F42] bg-[#26292B] p-0.5">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={cn(
-                    "flex h-7 items-center gap-1.5 rounded-[4px] px-2 text-[13px] font-medium transition-colors duration-150",
-                    viewMode === "list"
-                      ? "bg-[#3A3F42] text-white"
-                      : "text-[#9BA1A6] hover:bg-[#323638] hover:text-white"
-                  )}
-                >
-                  <ListTodo className="h-4 w-4" strokeWidth={1.75} />
-                  List
-                </button>
-                <button
-                  onClick={() => setViewMode("board")}
-                  className={cn(
-                    "flex h-7 items-center gap-1.5 rounded-[4px] px-2 text-[13px] font-medium transition-colors duration-150",
-                    viewMode === "board"
-                      ? "bg-[#3A3F42] text-white"
-                      : "text-[#9BA1A6] hover:bg-[#323638] hover:text-white"
-                  )}
-                >
-                  <Kanban className="h-4 w-4" strokeWidth={1.75} />
-                  Board
-                </button>
-                <button
-                  onClick={() => setViewMode("timeline")}
-                  className={cn(
-                    "flex h-7 items-center gap-1.5 rounded-[4px] px-2 text-[13px] font-medium transition-colors duration-150",
-                    viewMode === "timeline"
-                      ? "bg-[#3A3F42] text-white"
-                      : "text-[#9BA1A6] hover:bg-[#323638] hover:text-white"
-                  )}
-                >
-                  <CalendarRange className="h-4 w-4" strokeWidth={1.75} />
-                  Timeline
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  scheduleAllTasks();
-                }}
-              >
-                Auto Schedule
-              </Button>
-              <Button
-                data-create-task-button
-                onClick={() => {
-                  setSelectedTask(undefined);
-                  // Set initial project ID based on active project
-                  // If viewing "No Project", set to null
-                  // If viewing a specific project, set to that project's ID
-                  // Otherwise, don't set an initial project (undefined)
-                  const projectId = activeProject
-                    ? activeProject.id === "no-project"
-                      ? null
-                      : activeProject.id
-                    : undefined;
-                  setInitialProjectId(projectId);
-                  setOpen(true);
-                }}
-              >
-                Create Task
-              </Button>
-            </div>
-          </div>
-
-          {error && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertDescription>{error.message}</AlertDescription>
-            </Alert>
-          )}
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+      <header className="flex h-12 flex-none items-center border-b border-[var(--border-subtle)] px-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Box className="h-4 w-4 text-[var(--text-secondary)]" />
+          <h1 className="truncate text-[14px] font-semibold">Workspace</h1>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 pb-20 sm:p-4">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={viewMode}
-              className="min-h-0 flex-1"
-              initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={
-                prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -8 }
-              }
-              transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
-            >
-              {viewMode === "list" ? (
-                <TaskList
-                  tasks={tasks}
-                  onEdit={(task) => {
-                    setSelectedTask(task);
-                    setOpen(true);
-                  }}
-                  onDelete={handleDeleteTask}
-                  onStatusChange={handleStatusChange}
-                  onInlineEdit={handleInlineEdit}
-                />
-              ) : viewMode === "board" ? (
-                <BoardView
-                  tasks={tasks}
-                  onEdit={(task) => {
-                    setSelectedTask(task);
-                    setOpen(true);
-                  }}
-                  onDelete={handleDeleteTask}
-                  onStatusChange={handleStatusChange}
-                />
-              ) : (
-                <TimelineView tasks={tasks} />
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => scheduleAllTasks()}
+            className="flex h-8 items-center gap-1.5 rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] px-2.5 text-[12px] font-medium text-[var(--control-fg-muted)] hover:bg-[var(--control-bg-hover)] hover:text-[var(--control-fg)]"
+          >
+            <RotateCw className="h-3.5 w-3.5" />
+            Refresh tasks
+          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex h-8 items-center gap-1.5 rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] px-2.5 text-[12px] font-medium text-[var(--control-fg)] hover:bg-[var(--control-bg-hover)]">
+              <Plus className="h-3.5 w-3.5" />
+              New
+              <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuItem
+                onSelect={openCreateTask}
+                className="h-9 text-[12px]"
+              >
+                <ListTodo />
+                Create task
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => setProjectModalOpen(true)}
+                className="h-9 text-[12px]"
+              >
+                <Box />
+                Create project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      <div className="flex h-11 flex-none items-end border-b border-[var(--border-subtle)] px-2">
+        <nav aria-label="Workspace views" className="flex min-w-0 items-end">
+          {PRIMARY_VIEWS.map((view) => {
+            const Icon = view.icon;
+            const isActive = activePrimaryView === view.id;
+            return (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setViewMode(view.id)}
+                className={cn(
+                  VIEW_BUTTON_CLASS,
+                  isActive
+                    ? "border-[var(--text-primary)] text-[var(--text-primary)]"
+                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {view.label}
+              </button>
+            );
+          })}
+          {viewMode === "deadlines" && (
+            <button
+              type="button"
+              className={cn(
+                VIEW_BUTTON_CLASS,
+                "border-[var(--text-primary)] text-[var(--text-primary)]"
               )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+            >
+              <CalendarRange className="h-3.5 w-3.5" />
+              Deadlines
+            </button>
+          )}
+          {viewMode === "board" && (
+            <button
+              type="button"
+              className={cn(
+                VIEW_BUTTON_CLASS,
+                "border-[var(--text-primary)] text-[var(--text-primary)]"
+              )}
+            >
+              <Kanban className="h-3.5 w-3.5" />
+              Kanban
+            </button>
+          )}
+        </nav>
 
-        <TaskModal
-          isOpen={isOpen}
-          onClose={() => {
-            setOpen(false);
-            setSelectedTask(undefined);
-            setInitialProjectId(undefined);
-          }}
-          onSave={selectedTask ? handleUpdateTask : handleCreateTask}
-          task={selectedTask}
-          tags={tags}
-          onCreateTag={handleCreateTag}
-          initialProjectId={initialProjectId}
-        />
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label="Manage workspace views"
+            className="mb-1 grid h-7 w-7 place-items-center rounded text-[var(--text-muted)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-52">
+            <DropdownMenuLabel className="text-[11px] text-[var(--text-muted)]">
+              View order
+            </DropdownMenuLabel>
+            {PRIMARY_VIEWS.map((view) => (
+              <DropdownMenuItem
+                key={view.id}
+                onSelect={() => setViewMode(view.id)}
+                className="h-8 text-[12px]"
+              >
+                <view.icon />
+                {view.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => setViewMode("space")}
+              className="h-8 text-[12px]"
+            >
+              Reset to Solo defaults
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label="Add workspace view"
+            className="mb-1 grid h-7 w-7 place-items-center rounded text-[var(--text-muted)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
+          >
+            <Plus className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuLabel className="text-[11px] text-[var(--text-muted)]">
+              Add view
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={() => setViewMode("deadlines")}
+              className="h-9 text-[12px]"
+            >
+              <CalendarRange />
+              Deadlines
+              <span className="ml-auto text-[10px] text-[var(--text-muted)]">
+                {deadlineTasks.length}
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setViewMode("board")}
+              className="h-9 text-[12px]"
+            >
+              <Kanban />
+              Kanban
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled className="h-9 text-[12px]">
+              Team views
+              <span className="ml-auto text-[10px] text-[var(--text-muted)]">
+                Solo
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      {error && (
+        <Alert variant="destructive" className="m-3 flex-none">
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      )}
+
+      <main className="min-h-0 flex-1 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={viewMode}
+            className="h-full min-h-0"
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
+          >
+            {viewMode === "space" ? (
+              <SpaceView
+                projects={projects}
+                tasks={tasks}
+                onOpenTask={openTask}
+                onRescheduleTask={handleSpaceReschedule}
+              />
+            ) : viewMode === "timeline" ? (
+              <div className="h-full p-3">
+                <TimelineView tasks={tasks} />
+              </div>
+            ) : viewMode === "board" ? (
+              <BoardView
+                tasks={tasks}
+                onEdit={openTask}
+                onDelete={handleDeleteTask}
+                onStatusChange={handleStatusChange}
+              />
+            ) : (
+              <TaskList
+                tasks={viewMode === "deadlines" ? deadlineTasks : tasks}
+                onEdit={openTask}
+                onStatusChange={handleStatusChange}
+                onCreateTask={openCreateTask}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      <TaskModal
+        isOpen={isOpen}
+        onClose={() => {
+          setOpen(false);
+          setSelectedTask(undefined);
+          setInitialProjectId(undefined);
+        }}
+        onSave={selectedTask ? handleUpdateTask : handleCreateTask}
+        task={selectedTask}
+        tags={tags}
+        onCreateTag={handleCreateTag}
+        initialProjectId={initialProjectId}
+      />
+
+      <ProjectModal
+        isOpen={projectModalOpen}
+        onClose={() => setProjectModalOpen(false)}
+      />
     </div>
   );
 }

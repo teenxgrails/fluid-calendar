@@ -244,7 +244,7 @@ export async function PUT(
     // Save the old task for change tracking
     const oldTask = { ...task };
 
-    const updatedTask = await prisma.task.update({
+    let updatedTask = await prisma.task.update({
       where: {
         id: id,
         // Ensure the task belongs to the current user
@@ -271,6 +271,40 @@ export async function PUT(
         scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
       },
     });
+
+    // A manually placed task is represented by one frozen block. Keeping the
+    // block relation in sync here makes Calendar, Space, Focus, and connector
+    // reads all observe the same placement without a second storage model.
+    if (
+      updates.scheduleLocked === true &&
+      updates.scheduledStart &&
+      updates.scheduledEnd
+    ) {
+      await prisma.$transaction([
+        prisma.scheduledBlock.deleteMany({ where: { taskId: id } }),
+        prisma.scheduledBlock.create({
+          data: {
+            taskId: id,
+            userId,
+            start: newDate(updates.scheduledStart),
+            end: newDate(updates.scheduledEnd),
+            chunkIndex: 0,
+            chunkCount: 1,
+            isFrozen: true,
+          },
+        }),
+      ]);
+
+      updatedTask =
+        (await prisma.task.findUnique({
+          where: { id, userId },
+          include: {
+            tags: true,
+            project: true,
+            scheduledBlocks: { orderBy: { chunkIndex: "asc" } },
+          },
+        })) ?? updatedTask;
+    }
 
     // Track the update for sync purposes if the task is in a mapped project
     if (mappingId) {

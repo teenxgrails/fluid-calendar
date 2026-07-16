@@ -84,7 +84,7 @@ export function BoardTask({ task, onEdit, onDelete }: BoardTaskProps) {
       <div
         {...draggableProps}
         className={cn(
-          "cursor-grab rounded-lg border bg-card p-3 shadow-sm transition-[opacity,box-shadow] duration-150 hover:shadow-md active:cursor-grabbing",
+          "cursor-grab rounded-[var(--control-radius)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-2.5 transition-[opacity,background-color,border-color] duration-150 hover:border-[var(--control-border)] hover:bg-[var(--surface-hover)] active:cursor-grabbing",
           isDragging && "opacity-30"
         )}
       >
@@ -102,12 +102,14 @@ export function BoardTask({ task, onEdit, onDelete }: BoardTaskProps) {
                   )}
                 </div>
               )}
-              <h3 className="task-title text-sm font-medium">{task.title}</h3>
+              <h3 className="task-title text-[12px] font-medium text-[var(--text-primary)]">
+                {task.title}
+              </h3>
             </div>
           </div>
 
           {task.description && (
-            <p className="task-description line-clamp-2 text-xs text-muted-foreground">
+            <p className="task-description line-clamp-2 text-[11px] text-[var(--text-secondary)]">
               {task.description}
             </p>
           )}
@@ -129,7 +131,7 @@ export function BoardTask({ task, onEdit, onDelete }: BoardTaskProps) {
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-[10px]">
             {task.energyLevel && (
               <span
                 className={cn(

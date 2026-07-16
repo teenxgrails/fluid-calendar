@@ -18,15 +18,15 @@ interface ColumnProps {
 }
 
 const statusColors = {
-  [TaskStatus.TODO]: "bg-yellow-500/10 border-yellow-500/20",
-  [TaskStatus.IN_PROGRESS]: "bg-blue-500/10 border-blue-500/20",
-  [TaskStatus.COMPLETED]: "bg-green-500/10 border-green-500/20",
+  [TaskStatus.TODO]: "border-[var(--border-subtle)]",
+  [TaskStatus.IN_PROGRESS]: "border-[var(--border-subtle)]",
+  [TaskStatus.COMPLETED]: "border-[var(--border-subtle)]",
 };
 
 const statusHeaderColors = {
-  [TaskStatus.TODO]: "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
-  [TaskStatus.IN_PROGRESS]: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
-  [TaskStatus.COMPLETED]: "bg-green-500/20 text-green-700 dark:text-green-400",
+  [TaskStatus.TODO]: "text-[var(--primitive-gold-400)]",
+  [TaskStatus.IN_PROGRESS]: "text-[var(--primitive-blue-500)]",
+  [TaskStatus.COMPLETED]: "text-[var(--color-success)]",
 };
 
 // Helper function to format enum values for display
@@ -48,23 +48,23 @@ export function Column({ status, tasks, onEdit, onDelete }: ColumnProps) {
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-80 flex-shrink-0 flex-col rounded-lg border bg-background",
+        "flex w-72 flex-shrink-0 flex-col rounded-[var(--control-radius)] border bg-[var(--surface-panel)]",
         statusColors[status],
-        isOver && "ring-2 ring-ring"
+        isOver && "border-[var(--text-secondary)] bg-[var(--surface-raised)]"
       )}
     >
-      <div className="border-b border-border p-2">
+      <div className="border-b border-[var(--border-subtle)] p-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                "rounded-full px-2.5 py-0.5 text-sm font-medium",
+                "px-1 text-[12px] font-medium",
                 statusHeaderColors[status]
               )}
             >
               {formatEnumValue(status)}
             </span>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-[11px] text-[var(--text-muted)]">
               <NumberFlow
                 value={tasks.length}
                 transformTiming={{ duration: 180, easing: "ease-out" }}
@@ -74,8 +74,8 @@ export function Column({ status, tasks, onEdit, onDelete }: ColumnProps) {
           </div>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-2">
-        <div ref={taskListRef} className="space-y-2">
+      <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
+        <div ref={taskListRef} className="space-y-1.5">
           {tasks.map((task) => (
             <BoardTask
               key={task.id}

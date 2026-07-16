@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added Space as the primary Solo workspace view: a lightweight animated constellation of the same scheduled tasks used by Calendar, with project clusters, task details, pan/zoom, completed-task visibility, and drag-to-reschedule across the next 14 days.
+- Added configurable Solo workspace views and Motion-style menus for grouping, sorting, layout, filters, projects, visible columns, view management, creation, and task actions.
 - Added a Motion-matched calendar task actions menu with completion, cancellation, link, scheduling, duplication, project, template, archive, and delete actions.
 - Added spring-based task dragging with a Motion-style lift preview, reduced-motion fallbacks, and direct Today-sidebar drops onto the Day and Week calendar grids.
 - Added a lightly staggered spring settle animation when auto-scheduling moves task chips into their new calendar slots.
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Rebuilt Workspace around the Solo-focused `Space`, `Task List`, and `Timeline` views, removed the legacy project sidebar, and simplified the default task table to the six fields most users need while keeping additional fields optional.
 - Reworked calendar quick-create with the shared Needt popover, input, control, and focus tokens; matched the current-time dot/rule to Motion and aligned hour labels directly with their horizontal grid lines.
 - Restyled the calendar task-actions menu and Start task dialog with the shared Needt menu, dialog, control, and status tokens.
 - Moved the today-only task list above the sidebar mini-calendar, removed its redundant heading/count, and replaced the accent start control with a compact neutral action button.

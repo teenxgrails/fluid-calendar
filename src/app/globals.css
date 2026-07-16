@@ -524,6 +524,98 @@
   }
 }
 
+/* Workspace Space view: a deliberately lightweight CSS canvas. The star field
+   and task drift use only composited transforms/gradients, so no animation
+   loop or force simulation runs on the main thread. */
+.workspace-space-canvas {
+  background-color: #090b0c;
+  background-image:
+    radial-gradient(
+      circle at 15% 18%,
+      rgb(255 255 255 / 30%) 0 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 68% 35%,
+      rgb(255 255 255 / 22%) 0 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 38% 72%,
+      rgb(255 255 255 / 18%) 0 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 82% 78%,
+      rgb(255 255 255 / 26%) 0 1px,
+      transparent 1.5px
+    );
+  background-size:
+    170px 160px,
+    230px 210px,
+    290px 250px,
+    360px 330px;
+}
+
+.workspace-space-canvas::before {
+  position: absolute;
+  inset: -5%;
+  content: "";
+  pointer-events: none;
+  opacity: 0.3;
+  background:
+    radial-gradient(ellipse at 22% 44%, rgb(74 123 255 / 10%), transparent 34%),
+    radial-gradient(ellipse at 76% 58%, rgb(139 92 246 / 8%), transparent 30%);
+  animation: workspace-space-drift 18s ease-in-out infinite alternate;
+}
+
+.workspace-space-canvas::after {
+  position: absolute;
+  inset: -28%;
+  content: "";
+  pointer-events: none;
+  opacity: 0.12;
+  background: repeating-radial-gradient(
+    ellipse at 49% 51%,
+    transparent 0 106px,
+    rgb(213 221 232 / 44%) 107px,
+    transparent 108px 184px
+  );
+  transform: rotate(-9deg);
+  animation: workspace-orbit-turn 72s linear infinite;
+}
+
+.workspace-space-node {
+  animation: workspace-task-float 5.5s ease-in-out infinite alternate;
+  animation-delay: var(--space-delay, 0ms);
+}
+
+@keyframes workspace-space-drift {
+  to {
+    transform: translate3d(1.2%, -0.8%, 0) scale(1.015);
+  }
+}
+
+@keyframes workspace-task-float {
+  to {
+    translate: var(--space-distance, 3px) calc(var(--space-distance, 3px) * -1);
+  }
+}
+
+@keyframes workspace-orbit-turn {
+  to {
+    transform: rotate(351deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-space-canvas::before,
+  .workspace-space-canvas::after,
+  .workspace-space-node {
+    animation: none;
+  }
+}
+
 html[data-animations="off"] *,
 html[data-animations="off"] *::before,
 html[data-animations="off"] *::after {

@@ -14,11 +14,15 @@ import { Label } from "@/components/ui/label";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import { Textarea } from "@/components/ui/textarea";
 
+import { logger } from "@/lib/logger";
+
 import { useProjectStore } from "@/store/project";
 
 import { Project, ProjectStatus } from "@/types/project";
 
 import { DeleteProjectDialog } from "./DeleteProjectDialog";
+
+const LOG_SOURCE = "ProjectModal";
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -78,7 +82,11 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
       }
       onClose();
     } catch (error) {
-      console.error("Error saving project:", error);
+      void logger.error(
+        "Failed to save project",
+        { error: error instanceof Error ? error.message : String(error) },
+        LOG_SOURCE
+      );
     } finally {
       setIsSubmitting(false);
     }

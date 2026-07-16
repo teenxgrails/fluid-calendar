@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type ViewMode = "list" | "board" | "timeline";
+export type ViewMode = "space" | "list" | "board" | "deadlines" | "timeline";
 
 interface TaskPageSettings {
   // View settings
@@ -15,7 +15,7 @@ export const useTaskPageSettings = create<TaskPageSettings>()(
   persist(
     (set) => ({
       // Initial view settings
-      viewMode: "list",
+      viewMode: "space",
 
       // Actions
       setViewMode: (viewMode) => set({ viewMode }),
