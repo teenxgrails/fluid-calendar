@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed Coolify production images omitting build-time dependencies during `npm ci`, which caused misleading local component resolution errors and left the Prisma CLI unavailable.
 - Escape and outside-click now dismiss calendar quick-create and clear its temporary FullCalendar selection instead of leaving the draft block behind.
 - Calendar tasks now open their full editor on click, while their checkbox completes them directly without opening the editor.
 - Made Refresh all tasks run the scheduler, reload the calendar, animate the updated layout, and report success or rollback errors clearly.
