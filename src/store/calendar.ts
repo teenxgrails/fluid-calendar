@@ -36,16 +36,23 @@ export const useViewStore = create<ViewStore>()(
     }),
     {
       name: "calendar-view-store",
+      version: 2,
       // Only persist the date as ISO string
       partialize: (state) => ({
         view: state.view,
-        date: state.date.toISOString(),
         selectedEventId: state.selectedEventId,
       }),
+      migrate: (persistedState) => {
+        const state = persistedState as Partial<ViewStore>;
+        return {
+          view: state.view ?? "week",
+          selectedEventId: state.selectedEventId,
+        };
+      },
       // Convert ISO string back to Date on hydration
       onRehydrateStorage: () => (state) => {
         if (state) {
-          state.date = newDate(state.date);
+          state.date = newDate();
         }
       },
     }

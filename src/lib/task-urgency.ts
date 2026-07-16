@@ -35,7 +35,11 @@ export function getTaskUrgency(
   thresholds: UrgencyThresholds,
   now: Date = newDate()
 ): UrgencyLevel {
-  const due = task.dueDate ? newDate(task.dueDate) : null;
+  const due = task.deadline
+    ? newDate(task.deadline)
+    : task.dueDate
+      ? newDate(task.dueDate)
+      : null;
   if (!due) return "none";
 
   const hoursUntilDue = (due.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -50,12 +54,23 @@ export function getTaskUrgency(
  */
 export function isTodayTask(task: Task, now: Date = newDate()): boolean {
   if (task.status === TaskStatus.COMPLETED) return false;
-  if (!task.dueDate) return false;
-
-  const due = newDate(task.dueDate);
+  const due = task.deadline
+    ? newDate(task.deadline)
+    : task.dueDate
+      ? newDate(task.dueDate)
+      : null;
   const endOfToday = newDate(now);
   endOfToday.setHours(23, 59, 59, 999);
-  return due.getTime() <= endOfToday.getTime();
+  const startsToday = [task.scheduledStart, task.startDate].some((value) => {
+    if (!value) return false;
+    const date = newDate(value);
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  });
+  return startsToday || (!!due && due.getTime() <= endOfToday.getTime());
 }
 
 /**
@@ -72,8 +87,16 @@ export function sortByUrgency(
     const rankB = URGENCY_RANK[getTaskUrgency(b, thresholds, now)];
     if (rankA !== rankB) return rankA - rankB;
 
-    const dueA = a.dueDate ? newDate(a.dueDate).getTime() : Infinity;
-    const dueB = b.dueDate ? newDate(b.dueDate).getTime() : Infinity;
+    const dueA = a.deadline
+      ? newDate(a.deadline).getTime()
+      : a.dueDate
+        ? newDate(a.dueDate).getTime()
+        : Infinity;
+    const dueB = b.deadline
+      ? newDate(b.deadline).getTime()
+      : b.dueDate
+        ? newDate(b.dueDate).getTime()
+        : Infinity;
     return dueA - dueB;
   });
 }

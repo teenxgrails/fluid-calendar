@@ -1,6 +1,38 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { BookTemplate, Check, ChevronDown, Settings2 } from "lucide-react";
+import {
+  Bell,
+  Bold,
+  BookOpen,
+  BookTemplate,
+  Box,
+  CalendarDays,
+  Check,
+  CheckSquare2,
+  ChevronDown,
+  Circle,
+  Code2,
+  Copy,
+  Ellipsis,
+  Flag,
+  Folder,
+  Heading1,
+  Heading2,
+  Image,
+  Italic,
+  Layers3,
+  Link2,
+  List,
+  ListChecks,
+  ListOrdered,
+  Paperclip,
+  Plus,
+  Repeat2,
+  Strikethrough,
+  Tag as TagIcon,
+  Underline,
+  UserRound,
+} from "lucide-react";
 import { RRule } from "rrule";
 import { toast } from "sonner";
 
@@ -33,7 +65,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { format, newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
-import { RecurrenceConverterFactory } from "@/lib/task-sync/recurrence/recurrence-converter-factory";
 import { cn } from "@/lib/utils";
 
 import { useProjectStore } from "@/store/project";
@@ -114,27 +145,6 @@ const TASK_TEMPLATES: TaskTemplate[] = [
 
 const LOG_SOURCE = "TaskModal";
 const SAVED_TASK_TEMPLATES_KEY = "needt-task-templates";
-
-// Helper function to convert external recurrence rule to RRule format
-function getStandardRRule(task?: Task): RRule {
-  if (!task?.recurrenceRule) {
-    return new RRule({
-      freq: RRule.WEEKLY,
-      interval: 1,
-      byweekday: [RRule.MO],
-    });
-  }
-
-  // If the task has a source (e.g., OUTLOOK), use the appropriate converter
-  if (task.source) {
-    const converter = RecurrenceConverterFactory.getConverter(task.source);
-    const standardRule = converter.convertFromString(task.recurrenceRule);
-    return RRule.fromString(standardRule);
-  }
-
-  // If no source or internal task, assume it's already in RRule format
-  return RRule.fromString(task.recurrenceRule);
-}
 
 export function TaskModal({
   isOpen,
@@ -411,7 +421,11 @@ export function TaskModal({
       await onSave(buildPayload(statusValue));
       onClose();
     } catch (error) {
-      console.error("Error saving task:", error);
+      void logger.error(
+        "Task save failed",
+        { error: error instanceof Error ? error.message : String(error) },
+        LOG_SOURCE
+      );
       toast.error(
         task ? "Couldn't save the task." : "Couldn't create the task."
       );
@@ -446,7 +460,11 @@ export function TaskModal({
       setNewTagName("");
       setNewTagColor("#E5E7EB");
     } catch (error) {
-      console.error("Error creating tag:", error);
+      void logger.error(
+        "Task tag creation failed",
+        { error: error instanceof Error ? error.message : String(error) },
+        LOG_SOURCE
+      );
     }
   };
 
@@ -474,482 +492,510 @@ export function TaskModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         data-testid="task-modal"
-        className="flex h-[min(720px,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] !w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden border-[#3A3F42] bg-[#202425] p-0 text-[var(--text-hi)] sm:h-[min(720px,calc(100dvh-3rem))] sm:max-h-[calc(100dvh-3rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1080px]"
+        className="h-[min(767px,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] !w-[calc(100vw-1rem)] gap-0 overflow-hidden border-[#313538] bg-[#202425] p-0 text-[#F2F2F2] shadow-none sm:h-[min(767px,calc(100dvh-3.875rem))] sm:max-h-[calc(100dvh-3.875rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1016px] lg:[&>button.absolute]:-right-8 lg:[&>button.absolute]:top-0"
       >
-        <div className="contents">
-          {isSubmitting && <LoadingOverlay />}
-          <DialogHeader className="flex-row items-center justify-between space-y-0 border-b border-[var(--line-strong)] px-5 py-3.5 pr-14">
-            <DialogTitle className="flex items-center gap-3 text-base">
-              <span className="rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-2.5 py-1 text-xs font-medium text-[var(--text-lo)]">
+        {isSubmitting && <LoadingOverlay />}
+        <form
+          onSubmit={handleSubmit}
+          className="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,696px)_320px] lg:grid-rows-[95px_minmax(0,1fr)_54px] lg:[grid-template-areas:'header_aside''main_aside''mainFooter_asideFooter']"
+        >
+          <DialogHeader className="space-y-0 px-6 py-4 lg:[grid-area:header] lg:px-10 lg:pt-4">
+            <div className="flex h-[25px] items-center justify-between gap-4">
+              <DialogTitle className="flex items-center gap-2 text-[13px] font-normal text-[#737A80]">
+                <CheckSquare2 className="h-4 w-4" />
                 Task
-              </span>
-              {task ? "Edit task" : "Create task"}
-            </DialogTitle>
-            {task && status !== TaskStatus.COMPLETED && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleMarkComplete}
-                disabled={isSubmitting}
-              >
-                <Check className="h-3.5 w-3.5" />
-                Mark complete
-              </Button>
-            )}
-            {task && status === TaskStatus.COMPLETED && (
-              <span className="flex items-center gap-1.5 rounded-md border border-[var(--acc-teal)]/40 bg-[var(--acc-teal)]/10 px-2.5 py-1 text-xs font-medium text-[var(--acc-teal)]">
-                <Check className="h-3.5 w-3.5" />
-                Completed
-              </span>
-            )}
-            {!task && (
-              <Popover
-                open={isTemplateMenuOpen}
-                onOpenChange={setIsTemplateMenuOpen}
-              >
-                <PopoverTrigger asChild>
-                  <Button type="button" variant="ghost" size="sm">
-                    <BookTemplate className="h-3.5 w-3.5" />
-                    Use template
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="end"
-                  className="w-72 bg-[var(--raised)] p-2 text-[var(--text-hi)]"
-                >
-                  <div className="px-2 py-1.5 text-[13px] font-semibold">
-                    Task templates
-                  </div>
-                  <div className="my-1 h-px bg-[var(--line-strong)]" />
-                  {[...savedTemplates, ...TASK_TEMPLATES].map((template) => (
+              </DialogTitle>
+              <div className="mr-4 flex items-center gap-1 text-[13px] text-[#9BA1A6] lg:mr-0">
+                {task ? (
+                  <>
+                    {status !== TaskStatus.COMPLETED ? (
+                      <button
+                        type="button"
+                        onClick={handleMarkComplete}
+                        disabled={isSubmitting}
+                        className="flex h-[25px] items-center gap-1.5 rounded-md border border-[#3A3F42] bg-[#313538] px-2 text-white hover:bg-[#383D40]"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        Mark complete
+                      </button>
+                    ) : (
+                      <span className="flex h-[25px] items-center gap-1.5 rounded-md bg-[#244B3B] px-2 text-[#67D69B]">
+                        <Check className="h-3.5 w-3.5" /> Completed
+                      </span>
+                    )}
                     <button
-                      key={template.id}
                       type="button"
-                      onClick={() => applyTemplate(template)}
-                      className="w-full rounded-md px-2 py-2 text-left transition-colors hover:bg-[var(--active)]"
+                      onClick={() => {
+                        void navigator.clipboard.writeText(
+                          [title, description].filter(Boolean).join("\n\n")
+                        );
+                        toast.success("Task copied");
+                      }}
+                      className="grid h-[25px] w-[25px] place-items-center rounded-md hover:bg-[#2B2F31] hover:text-white"
+                      aria-label="Copy task"
                     >
-                      <div className="text-[13px] font-medium">
-                        {template.name}
-                      </div>
-                      <div className="mt-0.5 text-xs text-[var(--text-lo)]">
-                        {template.duration} min · {template.contextTag}
-                      </div>
+                      <Copy className="h-4 w-4" />
                     </button>
-                  ))}
-                </PopoverContent>
-              </Popover>
-            )}
+                    <button
+                      type="button"
+                      onClick={() => setIsAdvancedOpen((open) => !open)}
+                      className="grid h-[25px] w-[25px] place-items-center rounded-md hover:bg-[#2B2F31] hover:text-white"
+                      aria-label="More task settings"
+                    >
+                      <Ellipsis className="h-4 w-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Popover
+                      open={isTemplateMenuOpen}
+                      onOpenChange={setIsTemplateMenuOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex h-[25px] items-center gap-1.5 rounded-md px-2 hover:bg-[#2B2F31] hover:text-white"
+                        >
+                          <BookTemplate className="h-4 w-4" /> Use template
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="end"
+                        className="w-72 border-[#3A3F42] bg-[#202425] p-1.5 text-[#F2F2F2]"
+                      >
+                        <div className="px-2 py-1.5 text-[13px] font-semibold">
+                          Task templates
+                        </div>
+                        {[...savedTemplates, ...TASK_TEMPLATES].map(
+                          (template) => (
+                            <button
+                              key={template.id}
+                              type="button"
+                              onClick={() => applyTemplate(template)}
+                              className="w-full rounded px-2 py-2 text-left hover:bg-[#2B2F31]"
+                            >
+                              <span className="block text-[13px] font-medium">
+                                {template.name}
+                              </span>
+                              <span className="block text-[11px] text-[#9BA1A6]">
+                                {template.duration} min · {template.contextTag}
+                              </span>
+                            </button>
+                          )
+                        )}
+                      </PopoverContent>
+                    </Popover>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = !isRecurring;
+                        setIsRecurring(next);
+                        if (next && !recurrenceRule) {
+                          setRecurrenceRule(
+                            new RRule({
+                              freq: RRule.WEEKLY,
+                              interval: 1,
+                              byweekday: [RRule.MO],
+                            }).toString()
+                          );
+                        }
+                      }}
+                      className={cn(
+                        "flex h-[25px] items-center gap-1.5 rounded-md px-2 hover:bg-[#2B2F31] hover:text-white",
+                        isRecurring && "bg-[#2B2F31] text-white"
+                      )}
+                    >
+                      <Repeat2 className="h-4 w-4" /> Recurring
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+            <Label htmlFor="title" className="sr-only">
+              Task name
+            </Label>
+            <Input
+              id="title"
+              ref={titleInputRef}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              required
+              placeholder="Task name"
+              className="mt-1 h-[42px] border-0 bg-transparent px-0 text-[22px] font-semibold text-[#F2F2F2] shadow-none placeholder:text-[#737A80] focus-visible:border-0 focus-visible:ring-0"
+            />
           </DialogHeader>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex min-h-0 flex-1 flex-col"
-          >
-            {task && (
-              <div className="flex-none px-5 pt-4">
-                <TaskTimer
-                  taskId={task.id}
-                  actualMinutes={task.actualMinutes}
-                  likelyDelta={task.likelyDelta}
+          <main className="flex min-h-0 flex-col px-6 pb-3 lg:[grid-area:main] lg:px-10 lg:pb-6">
+            <div
+              aria-label="Description toolbar"
+              className="flex h-[52px] flex-none items-start gap-0.5 pt-1 text-[#737A80]"
+            >
+              {[
+                [Bold, "Bold"],
+                [Italic, "Italic"],
+                [Underline, "Underline"],
+                [Strikethrough, "Strikethrough"],
+                [Heading1, "Heading 1"],
+                [Heading2, "Heading 2"],
+                [List, "Bulleted list"],
+                [ListOrdered, "Numbered list"],
+                [ListChecks, "Checklist"],
+                [Image, "Image"],
+                [Code2, "Code"],
+                [Link2, "Link"],
+              ].map(([Icon, label]) => (
+                <button
+                  key={label as string}
+                  type="button"
+                  title={label as string}
+                  className="grid h-[30px] w-[30px] place-items-center rounded-md hover:bg-[#2B2F31] hover:text-[#F2F2F2]"
+                >
+                  <Icon className="h-4 w-4" />
+                </button>
+              ))}
+            </div>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Description"
+              className="min-h-[260px] flex-1 resize-none border-0 bg-transparent px-0 py-0 text-[14px] leading-6 text-[#F2F2F2] shadow-none placeholder:text-[#9BA1A6] focus-visible:border-0 focus-visible:ring-0"
+            />
+            <div className="flex h-[50px] flex-none items-center justify-between text-[13px]">
+              <span className="flex items-center gap-2 font-semibold text-[#F2F2F2]">
+                <Paperclip className="h-4 w-4 text-[#737A80]" /> Attachments
+              </span>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 rounded px-2 py-1 text-[#9BA1A6] hover:bg-[#2B2F31] hover:text-white"
+              >
+                <Plus className="h-4 w-4" /> Add attachment
+              </button>
+            </div>
+          </main>
+
+          <aside className="min-h-0 overflow-y-auto border-t border-[#313538] bg-[#202425] lg:[grid-area:aside] lg:border-l lg:border-t-0">
+            <div className="space-y-0.5 px-3 py-4 lg:px-5">
+              <button
+                type="button"
+                className="flex h-[28px] w-full items-center gap-2 rounded px-1 text-left text-[14px] hover:bg-[#2B2F31]"
+              >
+                <Layers3 className="h-4 w-4 text-[#737A80]" /> My Workspace
+              </button>
+              <button
+                type="button"
+                disabled
+                className="flex h-[28px] w-full items-center gap-2 rounded px-1 text-left text-[14px] text-[#737A80]"
+              >
+                <Folder className="h-4 w-4" /> No folder
+              </button>
+              <div className="flex h-[28px] items-center gap-2 px-1">
+                <Box className="h-4 w-4 flex-none text-[#737A80]" />
+                <Select
+                  value={projectId || "none"}
+                  onValueChange={(value) =>
+                    setProjectId(value === "none" ? null : value)
+                  }
+                >
+                  <SelectTrigger className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-0 text-[14px] shadow-none focus:ring-0">
+                    <SelectValue placeholder="No project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No project</SelectItem>
+                    {projects
+                      .filter((project) => project.status === "active")
+                      .map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <label
+              className={cn(
+                "flex h-[48px] cursor-pointer items-center gap-2 px-5 text-[13px]",
+                isAutoScheduled
+                  ? "bg-[#4C2365] text-[#CE8CFF]"
+                  : "bg-[#2B2F31] text-[#F2F2F2]"
+              )}
+            >
+              <Switch
+                checked={isAutoScheduled}
+                onCheckedChange={setIsAutoScheduled}
+                className="sr-only"
+              />
+              <span className="grid h-5 w-5 place-items-center rounded-full border border-current">
+                <Check className="h-3 w-3" />
+              </span>
+              <span className="font-medium">Auto-scheduled</span>
+              <span className="text-current/80">
+                {task?.scheduledStart
+                  ? format(newDate(task.scheduledStart), "EEE MMM d, h:mm a")
+                  : "(Pending)"}
+              </span>
+            </label>
+
+            <div className="space-y-0.5 border-b border-[#2B2F31] px-5 py-3 text-[13px]">
+              <div className="flex h-[30px] items-center gap-2">
+                <UserRound className="h-4 w-4 text-[#737A80]" />
+                <span className="w-[76px] text-[#9BA1A6]">Assignee:</span>
+                <span>Me</span>
+              </div>
+              <div className="flex h-[30px] items-center gap-2">
+                <Circle className="h-4 w-4 text-[#737A80]" />
+                <span className="w-[76px] text-[#9BA1A6]">Status:</span>
+                <Select
+                  value={status}
+                  onValueChange={(value) => setStatus(value as TaskStatus)}
+                >
+                  <SelectTrigger className="h-[28px] flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none">
+                    <SelectValue>{formatEnumValue(status)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(TaskStatus).map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {formatEnumValue(value)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex h-[30px] items-center gap-2">
+                <Flag className="h-4 w-4 text-[#F7B642]" />
+                <span className="w-[76px] text-[#9BA1A6]">Priority:</span>
+                <Select
+                  value={priority || Priority.NONE}
+                  onValueChange={(value) => setPriority(value as Priority)}
+                >
+                  <SelectTrigger className="h-[28px] flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none">
+                    <SelectValue>
+                      {formatEnumValue(priority || Priority.NONE)}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(Priority).map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {formatEnumValue(value)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-0.5 border-b border-[#2B2F31] px-5 py-3 text-[13px]">
+              <div className="flex h-[30px] items-center gap-2">
+                <span className="w-[100px] text-[#9BA1A6]">Duration:</span>
+                <Input
+                  id="duration"
+                  type="number"
+                  min="0"
+                  value={duration}
+                  onChange={(event) => setDuration(event.target.value)}
+                  placeholder="30"
+                  className="h-[28px] flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none focus-visible:ring-0"
+                />
+                <span className="text-[#9BA1A6]">min</span>
+              </div>
+              <div className="flex h-[30px] items-center gap-2 pl-3">
+                <span className="w-[88px] text-[#9BA1A6]">└ Min chunk:</span>
+                <Input
+                  id="minChunkMinutes"
+                  type="number"
+                  min="0"
+                  value={minChunkMinutes}
+                  onChange={(event) => setMinChunkMinutes(event.target.value)}
+                  placeholder="No Chunks"
+                  className="h-[28px] flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none focus-visible:ring-0"
                 />
               </div>
-            )}
-
-            <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="flex min-h-0 flex-col gap-4 px-6 py-5">
-                <div>
-                  <Label htmlFor="title" className="sr-only">
-                    Task name
-                  </Label>
-                  <Input
-                    id="title"
-                    ref={titleInputRef}
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                    placeholder="Task name"
-                    className="h-12 border-0 bg-transparent px-0 text-[26px] font-medium text-[var(--text-hi)] placeholder:text-[#737A80] focus-visible:ring-0"
-                  />
-                </div>
-
-                <div
-                  aria-label="Description toolbar"
-                  className="flex flex-wrap gap-1 py-1 text-xs text-[var(--text-lo)]"
-                >
-                  {[
-                    "B",
-                    "I",
-                    "U",
-                    "S",
-                    "H1",
-                    "H2",
-                    "•",
-                    "1.",
-                    "Img",
-                    "Code",
-                    "Link",
-                  ].map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      className="rounded px-2 py-1.5 hover:bg-[#2B2F31] hover:text-[var(--text-hi)]"
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex min-h-0 flex-1 flex-col">
-                  <Label
-                    htmlFor="description"
-                    className="text-[16px] font-medium"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={4}
-                    placeholder="Add notes, links, acceptance criteria, or a quick brain dump."
-                    className="mt-2 min-h-[180px] flex-1 resize-none border-0 bg-transparent px-0 text-[15px] leading-6 text-[var(--text-hi)] placeholder:text-[#737A80] focus-visible:ring-0"
-                  />
-                </div>
-
-                <div className="mt-auto flex items-center justify-between border-t border-[#2B2F31] pt-4 text-sm text-[var(--text-lo)]">
-                  <span className="font-medium text-[var(--text-hi)]">
-                    Attachments
-                  </span>
-                  <span>Add attachment</span>
-                </div>
+              <div className="flex h-[30px] items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-[#737A80]" />
+                <span className="w-[76px] text-[#9BA1A6]">Start date:</span>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(event) => setStartDate(event.target.value)}
+                  className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none focus-visible:ring-0"
+                />
               </div>
+              <div className="flex h-[30px] items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-[#CE8CFF]" />
+                <span className="w-[76px] text-[#9BA1A6]">Deadline:</span>
+                <Input
+                  id="deadline"
+                  type="datetime-local"
+                  value={deadline}
+                  onChange={(event) => setDeadline(event.target.value)}
+                  className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-0 text-[13px] text-[#CE8CFF] shadow-none focus-visible:ring-0"
+                />
+                <Bell className="h-4 w-4 text-[#CE8CFF]" />
+              </div>
+              <label className="flex h-[30px] cursor-pointer items-center gap-2 pl-3">
+                <span className="w-[88px] text-[#9BA1A6]">
+                  └ Hard deadline:
+                </span>
+                <Switch
+                  checked={isFrozen}
+                  onCheckedChange={setIsFrozen}
+                  className="h-4 w-[26px] [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-[12px]"
+                />
+              </label>
+              <div className="flex h-[30px] items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-[#737A80]" />
+                <span className="w-[76px] text-[#9BA1A6]">Schedule:</span>
+                <Select
+                  value={preferredTime || "none"}
+                  onValueChange={(value) =>
+                    setPreferredTime(
+                      value === "none" ? "" : (value as TimePreference)
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-[28px] flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none">
+                    <SelectValue>
+                      {preferredTime
+                        ? formatEnumValue(preferredTime)
+                        : "Work hours"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Work hours</SelectItem>
+                    {Object.values(TimePreference).map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {formatEnumValue(value)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-              <div className="min-h-0 space-y-3 overflow-y-auto border-t border-[#2B2F31] bg-[#1D2021] p-4 lg:border-l lg:border-t-0">
+            <div className="px-5 py-3 text-[13px]">
+              <div className="flex h-[30px] items-center gap-2">
+                <TagIcon className="h-4 w-4 text-[#737A80]" />
+                <span className="w-[76px] text-[#9BA1A6]">Labels:</span>
+                <span className="truncate">
+                  {selectedTagIds.length
+                    ? tags
+                        .filter((tag) => selectedTagIds.includes(tag.id))
+                        .map((tag) => tag.name)
+                        .join(", ")
+                    : "None"}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAdvancedOpen((open) => !open)}
+                aria-expanded={isAdvancedOpen}
+                className="mt-1 flex h-[30px] w-full items-center gap-2 rounded px-1 text-[#9BA1A6] hover:bg-[#2B2F31] hover:text-white"
+              >
+                <Plus className="h-4 w-4" /> Advanced settings{" "}
+                <ChevronDown
+                  className={cn(
+                    "ml-auto h-4 w-4 transition-transform",
+                    isAdvancedOpen && "rotate-180"
+                  )}
+                />
+              </button>
+            </div>
+
+            {isAdvancedOpen && (
+              <div className="space-y-3 border-t border-[#2B2F31] px-5 py-4 text-[12px]">
                 {isMissedDeadline && (
-                  <div className="flex items-center justify-between gap-2 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm">
-                    <span className="flex items-center gap-2 font-medium text-red-300">
-                      <span className="grid h-4 w-4 place-items-center rounded-sm bg-red-500/80 text-[10px] font-bold text-white">
-                        !
-                      </span>
-                      Missed deadline
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => save(status)}
-                      disabled={isSubmitting}
-                      className="text-[13px] font-medium text-[var(--accent)] transition-colors hover:text-[var(--text-hi)]"
-                    >
-                      Resolve
-                    </button>
+                  <div className="rounded border border-red-500/40 bg-red-500/10 px-2 py-1.5 text-red-300">
+                    Missed deadline
                   </div>
                 )}
-
-                <div
-                  className={cn(
-                    "-mx-4 flex items-center justify-between px-4 py-3 text-sm transition-colors",
-                    isAutoScheduled
-                      ? "bg-[#4C2365] text-[#CE8CFF]"
-                      : "bg-[#2B2F31] text-[var(--text-hi)]"
-                  )}
-                >
-                  <span className="font-medium">Auto-scheduled</span>
-                  <Switch
-                    checked={isAutoScheduled}
-                    onCheckedChange={setIsAutoScheduled}
+                {task && (
+                  <TaskTimer
+                    taskId={task.id}
+                    actualMinutes={task.actualMinutes}
+                    likelyDelta={task.likelyDelta}
                   />
-                </div>
-
-                {task?.isAutoScheduled && task?.scheduledStart && (
-                  <div
-                    className={cn(
-                      "text-xs",
-                      isMissedDeadline
-                        ? "text-red-300"
-                        : "text-[var(--text-lo)]"
-                    )}
-                  >
-                    Auto-scheduled on{" "}
-                    {format(
-                      newDate(task.scheduledStart),
-                      "EEE MMM d 'at' h:mm a"
-                    )}
-                  </div>
                 )}
-
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-center gap-3">
-                    <Label
-                      htmlFor="status"
-                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
-                    >
-                      Status
-                    </Label>
-                    <Select
-                      value={status}
-                      onValueChange={(value) => setStatus(value as TaskStatus)}
-                    >
-                      <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
-                        <SelectValue>{formatEnumValue(status)}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(TaskStatus).map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {formatEnumValue(s)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Label
-                      htmlFor="priority"
-                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
-                    >
-                      Priority
-                    </Label>
-                    <Select
-                      value={priority || Priority.NONE}
-                      onValueChange={(value) => setPriority(value as Priority)}
-                    >
-                      <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
-                        <SelectValue>
-                          {formatEnumValue(priority || Priority.NONE)}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(Priority).map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {formatEnumValue(level)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Label
-                      htmlFor="duration"
-                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
-                    >
-                      Duration
-                    </Label>
-                    <Input
-                      type="number"
-                      id="duration"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      min="0"
-                      placeholder="30"
-                      className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
-                    />
-                  </div>
-
-                  <div className={cn(!isAdvancedOpen && "hidden")}>
-                    <Label htmlFor="minChunkMinutes">Min chunk</Label>
-                    <Input
-                      type="number"
-                      id="minChunkMinutes"
-                      value={minChunkMinutes}
-                      onChange={(e) => setMinChunkMinutes(e.target.value)}
-                      min="0"
-                      placeholder="No chunks"
-                    />
-                  </div>
-
-                  <div className={cn(!isAdvancedOpen && "hidden")}>
-                    <Label htmlFor="startDate">Start date</Label>
-                    <Input
-                      type="date"
-                      id="startDate"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Label
-                      htmlFor="deadline"
-                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
-                    >
-                      Deadline
-                    </Label>
-                    <Input
-                      type="datetime-local"
-                      id="deadline"
-                      value={deadline}
-                      onChange={(e) => setDeadline(e.target.value)}
-                      className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
-                    />
-                  </div>
-
-                  <div
-                    className={cn(
-                      "col-span-full flex items-center justify-between rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2",
-                      !isAdvancedOpen && "hidden"
-                    )}
-                  >
-                    <div>
-                      <Label>Hard deadline</Label>
-                      <p className="text-xs text-[var(--text-lo)]">
-                        Keep this block fixed when reflowing.
-                      </p>
-                    </div>
-                    <Switch checked={isFrozen} onCheckedChange={setIsFrozen} />
-                  </div>
-
-                  <div className="col-span-full flex items-center gap-3">
-                    <Label
-                      htmlFor="preferredTime"
-                      className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
-                    >
-                      Schedule
-                    </Label>
-                    <Select
-                      value={preferredTime || "none"}
-                      onValueChange={(value) =>
-                        setPreferredTime(
-                          value === "none" ? "" : (value as TimePreference)
-                        )
-                      }
-                    >
-                      <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
-                        <SelectValue placeholder="Work hours">
-                          {preferredTime
-                            ? formatEnumValue(preferredTime)
-                            : "Work hours"}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Work hours</SelectItem>
-                        {Object.values(TimePreference).map((time) => (
-                          <SelectItem key={time} value={time}>
-                            {formatEnumValue(time)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsAdvancedOpen((open) => !open)}
-                    aria-expanded={isAdvancedOpen}
-                    className="col-span-full flex items-center justify-between rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-3 py-2 text-left transition-colors hover:bg-[var(--active)]"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Settings2
-                        className="h-3.5 w-3.5 text-[var(--text-lo)]"
-                        strokeWidth={1.8}
-                      />
-                      <span>
-                        <span className="block text-[13px] font-medium text-[var(--text-hi)]">
-                          Advanced settings
-                        </span>
-                        <span className="block text-xs text-[var(--text-lo)]">
-                          Estimates, focus, chunks, tags, and recurrence
-                        </span>
-                      </span>
-                    </span>
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 text-[var(--text-lo)] transition-transform duration-150",
-                        isAdvancedOpen && "rotate-180"
-                      )}
-                      strokeWidth={1.8}
-                    />
-                  </button>
-                </div>
-
-                <div
-                  className={cn(
-                    "grid grid-cols-1 gap-3 border-t border-[var(--line-strong)] pt-3 sm:grid-cols-2",
-                    !isAdvancedOpen && "hidden"
-                  )}
-                >
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label htmlFor="estimatedMinutes">Planner estimate</Label>
+                    <Label htmlFor="estimatedMinutes">Estimate</Label>
                     <Input
-                      type="number"
                       id="estimatedMinutes"
+                      type="number"
+                      min="0"
                       value={estimatedMinutes}
-                      onChange={(e) => setEstimatedMinutes(e.target.value)}
-                      min="0"
-                      placeholder={duration || "45"}
+                      onChange={(event) =>
+                        setEstimatedMinutes(event.target.value)
+                      }
                     />
                   </div>
-
-                  <div>
-                    <Label htmlFor="estOptimistic">Optimistic</Label>
-                    <Input
-                      type="number"
-                      id="estOptimistic"
-                      value={estOptimistic}
-                      onChange={(e) => setEstOptimistic(e.target.value)}
-                      min="0"
-                      placeholder="30"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="estLikely">Likely</Label>
-                    <Input
-                      type="number"
-                      id="estLikely"
-                      value={estLikely}
-                      onChange={(e) => setEstLikely(e.target.value)}
-                      min="0"
-                      placeholder={estimatedMinutes || duration || "45"}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="estPessimistic">Pessimistic</Label>
-                    <Input
-                      type="number"
-                      id="estPessimistic"
-                      value={estPessimistic}
-                      onChange={(e) => setEstPessimistic(e.target.value)}
-                      min="0"
-                      placeholder="75"
-                    />
-                  </div>
-
                   <div>
                     <Label htmlFor="maxChunkMinutes">Max chunk</Label>
                     <Input
-                      type="number"
                       id="maxChunkMinutes"
-                      value={maxChunkMinutes}
-                      onChange={(e) => setMaxChunkMinutes(e.target.value)}
+                      type="number"
                       min="0"
+                      value={maxChunkMinutes}
+                      onChange={(event) =>
+                        setMaxChunkMinutes(event.target.value)
+                      }
                     />
                   </div>
-
                   <div>
-                    <Label htmlFor="contextTag">Labels</Label>
+                    <Label htmlFor="estOptimistic">Optimistic</Label>
+                    <Input
+                      id="estOptimistic"
+                      type="number"
+                      min="0"
+                      value={estOptimistic}
+                      onChange={(event) => setEstOptimistic(event.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="estLikely">Likely</Label>
+                    <Input
+                      id="estLikely"
+                      type="number"
+                      min="0"
+                      value={estLikely}
+                      onChange={(event) => setEstLikely(event.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="estPessimistic">Pessimistic</Label>
+                    <Input
+                      id="estPessimistic"
+                      type="number"
+                      min="0"
+                      value={estPessimistic}
+                      onChange={(event) =>
+                        setEstPessimistic(event.target.value)
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contextTag">Context</Label>
                     <Input
                       id="contextTag"
                       value={contextTag}
-                      onChange={(e) => setContextTag(e.target.value)}
-                      placeholder="deep work"
+                      onChange={(event) => setContextTag(event.target.value)}
                     />
-                    {contextFactor && suggestedLikely && (
-                      <button
-                        type="button"
-                        onClick={() => setEstLikely(String(suggestedLikely))}
-                        className="mt-1 text-left text-xs text-[var(--accent)] hover:text-[var(--text-hi)]"
-                      >
-                        You usually run {contextFactor.toFixed(1)}x on &quot;
-                        {contextTag.trim()}&quot;. Suggest {suggestedLikely}{" "}
-                        min.
-                      </button>
-                    )}
                   </div>
-
+                </div>
+                {contextFactor && suggestedLikely && (
+                  <button
+                    type="button"
+                    onClick={() => setEstLikely(String(suggestedLikely))}
+                    className="text-left text-[var(--accent)]"
+                  >
+                    Suggest {suggestedLikely} min from your history
+                  </button>
+                )}
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label htmlFor="priorityLevel">Planner priority</Label>
+                    <Label>Planner priority</Label>
                     <Select
                       value={priorityLevel}
                       onValueChange={(value) =>
@@ -957,22 +1003,19 @@ export function TaskModal({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue>
-                          {formatEnumValue(priorityLevel)}
-                        </SelectValue>
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.values(SchedulingTaskPriority).map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {formatEnumValue(level)}
+                        {Object.values(SchedulingTaskPriority).map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {formatEnumValue(value)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
-                    <Label htmlFor="energyRequired">Focus required</Label>
+                    <Label>Focus required</Label>
                     <Select
                       value={energyRequired}
                       onValueChange={(value) =>
@@ -980,22 +1023,19 @@ export function TaskModal({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue>
-                          {formatEnumValue(energyRequired)}
-                        </SelectValue>
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.values(SchedulingEnergyLevel).map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {formatEnumValue(level)}
+                        {Object.values(SchedulingEnergyLevel).map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {formatEnumValue(value)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
-                    <Label htmlFor="energyLevel">Energy level</Label>
+                    <Label>Energy level</Label>
                     <Select
                       value={energyLevel || "none"}
                       onValueChange={(value) =>
@@ -1005,287 +1045,115 @@ export function TaskModal({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="None">
-                          {energyLevel ? formatEnumValue(energyLevel) : "None"}
-                        </SelectValue>
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">None</SelectItem>
-                        {Object.values(EnergyLevel).map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {formatEnumValue(level)}
+                        {Object.values(EnergyLevel).map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {formatEnumValue(value)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                  <label className="flex items-end justify-between gap-2 pb-2">
+                    <span>Lock schedule</span>
+                    <Switch
+                      checked={scheduleLocked}
+                      onCheckedChange={setScheduleLocked}
+                      className="h-4 w-[26px] [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-[12px]"
+                    />
+                  </label>
                 </div>
-
-                {isAdvancedOpen && isAutoScheduled && (
-                  <div className="space-y-3 border-t border-[var(--line-strong)] pt-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Lock schedule</Label>
-                        <p className="text-sm text-[var(--text-lo)]">
-                          Prevent automatic rescheduling
-                        </p>
-                      </div>
-                      <Switch
-                        checked={scheduleLocked}
-                        onCheckedChange={setScheduleLocked}
-                      />
-                    </div>
-
-                    {task?.scheduledStart && task?.scheduledEnd && (
-                      <div className="rounded-md border border-[var(--line-strong)] bg-[var(--raised)] p-3">
-                        <div className="text-sm text-[var(--text-hi)]">
-                          Scheduled for{" "}
-                          {format(newDate(task.scheduledStart), "PPp")} to{" "}
-                          {format(newDate(task.scheduledEnd), "p")}
-                        </div>
-                        {task.scheduleScore && (
-                          <div className="mt-1 text-sm text-[var(--text-lo)]">
-                            Confidence: {Math.round(task.scheduleScore * 100)}%
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 border-t border-[#2B2F31] pt-3">
-                  <Label
-                    htmlFor="project"
-                    className="w-24 shrink-0 text-[15px] text-[var(--text-lo)]"
-                  >
-                    Project
-                  </Label>
-                  <Select
-                    value={projectId || "none"}
-                    onValueChange={(value) =>
-                      setProjectId(value === "none" ? null : value)
-                    }
-                  >
-                    <SelectTrigger className="h-8 border-0 bg-transparent px-0 text-[15px] shadow-none hover:bg-transparent">
-                      <SelectValue placeholder="No Project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No Project</SelectItem>
-                      {projects
-                        .filter((p) => p.status === "active")
-                        .map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className={cn(!isAdvancedOpen && "hidden")}>
+                <div>
                   <Label>Tags</Label>
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-1 flex flex-wrap gap-1">
                     {tags.map((tag) => (
                       <label
                         key={tag.id}
                         className={cn(
-                          "inline-flex cursor-pointer items-center rounded-md px-3 py-1.5 text-sm transition-colors",
+                          "cursor-pointer rounded px-2 py-1",
                           selectedTagIds.includes(tag.id)
-                            ? "bg-[var(--active)] text-[var(--text-hi)]"
-                            : "bg-[var(--raised)] text-[var(--text-lo)] hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
+                            ? "bg-[#2B2F31] text-white"
+                            : "bg-[#151718] text-[#9BA1A6]"
                         )}
                       >
                         <Checkbox
                           className="sr-only"
                           checked={selectedTagIds.includes(tag.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedTagIds([...selectedTagIds, tag.id]);
-                            } else {
-                              setSelectedTagIds(
-                                selectedTagIds.filter((id) => id !== tag.id)
-                              );
-                            }
-                          }}
-                        />
-                        <span
-                          className="mr-2 h-2 w-2 rounded-full"
-                          style={{
-                            backgroundColor: tag.color || "var(--muted)",
-                          }}
+                          onCheckedChange={(checked) =>
+                            setSelectedTagIds(
+                              checked
+                                ? [...selectedTagIds, tag.id]
+                                : selectedTagIds.filter((id) => id !== tag.id)
+                            )
+                          }
                         />
                         {tag.name}
                       </label>
                     ))}
                   </div>
-
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-2 flex gap-1">
                     <Input
                       value={newTagName}
-                      onChange={(e) => setNewTagName(e.target.value)}
-                      placeholder="New tag name"
+                      onChange={(event) => setNewTagName(event.target.value)}
+                      placeholder="New tag"
                     />
                     <Input
                       type="color"
                       value={newTagColor}
-                      onChange={(e) => setNewTagColor(e.target.value)}
-                      className="h-9 w-9 p-1"
+                      onChange={(event) => setNewTagColor(event.target.value)}
+                      className="w-9 p-1"
                     />
                     <Button
                       type="button"
+                      variant="secondary"
+                      size="sm"
                       onClick={handleCreateTag}
                       disabled={!newTagName.trim()}
-                      variant="secondary"
                     >
                       Add
                     </Button>
                   </div>
                 </div>
-
-                <div
-                  className={cn(
-                    "space-y-2 border-t border-[var(--line-strong)] pt-3",
-                    !isAdvancedOpen && "hidden"
-                  )}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="recurring"
-                      checked={isRecurring}
-                      onCheckedChange={(checked) => {
-                        setIsRecurring(checked as boolean);
-                        if (checked) {
-                          if (!dueDate) {
-                            const today = newDate();
-                            setDueDate(today.toISOString().split("T")[0]);
-                          }
-                          if (!recurrenceRule) {
-                            setRecurrenceRule(
-                              new RRule({
-                                freq: RRule.WEEKLY,
-                                interval: 1,
-                                byweekday: [RRule.MO],
-                              }).toString()
-                            );
-                          }
-                        }
-                      }}
-                    />
-                    <Label htmlFor="recurring">Recurring task</Label>
+                {isRecurring && (
+                  <div className="rounded border border-[#2B2F31] bg-[#151718] p-2 text-[#9BA1A6]">
+                    Repeats weekly. Recurrence details are saved with this task.
                   </div>
-                  {isRecurring && !dueDate && (
-                    <div className="ml-6 mt-1 text-sm text-[var(--accent)]">
-                      A recurring task needs a start date. Today has been set as
-                      the default.
-                    </div>
-                  )}
-                  {isRecurring && (
-                    <div className="mt-2 space-y-3 pl-6">
-                      <div>
-                        <Label>Repeat every</Label>
-                        <div className="mt-1 flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min="1"
-                            value={
-                              recurrenceRule
-                                ? getStandardRRule({
-                                    recurrenceRule,
-                                    source: task?.source,
-                                  } as Task).options.interval || 1
-                                : 1
-                            }
-                            onChange={(e) => {
-                              const interval = parseInt(e.target.value) || 1;
-                              const currentRule = recurrenceRule
-                                ? getStandardRRule({
-                                    recurrenceRule,
-                                    source: task?.source,
-                                  } as Task)
-                                : new RRule({
-                                    freq: RRule.WEEKLY,
-                                    interval: 1,
-                                    byweekday: [RRule.MO],
-                                  });
-                              setRecurrenceRule(
-                                new RRule({
-                                  ...currentRule.options,
-                                  interval,
-                                }).toString()
-                              );
-                            }}
-                            className="w-20"
-                          />
-                          <Select
-                            value={
-                              recurrenceRule
-                                ? getStandardRRule({
-                                    recurrenceRule,
-                                    source: task?.source,
-                                  } as Task).options.freq.toString()
-                                : RRule.WEEKLY.toString()
-                            }
-                            onValueChange={(value) => {
-                              const freq = parseInt(value);
-                              const currentRule = recurrenceRule
-                                ? getStandardRRule({
-                                    recurrenceRule,
-                                    source: task?.source,
-                                  } as Task)
-                                : new RRule({
-                                    freq: RRule.WEEKLY,
-                                    interval: 1,
-                                    byweekday: [RRule.MO],
-                                  });
-                              setRecurrenceRule(
-                                new RRule({
-                                  ...currentRule.options,
-                                  freq,
-                                  byweekday:
-                                    freq === RRule.WEEKLY ? [RRule.MO] : null,
-                                }).toString()
-                              );
-                            }}
-                          >
-                            <SelectTrigger className="w-[110px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={RRule.DAILY.toString()}>
-                                days
-                              </SelectItem>
-                              <SelectItem value={RRule.WEEKLY.toString()}>
-                                weeks
-                              </SelectItem>
-                              <SelectItem value={RRule.MONTHLY.toString()}>
-                                months
-                              </SelectItem>
-                              <SelectItem value={RRule.YEARLY.toString()}>
-                                years
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            </div>
-            <div className="flex flex-none justify-end gap-3 border-t border-[var(--line-strong)] px-5 py-3">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel (Esc)
-              </Button>
-              <Button type="submit" disabled={isSubmitting || !title.trim()}>
-                {isSubmitting
-                  ? "Saving..."
-                  : task
-                    ? "Save changes"
-                    : "Save task"}
-              </Button>
-            </div>
-          </form>
-        </div>
+            )}
+          </aside>
+
+          <footer className="flex items-center px-6 lg:[grid-area:mainFooter] lg:px-10">
+            <a
+              href="/tutorials/managing-tasks"
+              className="flex items-center gap-2 rounded bg-[#4C2365] px-2 py-1 text-[12px] font-medium text-[#CE8CFF]"
+            >
+              <BookOpen className="h-4 w-4" /> Tutorial
+            </a>
+          </footer>
+          <div className="flex items-center justify-end gap-2 border-t border-[#313538] bg-[#202425] px-3 lg:[grid-area:asideFooter] lg:border-l">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-[30px] rounded px-2 text-[13px] text-[#9BA1A6] hover:bg-[#2B2F31] hover:text-white"
+            >
+              Cancel{" "}
+              <kbd className="ml-1 rounded bg-[#313538] px-1 text-[10px]">
+                Esc
+              </kbd>
+            </button>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !title.trim()}
+              className="h-[34px] border-[#3A3F42] bg-[#313538] px-3 text-[13px] hover:bg-[#383D40]"
+            >
+              {isSubmitting ? "Saving..." : task ? "Save changes" : "Save task"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

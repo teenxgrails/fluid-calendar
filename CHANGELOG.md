@@ -20,15 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added instant optimistic task creation, editing, completion, movement, and deletion across Tasks, Calendar, Focus, Smart Planning, and project drag-and-drop, with server reconciliation and automatic rollback when a request fails.
 - Added Motion-style calendar creation: clicking or dragging an empty Week/Day time slot now opens a lightweight task-first quick creator. Press Enter to create an auto-scheduled task, choose Event for a fixed block, or open the full Task editor for advanced options.
 - Rebuilt the Event creator as a full Motion-style, two-column editor with time controls, repeat settings, and a dedicated Event details panel.
-- Restored the month mini-calendar in the left sidebar (above the navigation list). Clicking a day moves the main calendar, the ‹ › arrows change month, today is shown with an accent-filled pill, and the selected day with a grey pill
+- Restored the month mini-calendar in the left sidebar with Motion-sized 24px dates, a white selected day, a TODAY marker, seven-day navigation, and a month/year picker.
 - Added a "Today's tasks" panel in the left sidebar listing incomplete tasks that are overdue or due today, sorted most-urgent first with a colored urgency circle (red for overdue/due soon and pinned to the top, yellow for approaching, green for plenty of time). Hovering a row reveals an animated circular start button that opens a "Start task now" modal — choose how long to work (5–120 min), optionally start Focus, and the block is allocated now while the scheduling engine moves other tasks around it. Chosen durations are learned per task title so similar new tasks are prefilled. Urgency thresholds are configurable under Settings → Task urgency
 
 ### Changed
 
-- Matched calendar toolbar controls to Motion's exact 25px height, 13px type, and compact padding, and replaced the app's blue primary accent with a neutral graphite accent.
+- Matched calendar toolbar controls to Motion's exact 25px height and 13px type, while restoring a configurable multi-color accent palette instead of forcing the interface to one graphite color.
 - Aligned the week header/time gutter with Motion and added a compact gridded all-day rail.
 - Refined calendar working and non-working hour shades while preserving the current-day hierarchy and consistent one-pixel grid lines.
-- Reduced the full Create task editor to Motion-like compact proportions with a 1080×720 desktop frame and a narrower scheduling sidebar.
+- Rebuilt the full Create task editor around Motion's measured 1016×767 desktop frame, with a 696px editing canvas, 320px scheduling sidebar, matching property groups, templates, recurrence, and collapsed advanced settings.
 - Recolored the calendar canvas and time gutter to #1B1D1E, with subtle stepped shades for non-current working and non-working hours while preserving every grid line.
 - Rebuilt calendar task and event cards in Motion’s grid language: tasks are neutral, checkbox-led blocks with compact time metadata and a hover actions affordance; events retain a restrained color marker and their own event-specific layout.
 - Matched the Task and Event editors more closely to Motion’s actual layouts: Task now uses a wide, borderless editing canvas with property rows in the scheduling sidebar; Event uses Motion’s compact single-column creation flow with time controls, repeat controls, and Event details below.
@@ -44,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Calendar tasks now open their full editor on click, while their checkbox completes them directly without opening the editor.
 - Made Refresh all tasks run the scheduler, reload the calendar, animate the updated layout, and report success or rollback errors clearly.
 - Fixed the current-time indicator gap, removed the extra time-gutter divider, and added matching open/close motion to the Create Task / Event menu.
+- Kept hourly grid rules visible above working-hours overlays, made every all-day cell `#1B1D1E` with four-sided dividers, and removed the redundant main-calendar date controls.
+- Reset the calendar to the real current day after a new session, prevented week changes from remounting the whole view, and made mini-calendar arrows move exactly seven days.
+- Hid the empty Today tasks placeholder, included tasks scheduled for today, and based urgency color/order on the explicit deadline before the due-date fallback.
 - Fixed the Week calendar's full task editor occasionally refusing to close because its grid-creation state remained active after Close, Cancel, or Escape.
 - Fixed the command palette keeping an invisible modal scroll lock mounted after closing, which could prevent calendar scrolling and pointer interaction.
 - Fixed calendar task quick views for auto-scheduled chunks: click handlers now resolve the underlying task id instead of the generated calendar-block id, and the popover anchors to the clicked item.

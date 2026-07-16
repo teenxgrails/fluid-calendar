@@ -13,7 +13,7 @@
     --line-strong: #cbd2df;
     --text-hi: #11131c;
     --text-lo: #5d6478;
-    --accent: #555b5f;
+    --accent: #6366f1;
     --accent-contrast: #ffffff;
     --bg-0: #f6f7fb;
     --bg-1: #ffffff;
@@ -32,7 +32,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
 
-    --primary: 200 4% 35%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 0 0% 96.1%;
@@ -51,7 +51,7 @@
 
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 200 4% 35%;
+    --ring: 239 84% 67%;
 
     --radius: 0.5rem;
 
@@ -76,14 +76,14 @@
     --line-strong: #323334;
     --text-hi: #f4f5f6;
     --text-lo: #9aa0a6;
-    --accent: #555b5f;
+    --accent: #6366f1;
     --accent-contrast: #ffffff;
     --bg-0: #1b1d1e;
     --bg-1: #262627;
     --bg-2: #2b2f31;
-    --acc-blue: #555b5f;
-    --acc-violet: #555b5f;
-    --acc-magenta: #555b5f;
+    --acc-blue: #4a7bff;
+    --acc-violet: #8b5cf6;
+    --acc-magenta: #e64bd0;
     --acc-teal: #2dd4bf;
     --acc-gold: #f5c451;
     --background: 224 12% 7%;
@@ -95,7 +95,7 @@
     --popover: 225 11% 10%;
     --popover-foreground: 210 17% 96%;
 
-    --primary: 200 4% 35%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 224 10% 15%;
@@ -114,7 +114,7 @@
 
     --border: 224 9% 18%;
     --input: 224 9% 18%;
-    --ring: 200 4% 35%;
+    --ring: 239 84% 67%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -669,6 +669,14 @@ html[data-animations="off"] *::after {
   border-top: 1px solid #2b2f31 !important;
 }
 
+/* Keep hourly rules above FullCalendar's business-hours overlays so they
+   remain visible in every working and non-working block. */
+.fc .fc-timegrid-slots {
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
+}
+
 /* Vertical day-column separators. */
 .fc .fc-timegrid-cols .fc-timegrid-col {
   border-left: 1px solid #2b2f31 !important;
@@ -707,7 +715,7 @@ html[data-animations="off"] *::after {
 .fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-daygrid-day-frame {
   min-height: 21px !important;
   height: 21px !important;
-  background: #202425 !important;
+  background: #1b1d1e !important;
 }
 
 .fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-timegrid-axis,
@@ -718,6 +726,7 @@ html[data-animations="off"] *::after {
 
 .fc-tz-corner .fc-scrollgrid-section-body:first-of-type .fc-daygrid-day {
   border-left: 1px solid #2b2f31 !important;
+  border-right: 1px solid #2b2f31 !important;
 }
 
 .fc-tz-corner

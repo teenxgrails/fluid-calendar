@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 const LOG_SOURCE = "customization-api";
 
 const DEFAULT_CUSTOMIZATION = {
-  accentColor: "#555B5F",
+  accentColor: "#6366F1",
   backgroundTint: "#1B1D1E",
   density: "comfortable",
   sidebarWidth: 244,

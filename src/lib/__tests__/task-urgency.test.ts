@@ -1,8 +1,4 @@
-import {
-  getTaskUrgency,
-  isTodayTask,
-  sortByUrgency,
-} from "@/lib/task-urgency";
+import { getTaskUrgency, isTodayTask, sortByUrgency } from "@/lib/task-urgency";
 
 import { Task, TaskStatus } from "@/types/task";
 
@@ -47,20 +43,40 @@ describe("getTaskUrgency", () => {
       "none"
     );
   });
+
+  it("uses the task deadline before its fallback due date", () => {
+    const task = makeTask({
+      deadline: new Date("2026-07-11T13:00:00.000Z"),
+      dueDate: new Date("2026-07-15T12:00:00.000Z"),
+    });
+    expect(getTaskUrgency(task, thresholds, now)).toBe("red");
+  });
 });
 
 describe("isTodayTask", () => {
   it("includes overdue and due-today tasks but excludes completed ones", () => {
-    const dueToday = makeTask({ dueDate: new Date("2026-07-11T18:00:00.000Z") });
+    const dueToday = makeTask({
+      dueDate: new Date("2026-07-11T18:00:00.000Z"),
+    });
     const completed = makeTask({
       dueDate: new Date("2026-07-11T18:00:00.000Z"),
       status: TaskStatus.COMPLETED,
     });
-    const tomorrow = makeTask({ dueDate: new Date("2026-07-12T18:00:00.000Z") });
+    const tomorrow = makeTask({
+      dueDate: new Date("2026-07-12T18:00:00.000Z"),
+    });
     expect(isTodayTask(dueToday, now)).toBe(true);
     expect(isTodayTask(completed, now)).toBe(false);
     // A task due tomorrow is not part of today's list.
     expect(isTodayTask(tomorrow, now)).toBe(false);
+  });
+
+  it("includes tasks scheduled to run today without a due date", () => {
+    const scheduledToday = makeTask({
+      dueDate: null,
+      scheduledStart: new Date("2026-07-11T16:00:00.000Z"),
+    });
+    expect(isTodayTask(scheduledToday, now)).toBe(true);
   });
 });
 
@@ -79,6 +95,10 @@ describe("sortByUrgency", () => {
       dueDate: new Date("2026-07-11T20:00:00.000Z"),
     });
     const sorted = sortByUrgency([green, yellow, red], thresholds, now);
-    expect(sorted.map((task) => task.title)).toEqual(["red", "yellow", "green"]);
+    expect(sorted.map((task) => task.title)).toEqual([
+      "red",
+      "yellow",
+      "green",
+    ]);
   });
 });

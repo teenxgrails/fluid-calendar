@@ -1,16 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+import {
+  addDays,
   eachDayOfInterval,
   endOfMonth,
+  endOfWeek,
   format,
   isSameDay,
   isSameMonth,
   isToday,
+  newDate,
+  newDateFromYMD,
   startOfMonth,
-} from "date-fns";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
-
+  startOfWeek,
+  subDays,
+} from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 
 interface MiniCalendarProps {
@@ -19,6 +31,11 @@ interface MiniCalendarProps {
   compact?: boolean;
 }
 
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTHS = Array.from({ length: 12 }, (_, month) =>
+  format(newDateFromYMD(2026, month, 1), "MMM")
+);
+
 export function MiniCalendar({
   currentDate,
   onDateClick,
@@ -26,130 +43,176 @@ export function MiniCalendar({
 }: MiniCalendarProps) {
   const [calendarDate, setCalendarDate] = useState(currentDate);
 
-  // Follow the main calendar when its selected date jumps to another month
-  // (e.g. via the calendar arrows), so the mini-calendar stays in sync.
   useEffect(() => {
-    setCalendarDate((prev) =>
-      isSameMonth(prev, currentDate) ? prev : currentDate
-    );
+    setCalendarDate(currentDate);
   }, [currentDate]);
 
-  const monthStart = startOfMonth(calendarDate);
-  const monthEnd = endOfMonth(calendarDate);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const visibleDays = useMemo(() => {
+    const monthStart = startOfMonth(calendarDate);
+    const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const gridEnd = endOfWeek(endOfMonth(calendarDate), { weekStartsOn: 0 });
+    return eachDayOfInterval({ start: gridStart, end: gridEnd });
+  }, [calendarDate]);
 
-  // Two-letter weekday initials (Mon-first), matching the Motion reference.
-  const weekDays = [
-    { key: "mon", label: "Mo" },
-    { key: "tue", label: "Tu" },
-    { key: "wed", label: "We" },
-    { key: "thu", label: "Th" },
-    { key: "fri", label: "Fr" },
-    { key: "sat", label: "Sa" },
-    { key: "sun", label: "Su" },
-  ];
-
-  const handlePrevMonth = () => {
-    const newDate = new Date(calendarDate);
-    newDate.setMonth(newDate.getMonth() - 1);
-    setCalendarDate(newDate);
-  };
-
-  const handleNextMonth = () => {
-    const newDate = new Date(calendarDate);
-    newDate.setMonth(newDate.getMonth() + 1);
-    setCalendarDate(newDate);
+  const jumpWeek = (amount: -7 | 7) => {
+    const next = amount < 0 ? subDays(currentDate, 7) : addDays(currentDate, 7);
+    setCalendarDate(next);
+    onDateClick?.(next);
   };
 
   const handleToday = () => {
-    const today = new Date();
+    const today = newDate();
     setCalendarDate(today);
     onDateClick?.(today);
   };
 
-  // Get the day of week of the first day (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-  const firstDayOfMonth = monthStart.getDay();
-  // Adjust for Monday start (transform Sunday from 0 to 7)
-  const adjustedFirstDay = firstDayOfMonth === 0 ? 7 : firstDayOfMonth;
-  // Calculate empty days needed before the first day
-  const emptyDays = adjustedFirstDay - 1;
-
-  const cellSize = compact ? "h-6 text-[11px]" : "h-7 text-[12px]";
+  const selectMonth = (month: number) => {
+    const next = newDate(calendarDate);
+    next.setDate(1);
+    next.setMonth(month);
+    setCalendarDate(next);
+    onDateClick?.(next);
+  };
 
   return (
-    <div className={cn(compact ? "p-1" : "p-1.5")}>
-      {/* Month navigation */}
-      <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-[13px] text-[var(--text-hi)]">
-          <span className="font-semibold">{format(calendarDate, "MMMM")}</span>{" "}
-          <span className="text-[var(--text-lo)]">
-            {format(calendarDate, "yyyy")}
-          </span>
-        </h2>
-        <div className="flex items-center gap-1">
+    <div className={cn("select-none", compact ? "px-1 py-1.5" : "p-1.5")}>
+      <div className="mb-1.5 flex h-6 items-center gap-1 px-0.5">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="group flex min-w-0 items-center gap-1 rounded px-0.5 text-[13px] font-semibold text-[var(--text-hi)] hover:bg-[var(--active)]"
+              aria-label="Choose month"
+            >
+              <span>{format(calendarDate, "MMMM yyyy")}</span>
+              <CalendarDays className="h-3 w-3 text-[var(--text-lo)] opacity-0 transition-opacity group-hover:opacity-100" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            sideOffset={5}
+            className="w-[220px] border-[#3A3F42] bg-[#202425] p-2"
+          >
+            <div className="mb-2 flex items-center justify-between px-1 text-[13px] font-semibold">
+              <button
+                type="button"
+                onClick={() =>
+                  setCalendarDate(
+                    newDateFromYMD(
+                      calendarDate.getFullYear() - 1,
+                      calendarDate.getMonth(),
+                      1
+                    )
+                  )
+                }
+                className="grid h-6 w-6 place-items-center rounded hover:bg-[#2B2F31]"
+                aria-label="Previous year"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              {calendarDate.getFullYear()}
+              <button
+                type="button"
+                onClick={() =>
+                  setCalendarDate(
+                    newDateFromYMD(
+                      calendarDate.getFullYear() + 1,
+                      calendarDate.getMonth(),
+                      1
+                    )
+                  )
+                }
+                className="grid h-6 w-6 place-items-center rounded hover:bg-[#2B2F31]"
+                aria-label="Next year"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              {MONTHS.map((month, index) => (
+                <button
+                  key={month}
+                  type="button"
+                  onClick={() => selectMonth(index)}
+                  className={cn(
+                    "h-7 rounded text-[12px] transition-colors hover:bg-[#2B2F31]",
+                    index === calendarDate.getMonth() &&
+                      "bg-white text-[#1B1D1E] hover:bg-white"
+                  )}
+                >
+                  {month}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className="ml-auto flex items-center gap-0.5">
           <button
+            type="button"
             onClick={handleToday}
-            className="rounded-md border border-[var(--line-strong)] bg-[var(--raised)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-hi)] transition-colors hover:bg-[var(--active)]"
-            aria-label="Go to today"
+            className="h-5 rounded-md border border-[#3A3F42] bg-[#313538] px-2 text-[12px] font-medium text-white transition-colors hover:bg-[#383D40]"
           >
             Today
           </button>
           <button
-            onClick={handlePrevMonth}
-            className="rounded-md p-0.5 text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
-            aria-label="Previous month"
+            type="button"
+            onClick={() => jumpWeek(-7)}
+            className="grid h-5 w-5 place-items-center rounded text-[#9BA1A6] transition-colors hover:bg-[#2B2F31] hover:text-white"
+            aria-label="Previous week"
           >
-            <IoChevronBack className="h-3.5 w-3.5" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={handleNextMonth}
-            className="rounded-md p-0.5 text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
-            aria-label="Next month"
+            type="button"
+            onClick={() => jumpWeek(7)}
+            className="grid h-5 w-5 place-items-center rounded text-[#9BA1A6] transition-colors hover:bg-[#2B2F31] hover:text-white"
+            aria-label="Next week"
           >
-            <IoChevronForward className="h-3.5 w-3.5" />
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-y-0.5">
-        {/* Weekday headers */}
-        {weekDays.map((day) => (
+        {WEEKDAYS.map((day) => (
           <div
-            key={day.key}
-            className={cn(
-              "flex items-center justify-center font-medium text-[var(--text-lo)]",
-              cellSize
-            )}
+            key={day}
+            className="flex h-6 items-center justify-center text-[11px] font-semibold text-[#6F757A]"
           >
-            {day.label}
+            {day}
           </div>
         ))}
 
-        {/* Leading blanks so the 1st lands on the right weekday */}
-        {Array.from({ length: emptyDays }).map((_, index) => (
-          <div key={`empty-${index}`} className={cellSize} />
-        ))}
-
-        {/* Current-month days only (no adjacent-month dates) */}
-        {days.map((day) => (
-          <div key={day.toISOString()} className="flex justify-center">
-            <button
-              onClick={() => onDateClick?.(day)}
-              className={cn(
-                "flex aspect-square w-7 items-center justify-center rounded-md transition-colors",
-                cellSize,
-                isToday(day)
-                  ? "bg-[var(--accent)] font-semibold text-white hover:opacity-90"
-                  : isSameDay(day, currentDate)
-                    ? "bg-[var(--active)] text-[var(--text-hi)]"
-                    : "text-[var(--text-hi)] hover:bg-[var(--active)]"
-              )}
-            >
-              {format(day, "d")}
-            </button>
-          </div>
-        ))}
+        {visibleDays.map((day) => {
+          const selected = isSameDay(day, currentDate);
+          const today = isToday(day);
+          const currentMonth = isSameMonth(day, calendarDate);
+          return (
+            <div key={day.toISOString()} className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => onDateClick?.(day)}
+                aria-label={`${today ? "TODAY " : ""}${format(day, "d")}`}
+                className={cn(
+                  "relative flex h-6 w-6 items-center justify-center rounded border border-transparent text-[12px] transition-[border-color,background-color,color] duration-150 hover:border-[var(--accent)]",
+                  selected
+                    ? "bg-[#ECedee] font-semibold text-[#1B1D1E]"
+                    : currentMonth
+                      ? "text-[#F2F2F2] hover:bg-[#26292B]"
+                      : "text-[#656B70] hover:bg-[#202425]"
+                )}
+              >
+                {today && (
+                  <span className="absolute left-1/2 top-px -translate-x-1/2 text-[4px] font-bold leading-none text-[#FF5C64]">
+                    TODAY
+                  </span>
+                )}
+                {format(day, "d")}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

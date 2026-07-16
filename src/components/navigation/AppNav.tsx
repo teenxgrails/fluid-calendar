@@ -98,7 +98,7 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
     },
     {
       href: "/tasks",
-      label: "Projects & Tasks",
+      label: "Workspace",
       icon: CheckSquare,
       badge: overdueCount,
     },

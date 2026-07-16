@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+import { cn } from "@/lib/utils";
+
 import { SettingRow, SettingsSection } from "./SettingsSection";
 
 interface CustomizationState {
@@ -31,7 +33,7 @@ interface CustomizationState {
 }
 
 const DEFAULTS: CustomizationState = {
-  accentColor: "#555B5F",
+  accentColor: "#6366F1",
   backgroundTint: "#1B1D1E",
   density: "comfortable",
   sidebarWidth: 244,
@@ -47,6 +49,15 @@ const lockedThemes = [
   ["Terminal", "Monospace, hard lines, low chrome."],
 ];
 
+const ACCENT_COLORS = [
+  "#6366F1",
+  "#4A7BFF",
+  "#8B5CF6",
+  "#2DD4BF",
+  "#F59E0B",
+  "#E64BD0",
+];
+
 export function CustomizationSettings() {
   const [settings, setSettings] = useState<CustomizationState>(DEFAULTS);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,7 +67,17 @@ export function CustomizationSettings() {
     fetch("/api/customization")
       .then((response) => response.json())
       .then((data) => {
-        if (!cancelled) setSettings({ ...DEFAULTS, ...data });
+        if (!cancelled) {
+          setSettings({
+            ...DEFAULTS,
+            ...data,
+            accentColor:
+              typeof data.accentColor !== "string" ||
+              data.accentColor.toUpperCase() === "#555B5F"
+                ? DEFAULTS.accentColor
+                : data.accentColor,
+          });
+        }
       })
       .catch(() => {
         toast.error("Could not load customization settings");
@@ -68,7 +89,7 @@ export function CustomizationSettings() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.style.removeProperty("--accent");
+    root.style.setProperty("--accent", settings.accentColor);
     root.style.setProperty("--app-bg", settings.backgroundTint);
     root.style.setProperty("--radius", `${settings.radius}px`);
     root.style.setProperty(
@@ -186,6 +207,36 @@ export function CustomizationSettings() {
               </SelectContent>
             </Select>
           </div>
+        </div>
+      </SettingRow>
+
+      <SettingRow
+        label="Accent color"
+        description="Use color for selection, focus, and interactive states."
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          {ACCENT_COLORS.map((color) => (
+            <button
+              key={color}
+              type="button"
+              onClick={() => update("accentColor", color)}
+              className={cn(
+                "h-7 w-7 rounded-md border-2 transition-transform hover:scale-105",
+                settings.accentColor.toUpperCase() === color
+                  ? "border-white"
+                  : "border-transparent"
+              )}
+              style={{ backgroundColor: color }}
+              aria-label={`Use accent ${color}`}
+            />
+          ))}
+          <Input
+            type="color"
+            value={settings.accentColor}
+            onChange={(event) => update("accentColor", event.target.value)}
+            className="h-7 w-9 p-0.5"
+            aria-label="Custom accent color"
+          />
         </div>
       </SettingRow>
 

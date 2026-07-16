@@ -13,9 +13,7 @@ import {
 } from "motion/react";
 import {
   IoAddOutline,
-  IoChevronBack,
   IoChevronDown,
-  IoChevronForward,
   IoOptionsOutline,
   IoRefreshOutline,
 } from "react-icons/io5";
@@ -47,7 +45,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 import { useEventModalStore } from "@/lib/commands/groups/calendar";
-import { addDays, newDate, subDays } from "@/lib/date-utils";
+import { newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
@@ -103,19 +101,6 @@ export function Calendar({
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isRefreshingTasks, setIsRefreshingTasks] = useState(false);
 
-  const titlePrimary =
-    view === "day"
-      ? new Intl.DateTimeFormat("en-US", {
-          month: "short",
-          day: "numeric",
-        }).format(currentDate)
-      : new Intl.DateTimeFormat("en-US", { month: "short" }).format(
-          currentDate
-        );
-  const titleSecondary = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-  }).format(currentDate);
-
   // Use initial data from server for hydration
   useEffect(() => {
     if (initialFeeds.length > 0) {
@@ -134,28 +119,6 @@ export function Calendar({
     // Always fetch tasks since they're not pre-loaded
     useTaskStore.getState().fetchTasks();
   }, [initialFeeds, initialEvents, setFeeds, setEvents]);
-
-  const handlePrevWeek = () => {
-    if (view === "month" || view === "multiMonth") {
-      const newDate = new Date(currentDate);
-      newDate.setMonth(newDate.getMonth() - 1);
-      setDate(newDate);
-    } else {
-      const days = view === "day" ? 1 : 7;
-      setDate(subDays(currentDate, days));
-    }
-  };
-
-  const handleNextWeek = () => {
-    if (view === "month" || view === "multiMonth") {
-      const newDate = new Date(currentDate);
-      newDate.setMonth(newDate.getMonth() + 1);
-      setDate(newDate);
-    } else {
-      const days = view === "day" ? 1 : 7;
-      setDate(addDays(currentDate, days));
-    }
-  };
 
   const handleAutoSchedule = async () => {
     if (isRefreshingTasks) return;
@@ -192,10 +155,6 @@ export function Calendar({
     setView(nextView);
   };
 
-  const handleToday = () => {
-    setDate(newDate());
-  };
-
   const handleNewEvent = () => {
     const start = newDate();
     eventModalStore.setDefaultDate(start);
@@ -215,42 +174,6 @@ export function Calendar({
       <main className="flex min-w-0 flex-1 flex-col bg-[#1B1D1E]">
         {/* Header */}
         <header className="flex h-12 flex-none items-center px-2">
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handleToday}
-              className={TOOLBAR_BUTTON_CLASS}
-              title="Go to Today (t)"
-            >
-              Today
-            </button>
-
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={handlePrevWeek}
-                className="grid h-[25px] w-[25px] place-items-center rounded-md text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
-                data-testid="calendar-prev-week"
-                title="Previous Week (←)"
-              >
-                <IoChevronBack className="h-4 w-4" />
-              </button>
-              <button
-                onClick={handleNextWeek}
-                className="grid h-[25px] w-[25px] place-items-center rounded-md text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
-                data-testid="calendar-next-week"
-                title="Next Week (→)"
-              >
-                <IoChevronForward className="h-4 w-4" />
-              </button>
-            </div>
-
-            <h1 className="px-1.5 text-[20px] leading-none text-white">
-              <span className="font-semibold">{titlePrimary}</span>{" "}
-              <span className="font-normal text-[#9BA1A6]">
-                {titleSecondary}
-              </span>
-            </h1>
-          </div>
-
           {/* Right-side actions */}
           <div className="ml-auto flex items-center gap-1">
             {/* Calendar options panel (Motion-style) */}
@@ -266,13 +189,14 @@ export function Calendar({
               </PopoverTrigger>
               <PopoverContent
                 align="end"
-                className="w-72 bg-[var(--raised)] p-4 text-[var(--text-hi)]"
+                sideOffset={6}
+                className="w-[322px] border-[#3A3F42] bg-[#202425] p-4 text-[var(--text-hi)]"
               >
-                <h3 className="mb-3 text-[15px] font-semibold">Calendar</h3>
+                <h3 className="mb-4 text-[16px] font-semibold">Calendar</h3>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[13px] text-[var(--text-lo)]">
+                <div className="space-y-2">
+                  <div className="flex h-[34px] items-center justify-between gap-3">
+                    <span className="text-[14px] text-[#9BA1A6]">
                       Start week on
                     </span>
                     <Select
@@ -283,7 +207,7 @@ export function Calendar({
                         })
                       }
                     >
-                      <SelectTrigger className="h-8 w-[120px]">
+                      <SelectTrigger className="h-[30px] w-[104px] border-[#2B2F31] bg-[#151718] px-3 text-[14px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -293,11 +217,12 @@ export function Calendar({
                     </Select>
                   </div>
 
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[13px] text-[var(--text-lo)]">
+                  <div className="flex h-[30px] items-center justify-between gap-3">
+                    <span className="text-[14px] text-[#9BA1A6]">
                       24-hour time
                     </span>
                     <Switch
+                      className="h-4 w-[26px] border-[#3A3F42] [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-[12px]"
                       checked={userSettings.timeFormat === "24h"}
                       onCheckedChange={(checked) =>
                         updateUserSettings({
@@ -307,11 +232,12 @@ export function Calendar({
                     />
                   </div>
 
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[13px] text-[var(--text-lo)]">
+                  <div className="flex h-[30px] items-center justify-between gap-3">
+                    <span className="text-[14px] text-[#9BA1A6]">
                       Highlight working hours
                     </span>
                     <Switch
+                      className="h-4 w-[26px] border-[#3A3F42] [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-[12px]"
                       checked={calendarSettings.workingHours.enabled}
                       onCheckedChange={(checked) =>
                         updateCalendarSettings({
@@ -325,18 +251,18 @@ export function Calendar({
                   </div>
                 </div>
 
-                <div className="my-3 h-px bg-[var(--line-strong)]" />
+                <div className="my-3 h-px bg-[#2B2F31]" />
 
                 <Link
                   href="/settings#auto-schedule"
-                  className="flex items-center justify-center gap-2 rounded-md py-1.5 text-[13px] text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
+                  className="flex h-7 items-center justify-center gap-2 rounded text-[14px] text-[#9BA1A6] transition-colors hover:bg-[#2B2F31] hover:text-white"
                 >
                   Auto-scheduling settings
                   <Settings className="h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="/settings#calendar"
-                  className="flex items-center justify-center gap-2 rounded-md py-1.5 text-[13px] text-[var(--text-lo)] transition-colors hover:bg-[var(--active)] hover:text-[var(--text-hi)]"
+                  className="flex h-7 items-center justify-center gap-2 rounded text-[14px] text-[#9BA1A6] transition-colors hover:bg-[#2B2F31] hover:text-white"
                 >
                   Calendar settings
                   <Settings className="h-3.5 w-3.5" />
@@ -436,7 +362,7 @@ export function Calendar({
           <LayoutGroup id="calendar-schedule">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
-                key={`${view}-${currentDate.toISOString().slice(0, 10)}`}
+                key={view}
                 className="h-full"
                 initial={prefersReducedMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
