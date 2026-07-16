@@ -210,9 +210,19 @@ export function Calendar({
                       <SelectTrigger className="h-[30px] w-[104px] border-[#2B2F31] bg-[#151718] px-3 text-[14px]">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="monday">Monday</SelectItem>
-                        <SelectItem value="sunday">Sunday</SelectItem>
+                      <SelectContent className="border-[#3A3F42] bg-[#202425] text-[#F2F2F2]">
+                        <SelectItem
+                          value="monday"
+                          className="h-[30px] rounded text-[14px] focus:bg-[#2B2F31] data-[state=checked]:bg-[#202425]"
+                        >
+                          Monday
+                        </SelectItem>
+                        <SelectItem
+                          value="sunday"
+                          className="h-[30px] rounded text-[14px] focus:bg-[#2B2F31] data-[state=checked]:bg-[#202425]"
+                        >
+                          Sunday
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -298,35 +308,21 @@ export function Calendar({
               <DropdownMenuContent
                 align="end"
                 sideOffset={6}
-                className="w-60 origin-[var(--radix-dropdown-menu-content-transform-origin)] border-[#2B2F31] bg-[#202425] p-1 text-[#F2F2F2] data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-1"
+                className="w-[210px] origin-[var(--radix-dropdown-menu-content-transform-origin)] rounded-lg border-[#3A3F42] bg-[#202425] p-1 text-[#F2F2F2] shadow-none data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-1"
               >
                 <DropdownMenuItem
                   onClick={handleNewTask}
-                  className="group flex cursor-pointer items-start gap-3 rounded-[4px] px-3 py-2.5 focus:bg-[#2B2F31]"
+                  className="group flex h-9 cursor-pointer items-center gap-2 rounded px-2 text-[13px] focus:bg-[#2B2F31]"
                 >
-                  <CheckSquare2 className="mt-0.5 h-4 w-4 text-[#9BA1A6] transition-colors group-data-[highlighted]:text-[#F2F2F2]" />
-                  <span className="space-y-0.5">
-                    <span className="block text-[13px] font-medium">
-                      Create task
-                    </span>
-                    <span className="block text-[12px] text-[#9BA1A6]">
-                      Add work for the planner to schedule.
-                    </span>
-                  </span>
+                  <CheckSquare2 className="h-4 w-4 text-[#9BA1A6] transition-colors group-data-[highlighted]:text-[#F2F2F2]" />
+                  <span className="font-medium">Create task</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleNewEvent}
-                  className="group flex cursor-pointer items-start gap-3 rounded-[4px] px-3 py-2.5 focus:bg-[#2B2F31]"
+                  className="group flex h-9 cursor-pointer items-center gap-2 rounded border-t border-[#2B2F31] px-2 text-[13px] focus:bg-[#2B2F31]"
                 >
-                  <Clock3 className="mt-0.5 h-4 w-4 text-[#9BA1A6] transition-colors group-data-[highlighted]:text-[#F2F2F2]" />
-                  <span className="space-y-0.5">
-                    <span className="block text-[13px] font-medium">
-                      Create event
-                    </span>
-                    <span className="block text-[12px] text-[#9BA1A6]">
-                      Block a fixed time on a calendar.
-                    </span>
-                  </span>
+                  <Clock3 className="h-4 w-4 text-[#9BA1A6] transition-colors group-data-[highlighted]:text-[#F2F2F2]" />
+                  <span className="font-medium">Create event</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

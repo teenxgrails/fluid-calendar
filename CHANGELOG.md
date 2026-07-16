@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kept hourly grid rules visible above working-hours overlays, made every all-day cell `#1B1D1E` with four-sided dividers, and removed the redundant main-calendar date controls.
 - Reset the calendar to the real current day after a new session, prevented week changes from remounting the whole view, and made mini-calendar arrows move exactly seven days.
 - Hid the empty Today tasks placeholder, included tasks scheduled for today, and based urgency color/order on the explicit deadline before the due-date fallback.
+- Matched the Calendar Options weekday picker to its panel background and replaced the oversized create dropdown with a compact two-action menu in the calendar palette.
 - Fixed the Week calendar's full task editor occasionally refusing to close because its grid-creation state remained active after Close, Cancel, or Escape.
 - Fixed the command palette keeping an invisible modal scroll lock mounted after closing, which could prevent calendar scrolling and pointer interaction.
 - Fixed calendar task quick views for auto-scheduled chunks: click handlers now resolve the underlying task id instead of the generated calendar-block id, and the popover anchors to the clicked item.
