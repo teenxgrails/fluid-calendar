@@ -23,9 +23,9 @@ FluidCalendar is built for people who want full control over their scheduling wo
 
 ![Snagit 2024 2025-02-16 12 33 23](https://github.com/user-attachments/assets/515381e9-b961-475d-a272-d454ecca59cb)
 
-## Flowday Fork
+## Needt Fork
 
-This repository is being shaped into **Flowday**, a single-user Motion-style planner.
+This repository is being shaped into **Needt**, a single-user Motion-style planner.
 
 What this fork adds:
 

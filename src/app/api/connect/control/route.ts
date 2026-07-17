@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { APP_NAME } from "@/lib/app-config";
+import { newDate } from "@/lib/date-utils";
 import { prisma } from "@/lib/prisma";
 import { authenticateConnectorToken } from "@/services/connectors/auth";
 import { scheduleAllTasksForUser } from "@/services/scheduling/TaskSchedulingService";
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
         take: 100,
       }),
     ]);
-    return NextResponse.json({ generatedAt: new Date().toISOString(), tasks, projects, calendars, events });
+    return NextResponse.json({ generatedAt: newDate().toISOString(), tasks, projects, calendars, events });
   }
 
   if (action === "create_project") {
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
   if (action === "update_task" || action === "complete_task") {
     if (typeof body.id !== "string") return NextResponse.json({ error: "id is required" }, { status: 400 });
     const data = action === "complete_task"
-      ? { status: TaskStatus.COMPLETED, completedAt: new Date() }
+      ? { status: TaskStatus.COMPLETED, completedAt: newDate() }
       : {
           ...(typeof body.title === "string" ? { title: body.title.trim() } : {}),
           ...(typeof body.description === "string" ? { description: body.description } : {}),
@@ -106,13 +108,13 @@ export async function POST(request: NextRequest) {
     let feedId = typeof body.feedId === "string" ? body.feedId : undefined;
     if (!feedId) {
       const feed = await prisma.calendarFeed.findFirst({ where: { userId, type: "LOCAL" }, orderBy: { createdAt: "asc" } })
-        ?? await prisma.calendarFeed.create({ data: { userId, name: "Flowday", type: "LOCAL", color: "#6366F1", enabled: true } });
+        ?? await prisma.calendarFeed.create({ data: { userId, name: APP_NAME, type: "LOCAL", color: "#6366F1", enabled: true } });
       feedId = feed.id;
     }
     const ownedFeed = await prisma.calendarFeed.findFirst({ where: { id: feedId, userId } });
     if (!ownedFeed) return NextResponse.json({ error: "Calendar not found" }, { status: 404 });
     const event = await prisma.calendarEvent.create({
-      data: { feedId, title: body.title.trim(), start: new Date(body.start), end: new Date(body.end), description: typeof body.description === "string" ? body.description : null, location: typeof body.location === "string" ? body.location : null, allDay: body.allDay === true },
+      data: { feedId, title: body.title.trim(), start: newDate(body.start), end: newDate(body.end), description: typeof body.description === "string" ? body.description : null, location: typeof body.location === "string" ? body.location : null, allDay: body.allDay === true },
     });
     return NextResponse.json(event, { status: 201 });
   }
@@ -125,8 +127,8 @@ export async function POST(request: NextRequest) {
         ...(typeof body.title === "string" ? { title: body.title.trim() } : {}),
         ...(typeof body.description === "string" ? { description: body.description } : {}),
         ...(typeof body.location === "string" ? { location: body.location } : {}),
-        ...(typeof body.start === "string" ? { start: new Date(body.start) } : {}),
-        ...(typeof body.end === "string" ? { end: new Date(body.end) } : {}),
+        ...(typeof body.start === "string" ? { start: newDate(body.start) } : {}),
+        ...(typeof body.end === "string" ? { end: newDate(body.end) } : {}),
       },
     });
     if (!result.count) return NextResponse.json({ error: "Event not found" }, { status: 404 });

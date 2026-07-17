@@ -14,7 +14,7 @@ const tools = [
   {
     name: "flowday_create_task",
     description:
-      "Create an auto-scheduled task in Flowday via the connector API.",
+      "Create an auto-scheduled task in Needt via the connector API.",
     inputSchema: {
       type: "object",
       required: ["title"],
@@ -40,7 +40,7 @@ const tools = [
   },
   {
     name: "flowday_list_tasks",
-    description: "List tasks from Flowday through GET /api/connect/tasks.",
+    description: "List tasks from Needt through GET /api/connect/tasks.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -49,7 +49,7 @@ const tools = [
   {
     name: "flowday_schedule",
     description:
-      "Run Flowday scheduling and return the current schedule through POST /api/connect/schedule.",
+      "Run Needt scheduling and return the current schedule through POST /api/connect/schedule.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -58,7 +58,7 @@ const tools = [
   {
     name: "flowday_reschedule",
     description:
-      "Run Flowday rescheduling through POST /api/connect/reschedule.",
+      "Run Needt rescheduling through POST /api/connect/reschedule.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -67,7 +67,7 @@ const tools = [
   {
     name: "flowday_control",
     description:
-      "Control Flowday projects, tasks, local calendars, and events. Use action: overview to inspect the app. Deletes require confirm: true.",
+      "Control Needt projects, tasks, local calendars, and events. Use action: overview to inspect the app. Deletes require confirm: true.",
     inputSchema: {
       type: "object",
       required: ["action"],

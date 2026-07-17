@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Rebranded the application shell, metadata, PWA assets, AI copy, local calendars, and documentation from Flowday to Needt through the shared app configuration.
+- Replaced the inherited root landing page with an auth-aware redirect to Calendar or Sign In.
 - Consolidated Needt into one production build by removing edition-specific routing, file variants, feature gates, repository sync tooling, and the legacy worker scripts.
 - Unified Workspace and Calendar control styling through one shared compact toolbar contract, and moved Space zoom into a small canvas control with cursor-anchored wheel zoom.
 - Removed the Space Inbox cluster and orbit rings: tasks without a project now float independently, project centers use compact neutral labels, and lightweight star layers drift and pulse without a JavaScript animation loop.
@@ -52,6 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Unified client session reads behind one provider so the sidebar keeps a skeleton during authentication instead of flashing an empty avatar or Sign In action.
+- Prevented mount-time FullCalendar selections from opening quick-create without an explicit user click or drag.
+- Kept Timeline task bars inside their project rows and aligned them to the date grid, with muted completed tasks and hatched weekend columns.
 - Fixed Coolify production images omitting build-time dependencies during `npm ci`, which caused misleading local component resolution errors and left the Prisma CLI unavailable.
 - Escape and outside-click now dismiss calendar quick-create and clear its temporary FullCalendar selection instead of leaving the draft block behind.
 - Calendar tasks now open their full editor on click, while their checkbox completes them directly without opening the editor.

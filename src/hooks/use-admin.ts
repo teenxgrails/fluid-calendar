@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 
-import { useSession } from "next-auth/react";
+import { useAppSession } from "@/components/providers/SessionProvider";
+
+import { logger } from "@/lib/logger";
+
+const LOG_SOURCE = "useAdmin";
 
 /**
  * Hook to check if the current user is an admin
  * @returns {boolean} Whether the current user is an admin
  */
 export function useAdmin(): { isAdmin: boolean; isLoading: boolean } {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useAppSession();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -38,7 +42,11 @@ export function useAdmin(): { isAdmin: boolean; isLoading: boolean } {
           setIsAdmin(data.isAdmin);
         }
       } catch (error) {
-        console.error("Failed to verify admin status:", error);
+        void logger.error(
+          "Failed to verify admin status",
+          { error: error instanceof Error ? error.message : String(error) },
+          LOG_SOURCE
+        );
       } finally {
         setIsLoading(false);
       }

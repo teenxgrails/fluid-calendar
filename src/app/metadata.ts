@@ -5,6 +5,11 @@ import { APP_DESCRIPTION, APP_NAME } from "@/lib/app-config";
 export const metadata: Metadata = {
   title: APP_NAME,
   description: APP_DESCRIPTION,
+  openGraph: {
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    type: "website",
+  },
   manifest: "/manifest.webmanifest",
   applicationName: APP_NAME,
   appleWebApp: {

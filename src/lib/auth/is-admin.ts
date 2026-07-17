@@ -45,7 +45,7 @@ export async function isAdmin(): Promise<boolean> {
 /**
  * Client-side hook to check if the current user is an admin
  * This should be used in client components
- * @param session The session object from useSession()
+ * @param session The session object from the shared app session provider
  * @returns {boolean} Whether the current user is an admin
  */
 export function isAdminFromSession(session: Session | null): boolean {

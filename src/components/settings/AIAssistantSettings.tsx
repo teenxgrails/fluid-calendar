@@ -25,6 +25,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
+import { APP_NAME } from "@/lib/app-config";
+
 import { SettingRow, SettingsSection } from "./SettingsSection";
 
 type AIProvider = "NONE" | "ANTHROPIC" | "OPENAI" | "GROK" | "GLM" | "CUSTOM";
@@ -276,7 +278,7 @@ export function AIAssistantSettings() {
     >
       <SettingRow
         label="Provider"
-        description="None keeps Flowday fully offline. API keys are encrypted before storage."
+        description={`None keeps ${APP_NAME} fully offline. API keys are encrypted before storage.`}
       >
         <div className="space-y-4">
           <Select
@@ -468,7 +470,7 @@ export function AIAssistantSettings() {
 
       <SettingRow
         label="Allowed Actions"
-        description="AI suggestions are shown as suggestions; Flowday does not silently reshuffle."
+        description={`AI suggestions are shown as suggestions; ${APP_NAME} does not silently reshuffle.`}
       >
         <div className="space-y-3">
           {[
@@ -498,7 +500,7 @@ export function AIAssistantSettings() {
 
       <SettingRow
         label="Brain Dump"
-        description="Paste messy notes and preview structured tasks. With provider None, Flowday uses a local parser."
+        description={`Paste messy notes and preview structured tasks. With provider None, ${APP_NAME} uses a local parser.`}
       >
         <div className="space-y-3">
           <Textarea

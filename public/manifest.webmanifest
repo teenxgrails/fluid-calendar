@@ -1,6 +1,6 @@
 {
-  "name": "Flowday",
-  "short_name": "Flowday",
+  "name": "Needt",
+  "short_name": "Needt",
   "description": "Installable local-first planner with schedule, task, and focus support.",
   "start_url": "/calendar",
   "scope": "/",

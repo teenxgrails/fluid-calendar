@@ -34,6 +34,7 @@ import { TaskSyncSettings } from "@/components/settings/TaskSyncSettings";
 import { TaskUrgencySettings } from "@/components/settings/TaskUrgencySettings";
 import { UserSettings } from "@/components/settings/UserSettings";
 
+import { APP_NAME } from "@/lib/app-config";
 import { cn } from "@/lib/utils";
 
 import { useAdmin } from "@/hooks/use-admin";
@@ -236,7 +237,7 @@ export default function SettingsPage() {
               href="/calendar"
               className="mb-2 flex h-[30px] items-center rounded-[2px] px-2.5 text-[13px] text-[#9BA1A6] transition-colors duration-150 ease-out hover:bg-[#2B2F31] hover:text-white"
             >
-              Back to Flowday
+              Back to {APP_NAME}
             </a>
             <div className="space-y-3">
               <div>

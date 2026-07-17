@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import { PanelLeftClose, Plus, Send, Search } from "lucide-react";
 
+import { APP_NAME } from "@/lib/app-config";
+
 interface AiMessage {
   id: string;
   role: string;
@@ -246,7 +248,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
         <div className="flex-1 overflow-y-auto p-6">
           {!messages.length ? (
             <div className="mx-auto flex h-full max-w-[760px] flex-col justify-center text-center">
-              <h1 className="text-2xl font-medium">Flowday is ready.</h1>
+              <h1 className="text-2xl font-medium">{APP_NAME} is ready.</h1>
               <p className="mt-2 text-sm text-[#9AA0A6]">
                 What can I help you get done?
               </p>

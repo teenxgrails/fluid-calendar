@@ -12,7 +12,10 @@ import FullCalendar from "@fullcalendar/react";
 
 import { TaskModal } from "@/components/tasks/TaskModal";
 
-import { getSelectionRange } from "@/lib/calendar-selection";
+import {
+  getSelectionRange,
+  isExplicitCalendarSelection,
+} from "@/lib/calendar-selection";
 import { useEventModalStore } from "@/lib/commands/groups/calendar";
 import { newDate } from "@/lib/date-utils";
 
@@ -180,6 +183,11 @@ export function MultiMonthView({
   };
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
+    if (!isExplicitCalendarSelection(selectInfo)) {
+      calendarRef.current?.getApi().unselect();
+      return;
+    }
+
     const { start, end, allDay } = getSelectionRange(selectInfo);
 
     setSelectedDate(start);

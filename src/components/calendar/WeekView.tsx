@@ -20,7 +20,10 @@ import { Clock3 } from "lucide-react";
 import { TaskModal } from "@/components/tasks/TaskModal";
 
 import { getEventEditability } from "@/lib/calendar-drag";
-import { getSelectionRange } from "@/lib/calendar-selection";
+import {
+  getSelectionRange,
+  isExplicitCalendarSelection,
+} from "@/lib/calendar-selection";
 import { useEventModalStore } from "@/lib/commands/groups/calendar";
 import { newDate } from "@/lib/date-utils";
 
@@ -304,6 +307,11 @@ export function WeekView({ currentDate }: WeekViewProps) {
   };
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
+    if (!isExplicitCalendarSelection(selectInfo)) {
+      calendarRef.current?.getApi().unselect();
+      return;
+    }
+
     const { start, end, allDay } = getSelectionRange(selectInfo);
 
     setSelectedDate(start);

@@ -1,4 +1,23 @@
-import { getSelectionRange } from "@/lib/calendar-selection";
+import {
+  getSelectionRange,
+  isExplicitCalendarSelection,
+} from "@/lib/calendar-selection";
+
+describe("isExplicitCalendarSelection", () => {
+  it("accepts a selection backed by a trusted browser event", () => {
+    expect(isExplicitCalendarSelection({ jsEvent: { isTrusted: true } })).toBe(
+      true
+    );
+  });
+
+  it("rejects mount-time or programmatic selections", () => {
+    expect(isExplicitCalendarSelection({})).toBe(false);
+    expect(isExplicitCalendarSelection({ jsEvent: null })).toBe(false);
+    expect(isExplicitCalendarSelection({ jsEvent: { isTrusted: false } })).toBe(
+      false
+    );
+  });
+});
 
 describe("getSelectionRange", () => {
   it("keeps the full range for a multi-day all-day drag (exclusive end, not collapsed)", () => {
@@ -8,7 +27,11 @@ describe("getSelectionRange", () => {
     const start = new Date(2026, 5, 10, 0, 0, 0); // Wed Jun 10 2026 local
     const exclusiveEnd = new Date(2026, 5, 13, 0, 0, 0); // Sat Jun 13 2026 local
 
-    const { start: rangeStart, end, allDay } = getSelectionRange({
+    const {
+      start: rangeStart,
+      end,
+      allDay,
+    } = getSelectionRange({
       start,
       end: exclusiveEnd,
       allDay: true,
@@ -24,7 +47,11 @@ describe("getSelectionRange", () => {
     const start = new Date(2026, 5, 10, 0, 0, 0);
     const exclusiveEnd = new Date(2026, 5, 11, 0, 0, 0); // next day, exclusive
 
-    const { start: rangeStart, end, allDay } = getSelectionRange({
+    const {
+      start: rangeStart,
+      end,
+      allDay,
+    } = getSelectionRange({
       start,
       end: exclusiveEnd,
       allDay: true,

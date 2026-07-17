@@ -1214,7 +1214,7 @@ html[data-animations="off"] *::after {
   background: var(--calendar-today-non-working-hours-bg) !important;
 }
 
-/* Uniform Flowday canvas behind columns, gutter and gaps. */
+/* Uniform Needt canvas behind columns, gutter and gaps. */
 .fc .fc-view-harness {
   background: var(--calendar-canvas-bg);
 }

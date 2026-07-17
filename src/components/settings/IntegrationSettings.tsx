@@ -1,13 +1,13 @@
-import { useSession } from "next-auth/react";
-
 import { BsGoogle } from "react-icons/bs";
+
+import { useAppSession } from "@/components/providers/SessionProvider";
 
 import { useSettingsStore } from "@/store/settings";
 
 import { SettingRow, SettingsSection } from "./SettingsSection";
 
 export function IntegrationSettings() {
-  const { data: session } = useSession();
+  const { data: session, status } = useAppSession();
   const { integrations, updateIntegrationSettings } = useSettingsStore();
 
   return (
@@ -26,7 +26,9 @@ export function IntegrationSettings() {
               <div>
                 <div className="font-medium">Google Calendar</div>
                 <div className="text-sm text-gray-500">
-                  {session?.user?.email || "Not connected"}
+                  {status === "loading"
+                    ? "Loading account…"
+                    : session?.user?.email || "Not connected"}
                 </div>
               </div>
             </div>

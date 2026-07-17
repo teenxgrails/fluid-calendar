@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+import { APP_NAME } from "@/lib/app-config";
 import { cn } from "@/lib/utils";
 
 import { SettingRow, SettingsSection } from "./SettingsSection";
@@ -246,7 +247,7 @@ export function CustomizationSettings() {
 
       <SettingRow
         label="Background and motion"
-        description="Flowday stays flat by default; animations can be disabled globally."
+        description={`${APP_NAME} stays flat by default; animations can be disabled globally.`}
       >
         <div className="space-y-3">
           <Input
@@ -266,7 +267,7 @@ export function CustomizationSettings() {
           <div className="rounded-md border p-3" style={previewStyle}>
             <div className="flex items-center gap-2 text-sm">
               <Palette className="h-4 w-4" />
-              Live Flowday preview
+              Live {APP_NAME} preview
             </div>
           </div>
         </div>

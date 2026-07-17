@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+import { APP_NAME } from "@/lib/app-config";
 import { formatToLocalISOString, newDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 
@@ -222,14 +223,14 @@ export function EventModal({
       let feed = feeds.find((candidate) => candidate.id === feedId);
 
       // A fresh personal planner has no external calendar yet. Motion still
-      // lets the user create an event, so create Flowday's private local
+      // lets the user create an event, so create Needt's private local
       // calendar on first use rather than blocking the editor.
       if (!feed && !event?.id) {
         const response = await fetch("/api/feeds", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: "Flowday",
+            name: APP_NAME,
             type: "LOCAL",
             color: "#6366F1",
             enabled: true,
@@ -237,7 +238,7 @@ export function EventModal({
         });
 
         if (!response.ok) {
-          throw new Error("Failed to create Flowday calendar");
+          throw new Error(`Failed to create ${APP_NAME} calendar`);
         }
 
         feed = (await response.json()) as CalendarFeed;

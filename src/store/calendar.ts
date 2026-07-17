@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { APP_NAME } from "@/lib/app-config";
 import { newDate, normalizeAllDayDate } from "@/lib/date-utils";
 import { DEFAULT_TASK_COLOR } from "@/lib/task-utils";
 
@@ -438,7 +439,7 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
         });
 
         if (!response.ok) {
-          throw new Error("Failed to add event to Flowday calendar");
+          throw new Error(`Failed to add event to ${APP_NAME} calendar`);
         }
 
         await get().loadFromDatabase();

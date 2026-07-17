@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
+import { APP_NAME } from "@/lib/app-config";
 import { newDate } from "@/lib/date-utils";
 
 import { useTaskMutations } from "@/hooks/useTaskMutations";
@@ -331,8 +332,8 @@ export function SmartPlanningPanel() {
           Time-Blindness Buffer
         </div>
         <div className="rounded-md bg-[#1B1D1E] p-2 text-xs text-[#9AA0A6]">
-          Flowday places tasks at {bufferMultiplier.toFixed(1)}x estimates when
-          no personal category data exists.
+          {APP_NAME} places tasks at {bufferMultiplier.toFixed(1)}x estimates
+          when no personal category data exists.
         </div>
         {nextTask && (
           <div className="rounded-md border border-[#323234] bg-[#1B1D1E] p-2">

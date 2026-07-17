@@ -1,10 +1,10 @@
 # Custom AI Contract
 
-Flowday can call a local or private AI service when Settings -> AI Assistant uses provider `Custom`.
+Needt can call a local or private AI service when Settings -> AI Assistant uses provider `Custom`.
 
 ## Authentication
 
-If an API key is saved, Flowday sends it as:
+If an API key is saved, Needt sends it as:
 
 ```http
 Authorization: Bearer <key>
@@ -16,7 +16,7 @@ Alternatively, a Custom AI service can use OAuth 2.0 authorization-code flow wit
 ${NEXTAUTH_URL}/api/ai/oauth/custom/callback
 ```
 
-The token endpoint must accept `application/x-www-form-urlencoded` authorization-code and refresh-token requests. Flowday includes `client_id`, `redirect_uri`, and `code_verifier` for code exchange; it includes `client_secret` only when `AI_CUSTOM_OAUTH_CLIENT_SECRET` is configured. It stores access and refresh tokens encrypted at rest, refreshes access tokens one minute before expiry, and sends the resulting access token as the same Bearer credential shown above.
+The token endpoint must accept `application/x-www-form-urlencoded` authorization-code and refresh-token requests. Needt includes `client_id`, `redirect_uri`, and `code_verifier` for code exchange; it includes `client_secret` only when `AI_CUSTOM_OAUTH_CLIENT_SECRET` is configured. It stores access and refresh tokens encrypted at rest, refreshes access tokens one minute before expiry, and sends the resulting access token as the same Bearer credential shown above.
 
 OAuth is intentionally scoped to Custom AI. OpenAI and Anthropic's direct API endpoints use API keys; their product-account sign-ins do not provide an OAuth credential for those endpoints.
 
@@ -70,4 +70,4 @@ Response:
 }
 ```
 
-Return strict JSON only. Flowday treats custom AI output as suggestions; deterministic scheduling remains the fallback.
+Return strict JSON only. Needt treats custom AI output as suggestions; deterministic scheduling remains the fallback.

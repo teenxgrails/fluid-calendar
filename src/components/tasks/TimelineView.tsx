@@ -2,6 +2,8 @@ import { useMemo } from "react";
 
 import { motion, useReducedMotion } from "framer-motion";
 
+import { addDays, format, getDay, newDate, startOfDay } from "@/lib/date-utils";
+
 import { Task, TaskStatus } from "@/types/task";
 
 interface TimelineViewProps {
@@ -9,12 +11,6 @@ interface TimelineViewProps {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-function startOfDay(date: Date) {
-  const next = new Date(date);
-  next.setHours(0, 0, 0, 0);
-  return next;
-}
 
 function taskStart(task: Task) {
   return (
@@ -41,8 +37,8 @@ export function TimelineView({ tasks }: TimelineViewProps) {
         if (!start || !end) return null;
         return {
           task,
-          start: startOfDay(new Date(start)),
-          end: startOfDay(new Date(end)),
+          start: startOfDay(newDate(start)),
+          end: startOfDay(newDate(end)),
         };
       })
       .filter(Boolean) as Array<{
@@ -55,23 +51,23 @@ export function TimelineView({ tasks }: TimelineViewProps) {
       datedTasks.reduce(
         (min, item) => Math.min(min, item.start.getTime()),
         Number.POSITIVE_INFINITY
-      ) || Date.now();
+      ) || newDate().getTime();
     const maxTime =
       datedTasks.reduce(
         (max, item) => Math.max(max, item.end.getTime()),
         Number.NEGATIVE_INFINITY
-      ) || Date.now();
-    const rangeStart = startOfDay(new Date(minTime));
+      ) || newDate().getTime();
+    const rangeStart = startOfDay(newDate(minTime));
     const dayCount = Math.max(7, Math.ceil((maxTime - minTime) / DAY_MS) + 1);
 
     const grouped = new Map<
       string,
-      { label: string; tasks: typeof datedTasks }
+      { id: string; label: string; tasks: typeof datedTasks }
     >();
     datedTasks.forEach((item) => {
       const id = item.task.projectId || "none";
       const label = item.task.project?.name || "No Project";
-      if (!grouped.has(id)) grouped.set(id, { label, tasks: [] });
+      if (!grouped.has(id)) grouped.set(id, { id, label, tasks: [] });
       grouped.get(id)?.tasks.push(item);
     });
 
@@ -99,70 +95,106 @@ export function TimelineView({ tasks }: TimelineViewProps) {
           Project
         </div>
         {Array.from({ length: rows.dayCount }).map((_, index) => {
-          const date = new Date(rows.rangeStart.getTime() + index * DAY_MS);
+          const date = addDays(rows.rangeStart, index);
           return (
             <div
-              key={date.toISOString()}
+              key={format(date, "yyyy-MM-dd")}
               className="border-b border-r border-[var(--border-subtle)] p-2 text-center text-[11px] text-[var(--text-secondary)]"
             >
-              {date.toLocaleDateString([], { month: "short", day: "numeric" })}
+              {format(date, "MMM d")}
             </div>
           );
         })}
 
         {rows.groups.map((group) => (
-          <div key={group.label} className="contents">
+          <div key={group.id} className="contents">
             <div className="sticky left-0 z-10 border-b border-r border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-2 text-sm text-[var(--text-primary)]">
               {group.label}
             </div>
             <div
-              className="relative col-span-full grid min-h-16 border-b border-[var(--border-subtle)]"
+              className="relative col-span-full border-b border-[var(--border-subtle)] p-2"
               style={{
                 gridColumn: `2 / span ${rows.dayCount}`,
-                gridTemplateColumns: `repeat(${rows.dayCount}, minmax(42px, 1fr))`,
+                minHeight: Math.max(44, group.tasks.length * 32 + 16),
               }}
             >
-              {Array.from({ length: rows.dayCount }).map((_, index) => (
-                <div
-                  key={index}
-                  className="border-r border-[var(--border-subtle)]"
-                />
-              ))}
-              {group.tasks.map(({ task, start, end }, index) => {
-                const offset =
-                  Math.floor(
-                    (start.getTime() - rows.rangeStart.getTime()) / DAY_MS
-                  ) + 1;
-                const span = Math.max(
-                  1,
-                  Math.floor((end.getTime() - start.getTime()) / DAY_MS) + 1
-                );
-                const color = task.project?.color || "var(--color-accent)";
-                return (
-                  <motion.div
-                    key={task.id}
-                    layout={!prefersReducedMotion}
-                    initial={
-                      prefersReducedMotion ? false : { opacity: 0, y: 4 }
-                    }
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
-                    className="absolute h-7 truncate rounded-md px-2 py-1 text-xs text-white"
-                    style={{
-                      left: `calc(${((offset - 1) / rows.dayCount) * 100}% + 4px)`,
-                      top: 8 + index * 30,
-                      width: `calc(${(span / rows.dayCount) * 100}% - 8px)`,
-                      background:
-                        task.status === TaskStatus.COMPLETED
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 grid"
+                style={{
+                  gridTemplateColumns: `repeat(${rows.dayCount}, minmax(42px, 1fr))`,
+                }}
+              >
+                {Array.from({ length: rows.dayCount }).map((_, index) => {
+                  const date = addDays(rows.rangeStart, index);
+                  const day = getDay(date);
+                  const isWeekend = day === 0 || day === 6;
+                  return (
+                    <div
+                      key={format(date, "yyyy-MM-dd")}
+                      className="border-r border-[var(--border-subtle)]"
+                      style={
+                        isWeekend
+                          ? {
+                              backgroundImage:
+                                "repeating-linear-gradient(135deg, transparent 0, transparent 6px, var(--border-subtle) 6px, var(--border-subtle) 7px)",
+                            }
+                          : undefined
+                      }
+                    />
+                  );
+                })}
+              </div>
+              <div
+                className="relative z-[1] grid gap-y-1"
+                style={{
+                  gridTemplateColumns: `repeat(${rows.dayCount}, minmax(42px, 1fr))`,
+                  gridTemplateRows: `repeat(${Math.max(1, group.tasks.length)}, 28px)`,
+                }}
+              >
+                {group.tasks.map(({ task, start, end }, index) => {
+                  const offset =
+                    Math.floor(
+                      (start.getTime() - rows.rangeStart.getTime()) / DAY_MS
+                    ) + 1;
+                  const span = Math.min(
+                    rows.dayCount - offset + 1,
+                    Math.max(
+                      1,
+                      Math.floor((end.getTime() - start.getTime()) / DAY_MS) + 1
+                    )
+                  );
+                  const isCompleted = task.status === TaskStatus.COMPLETED;
+                  const color = task.project?.color || "var(--color-accent)";
+                  return (
+                    <motion.div
+                      key={task.id}
+                      layout={!prefersReducedMotion}
+                      initial={
+                        prefersReducedMotion ? false : { opacity: 0, y: 4 }
+                      }
+                      animate={{ opacity: isCompleted ? 0.68 : 1, y: 0 }}
+                      transition={{
+                        duration: prefersReducedMotion ? 0 : 0.16,
+                      }}
+                      className="z-[1] min-w-0 truncate rounded-md border px-2 py-1 text-xs text-white"
+                      style={{
+                        gridColumn: `${offset} / span ${span}`,
+                        gridRow: index + 1,
+                        borderColor: isCompleted
+                          ? "var(--border-control)"
+                          : color,
+                        background: isCompleted
                           ? "var(--surface-control)"
                           : color,
-                    }}
-                    title={task.title}
-                  >
-                    {task.title}
-                  </motion.div>
-                );
-              })}
+                      }}
+                      title={task.title}
+                    >
+                      {task.title}
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ))}

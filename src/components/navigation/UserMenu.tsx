@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 import { HelpCircle, LogOut, Monitor, Moon, Settings, Sun } from "lucide-react";
 
+import { useAppSession } from "@/components/providers/SessionProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/components/providers/ThemeProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,9 +19,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function UserMenu() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useAppSession();
   const { theme, setTheme } = useTheme();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -28,16 +30,10 @@ export function UserMenu() {
   // sign-in CTA here briefly is both visually jarring and incorrect for an
   // authenticated route during client hydration.
   if (status === "loading") {
-    return (
-      <div
-        aria-hidden="true"
-        className="h-8 w-8 rounded-full bg-[var(--active)]"
-      />
-    );
+    return <Skeleton aria-hidden="true" className="h-8 w-8 rounded-full" />;
   }
 
-  // Check both session status and session data to handle all authentication scenarios
-  if (status !== "authenticated" || !session) {
+  if (status === "unauthenticated") {
     return (
       <Link href="/auth/signin">
         <Button variant="outline" size="sm">
@@ -45,6 +41,10 @@ export function UserMenu() {
         </Button>
       </Link>
     );
+  }
+
+  if (!session) {
+    return <Skeleton aria-hidden="true" className="h-8 w-8 rounded-full" />;
   }
 
   const handleLogout = async () => {
@@ -104,7 +104,12 @@ export function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href="https://github.com/dotnetfactory/fluid-calendar" target="_blank" rel="noreferrer" className="cursor-pointer">
+          <a
+            href="https://github.com/dotnetfactory/fluid-calendar"
+            target="_blank"
+            rel="noreferrer"
+            className="cursor-pointer"
+          >
             <HelpCircle className="mr-2 h-4 w-4" />
             <span>Help</span>
           </a>
@@ -124,7 +129,9 @@ export function UserMenu() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setTheme(item.id as "light" | "dark" | "system")}
+                  onClick={() =>
+                    setTheme(item.id as "light" | "dark" | "system")
+                  }
                   className={`flex flex-col items-center gap-1 rounded-md border px-2 py-2 text-xs ${
                     theme === item.id
                       ? "border-[var(--accent)] bg-[var(--active)] text-[var(--text-hi)]"

@@ -15,6 +15,21 @@ export interface SelectionRange {
   allDay: boolean;
 }
 
+interface SelectionInteraction {
+  jsEvent?: { isTrusted: boolean } | null;
+}
+
+/**
+ * FullCalendar can emit `select` while restoring or recalculating its internal
+ * selection during mount. Only a trusted browser event represents a selection
+ * the user explicitly made in the grid.
+ */
+export function isExplicitCalendarSelection(
+  selectInfo: SelectionInteraction
+): boolean {
+  return selectInfo.jsEvent?.isTrusted === true;
+}
+
 /**
  * Maps a calendar drag/click selection to the date range used to pre-fill the
  * New Event modal.

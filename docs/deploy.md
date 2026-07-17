@@ -1,6 +1,6 @@
-# Deploy Flowday to Vercel + Neon
+# Deploy Needt to Vercel + Neon
 
-Flowday is prepared for a single-user serverless deployment on Vercel with Neon Postgres. The previous VPS is not used.
+Needt is prepared for a single-user serverless deployment on Vercel with Neon Postgres. The previous VPS is not used.
 
 ## 1. Create Neon
 
@@ -34,9 +34,9 @@ Required:
 ```bash
 DATABASE_URL="postgresql://...-pooler..."
 DIRECT_URL="postgresql://..."
-NEXTAUTH_URL="https://app.flowday.local"
-NEXT_PUBLIC_APP_URL="https://app.flowday.local"
-NEXT_PUBLIC_SITE_URL="https://app.flowday.local"
+NEXTAUTH_URL="https://use.needt.app"
+NEXT_PUBLIC_APP_URL="https://use.needt.app"
+NEXT_PUBLIC_SITE_URL="https://use.needt.app"
 NEXTAUTH_SECRET="random-32-plus-character-secret"
 CRON_SECRET="random-cron-secret"
 ```
@@ -67,7 +67,7 @@ Apple/iCloud CalDAV credentials are entered in the app at runtime and never stor
 
 ## 4. Domain
 
-1. Add `app.flowday.local` or `flowday.local` in Vercel Project -> Domains after the domain is owned.
+1. Add `use.needt.app` in Vercel Project -> Domains. The separate marketing deployment owns `needt.app`.
 2. Point DNS to Vercel as instructed.
 3. Vercel provisions HTTPS automatically.
 
@@ -81,15 +81,15 @@ Register exact production redirect URIs:
 Google:
 
 ```text
-https://app.flowday.local/api/auth/callback/google
-https://app.flowday.local/api/calendar/google/auth
+https://use.needt.app/api/auth/callback/google
+https://use.needt.app/api/calendar/google/auth
 ```
 
 Microsoft/Azure:
 
 ```text
-https://app.flowday.local/api/auth/callback/azure-ad
-https://app.flowday.local/api/calendar/outlook/auth
+https://use.needt.app/api/auth/callback/azure-ad
+https://use.needt.app/api/calendar/outlook/auth
 ```
 
 Keep local redirect URIs for development if needed.
@@ -104,8 +104,8 @@ Keep local redirect URIs for development if needed.
 Manual test:
 
 ```bash
-curl -H "x-cron-secret: $CRON_SECRET" https://app.flowday.local/api/cron/reschedule
-curl -H "x-cron-secret: $CRON_SECRET" https://app.flowday.local/api/cron/sync-calendars
+curl -H "x-cron-secret: $CRON_SECRET" https://use.needt.app/api/cron/reschedule
+curl -H "x-cron-secret: $CRON_SECRET" https://use.needt.app/api/cron/sync-calendars
 ```
 
 The calendar cron syncs CalDAV directly in this build. Google/Outlook sync remains route-driven until their OAuth refresh flow is factored into reusable cron-safe services.
@@ -113,7 +113,7 @@ The calendar cron syncs CalDAV directly in this build. Google/Outlook sync remai
 ## 7. Health Check
 
 ```bash
-curl https://app.flowday.local/api/health
+curl https://use.needt.app/api/health
 ```
 
 Expected result:

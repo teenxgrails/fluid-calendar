@@ -14,7 +14,9 @@ import {
 import { scheduleAllTasksForUser } from "@/services/scheduling/TaskSchedulingService";
 import { Prisma } from "@prisma/client";
 
+import { APP_NAME } from "@/lib/app-config";
 import { authenticateRequest } from "@/lib/auth/api-auth";
+import { newDate } from "@/lib/date-utils";
 import { prisma } from "@/lib/prisma";
 
 const LOG_SOURCE = "ai-chat";
@@ -53,7 +55,7 @@ function booleanArg(args: Record<string, unknown>, key: string) {
 function dateArg(args: Record<string, unknown>, key: string) {
   const value = stringArg(args, key);
   if (!value) return null;
-  const date = new Date(value);
+  const date = newDate(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -72,7 +74,7 @@ function buildSystemPrompt(soulPreset: string) {
       : "Be concise, direct, and businesslike.";
 
   return [
-    "You are Flowday's single-user planner assistant.",
+    `You are ${APP_NAME}'s single-user planner assistant.`,
     tone,
     "Use tools when the user asks to create, edit, delete, schedule, parse, query, or manage planner data.",
     "Never claim a tool changed data unless the server tool result says it did.",
@@ -187,8 +189,7 @@ function toolDefinitions(settings: {
   if (settings.allowFullAuto) {
     tools.push({
       name: "auto_schedule",
-      description:
-        "Run Flowday's deterministic scheduler for the current user. Requires confirmation.",
+      description: `Run ${APP_NAME}'s deterministic scheduler for the current user. Requires confirmation.`,
       parameters: {
         type: "object",
         additionalProperties: false,

@@ -1,6 +1,6 @@
 # Connector API
 
-Flowday exposes a local, single-user API for scripts, bots, n8n, and private tools. Generate a token in Settings -> Connectors.
+Needt exposes a local, single-user API for scripts, bots, n8n, and private tools. Generate a token in Settings -> Connectors.
 
 Use:
 
@@ -26,7 +26,7 @@ curl -X POST http://localhost:3000/api/connect/tasks \
   }'
 ```
 
-The task is created as auto-scheduled and Flowday immediately runs the deterministic scheduler.
+The task is created as auto-scheduled and Needt immediately runs the deterministic scheduler.
 The response includes the task plus `scheduledBlocks` when the task is split into multiple chunks.
 
 ## Read Schedule

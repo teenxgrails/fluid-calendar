@@ -75,11 +75,11 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data?.json() ?? {};
   } catch {
-    data = { title: "Flowday", body: event.data?.text() ?? "Planner reminder" };
+    data = { title: "Needt", body: event.data?.text() ?? "Planner reminder" };
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "Flowday", {
+    self.registration.showNotification(data.title || "Needt", {
       body: data.body || "Your planner has an update.",
       icon: "/logo.svg",
       badge: "/logo.svg",

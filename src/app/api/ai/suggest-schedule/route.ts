@@ -4,6 +4,7 @@ import { getConfiguredSchedulerAI } from "@/services/ai/settings";
 import { AISuggestion, SchedulingContext } from "@/services/ai/types";
 import { getCalibrationContext } from "@/services/time-tracking/calibration";
 
+import { APP_NAME } from "@/lib/app-config";
 import { authenticateRequest } from "@/lib/auth/api-auth";
 import { logger } from "@/lib/logger";
 
@@ -11,7 +12,9 @@ const LOG_SOURCE = "ai-suggest-schedule-api";
 const FALLBACK: AISuggestion = {
   summary: "Deterministic schedule kept.",
   moves: [],
-  warnings: ["AI was unavailable, so Flowday kept the deterministic schedule."],
+  warnings: [
+    `AI was unavailable, so ${APP_NAME} kept the deterministic schedule.`,
+  ],
 };
 
 export async function POST(request: NextRequest) {

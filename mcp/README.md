@@ -1,6 +1,6 @@
-# Flowday MCP Server
+# Needt MCP Server
 
-This stdio MCP server wraps Flowday's existing connector API. It does not duplicate scheduling logic; every tool calls `/api/connect/*` with a personal bearer token.
+This stdio MCP server wraps Needt's existing connector API. It does not duplicate scheduling logic; every tool calls `/api/connect/*` with a personal bearer token.
 
 ## Environment
 
@@ -9,7 +9,7 @@ MINA_BASE_URL=http://localhost:3000
 FLOWDAY_CONNECT_TOKEN=flowday_REPLACE_ME
 ```
 
-Generate the token in Flowday: Settings -> Connectors.
+Generate the token in Needt: Settings -> Connectors.
 
 ## Tools
 

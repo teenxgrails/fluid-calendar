@@ -7,7 +7,7 @@ import {
 import { AIChatRequest } from "../types";
 
 const chatRequest: AIChatRequest = {
-  systemPrompt: "You are Flowday.",
+  systemPrompt: "You are Needt.",
   messages: [{ role: "user", content: "Create a task called plan week" }],
   tools: [
     {
