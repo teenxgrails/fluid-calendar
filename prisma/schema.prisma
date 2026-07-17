@@ -301,6 +301,7 @@ model Task {
   estLikely        Int?
   estPessimistic   Int?
   actualMinutes    Int?
+  actualFocusedMinutes Int @default(0)
   estimateDelta    Int?
   optimisticDelta  Int?
   likelyDelta      Int?
@@ -441,15 +442,21 @@ model FocusSession {
   task           Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
   mode           FocusSessionMode
   plannedMinutes Int?
-  elapsedMinutes Int
+  elapsedMinutes Int              @default(0)
   completed      Boolean          @default(false)
   abandoned      Boolean          @default(false)
-  startedAt      DateTime
-  endedAt        DateTime
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  // Server-truth timing. An active session has endedAt = null. pausedTotalSeconds
+  // accumulates completed pause spans; pausedAt is set while currently paused.
+  startedAt          DateTime
+  endedAt            DateTime?
+  pausedAt           DateTime?
+  pausedTotalSeconds Int       @default(0)
+  source             String    @default("web")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@index([userId, startedAt])
+  @@index([userId, endedAt])
   @@index([taskId])
   @@index([mode])
   @@index([completed])

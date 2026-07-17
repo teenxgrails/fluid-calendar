@@ -8,6 +8,8 @@ export interface WeeklyFocusReport {
   sessionsCompleted: number;
   bestDay: string | null;
   estimateAccuracyPercent: number | null;
+  /** Focused minutes per day for the last 7 days, oldest first (bar chart). */
+  dailyMinutes: { label: string; minutes: number }[];
   streakStatus: {
     current: number;
     longest: number;
@@ -194,6 +196,27 @@ export async function getWeeklyFocusReport(
     [...minutesByDay.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   const lastFocusDate = stats?.lastFocusDate ?? null;
 
+  // Fixed 7-day window (oldest first) so the bar chart always has 7 columns,
+  // including days with no focus.
+  const dailyMinutes: { label: string; minutes: number }[] = [];
+  const today = startOfDay(new Date());
+  const minutesByDayKey = new Map<number, number>();
+  for (const session of completed) {
+    const key = startOfDay(session.startedAt).getTime();
+    minutesByDayKey.set(
+      key,
+      (minutesByDayKey.get(key) ?? 0) + session.elapsedMinutes
+    );
+  }
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setDate(day.getDate() - offset);
+    dailyMinutes.push({
+      label: day.toLocaleDateString("en-US", { weekday: "narrow" }),
+      minutes: minutesByDayKey.get(day.getTime()) ?? 0,
+    });
+  }
+
   return {
     focusMinutes: completed.reduce(
       (total, session) => total + session.elapsedMinutes,
@@ -201,6 +224,7 @@ export async function getWeeklyFocusReport(
     ),
     sessionsCompleted: completed.length,
     bestDay,
+    dailyMinutes,
     estimateAccuracyPercent: Math.round(accuracy * 100),
     streakStatus: {
       current: stats?.currentStreak ?? 0,
