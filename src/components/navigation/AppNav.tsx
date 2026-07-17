@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { BoardsSidebarSection } from "@/components/boards/BoardsSidebarSection";
 import { MiniCalendar } from "@/components/calendar/MiniCalendar";
 import { DownloadAppsModal } from "@/components/navigation/DownloadAppsModal";
 import { TodaysTasksPanel } from "@/components/tasks/TodaysTasksPanel";
@@ -210,6 +211,10 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
           );
         })}
       </nav>
+
+      <div className="min-h-0 flex-1 overflow-y-auto max-md:hidden">
+        <BoardsSidebarSection />
+      </div>
 
       <div className="mt-auto max-md:hidden">
         <Link
