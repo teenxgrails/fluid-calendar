@@ -82,22 +82,16 @@ export function createBaseEventData(
 
     // Create dates at local midnight for all-day events
     // This ensures they display on the correct day in the calendar
-    start = new Date(
+    start = newDateFromYMD(
       parseInt(startStr.split("-")[0]),
       parseInt(startStr.split("-")[1]) - 1,
-      parseInt(startStr.split("-")[2]),
-      0,
-      0,
-      0
+      parseInt(startStr.split("-")[2])
     );
 
-    end = new Date(
+    end = newDateFromYMD(
       parseInt(endStr.split("-")[0]),
       parseInt(endStr.split("-")[1]) - 1,
-      parseInt(endStr.split("-")[2]),
-      0,
-      0,
-      0
+      parseInt(endStr.split("-")[2])
     );
   } else {
     // Regular events use the normal UTC conversion
@@ -368,12 +362,30 @@ export async function syncOutlookCalendar(
   lastSyncToken?: string | null,
   forceFullSync?: boolean
 ) {
-  // Fetch all events
-  const {
-    events: allEvents,
-    deletedEventIds,
-    nextSyncToken,
-  } = await fetchAllEvents(client, feed.url, lastSyncToken, forceFullSync);
+  let fullSync = Boolean(forceFullSync || !lastSyncToken);
+  let syncResult;
+  try {
+    syncResult = await fetchAllEvents(
+      client,
+      feed.url,
+      lastSyncToken,
+      forceFullSync
+    );
+  } catch (error) {
+    const statusCode =
+      typeof error === "object" && error !== null && "statusCode" in error
+        ? Number((error as { statusCode?: number }).statusCode)
+        : undefined;
+    if (!lastSyncToken || statusCode !== 410) throw error;
+    logger.info(
+      "Outlook delta token expired; retrying full sync",
+      { feedId: feed.id },
+      LOG_SOURCE
+    );
+    fullSync = true;
+    syncResult = await fetchAllEvents(client, feed.url, null, true);
+  }
+  const { events: allEvents, deletedEventIds, nextSyncToken } = syncResult;
   logger.debug(
     "Fetched events from Outlook",
     {
@@ -383,7 +395,7 @@ export async function syncOutlookCalendar(
     },
     LOG_SOURCE
   );
-  if (forceFullSync) {
+  if (fullSync) {
     // delete all events from the database
     await prisma.calendarEvent.deleteMany({
       where: {

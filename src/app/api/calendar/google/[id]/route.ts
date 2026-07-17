@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { GaxiosError } from "gaxios";
 
 import { authenticateRequest } from "@/lib/auth/api-auth";
+import { disableGoogleWatch } from "@/lib/calendar-webhooks/google";
+import { registerCalendarWebhookBestEffort } from "@/lib/calendar-webhooks/register";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
 const LOG_SOURCE = "GoogleCalendarIdAPI";
@@ -51,10 +54,19 @@ export async function PATCH(
         color: updates.color,
       },
     });
+    if (updates.enabled === true) {
+      await registerCalendarWebhookBestEffort(id, "GOOGLE");
+    } else if (updates.enabled === false) {
+      await disableGoogleWatch(id);
+    }
 
     return NextResponse.json(updatedFeed);
   } catch (error) {
-    console.error("Failed to update Google calendar:", error);
+    await logger.error(
+      "Failed to update Google calendar",
+      { error: error instanceof Error ? error.message : String(error) },
+      LOG_SOURCE
+    );
     if (error instanceof GaxiosError && Number(error.code) === 401) {
       return NextResponse.json(
         { error: "Authentication failed. Please try signing in again." },
@@ -93,6 +105,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Feed not found" }, { status: 404 });
     }
 
+    await disableGoogleWatch(id);
     // Delete the feed
     await prisma.calendarFeed.delete({
       where: { id, userId },
@@ -100,7 +113,11 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete Google calendar:", error);
+    await logger.error(
+      "Failed to delete Google calendar",
+      { error: error instanceof Error ? error.message : String(error) },
+      LOG_SOURCE
+    );
     if (error instanceof GaxiosError && Number(error.code) === 401) {
       return NextResponse.json(
         { error: "Authentication failed. Please try signing in again." },

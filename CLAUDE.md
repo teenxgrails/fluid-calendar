@@ -42,7 +42,7 @@ Next.js 15 (App Router) · React 19 · TypeScript · Prisma + PostgreSQL · Next
 
 **Task sync** (`src/lib/task-sync/`): one-way sync from external task providers (Outlook, Google Tasks) into FluidCalendar using **selective field sync** - external-owned fields (title, status, due date, recurrence) are overwritten on each sync; local-owned fields (start date, duration, priority, energy level) are preserved. See `src/lib/task-sync/README.md`.
 
-**Scheduled maintenance** is exposed through the existing `src/app/api/cron/` route handlers. A separate worker is intentionally not part of the current build.
+**Background work** uses the BullMQ worker in `src/worker/` for provider calendar sync, deterministic rescheduling, and webhook renewal. The existing `src/app/api/cron/` route handlers remain periodic safety nets.
 
 **State**: Zustand stores in `src/store/` (small, focused, one concern each - `calendar.ts`, `task.ts`, `settings.ts`, etc.). Server state via TanStack Query. Command palette (cmdk) commands live in `src/lib/commands/`.
 

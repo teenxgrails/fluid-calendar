@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 
 import {
@@ -8,6 +10,186 @@ import {
   EventStatus,
   ValidatedEvent,
 } from "@/types/calendar";
+
+export interface CalendarEventSyncInput {
+  externalEventId: string;
+  title: string;
+  description?: string;
+  start: Date;
+  end: Date;
+  location?: string;
+  isRecurring: boolean;
+  recurrenceRule?: string;
+  allDay: boolean;
+  status?: string;
+  sequence?: number;
+  created?: Date;
+  lastModified?: Date;
+  organizer?: Prisma.InputJsonValue;
+  attendees?: Prisma.InputJsonValue;
+  recurringEventId?: string;
+}
+
+export interface CalendarWebhookInput {
+  provider: "GOOGLE" | "OUTLOOK";
+  feedId: string;
+  channelId?: string;
+  subscriptionId?: string;
+  resourceId?: string;
+  expiration: Date;
+  clientState?: string;
+  channelToken?: string;
+}
+
+export async function getCalendarFeedForSync(feedId: string) {
+  return prisma.calendarFeed.findUnique({
+    where: { id: feedId },
+    include: { account: true },
+  });
+}
+
+export async function updateCalendarFeedSyncState(
+  feedId: string,
+  data: { lastSync?: Date; syncToken?: string | null; error?: string | null }
+) {
+  return prisma.calendarFeed.update({
+    where: { id: feedId },
+    data,
+  });
+}
+
+export async function persistGoogleCalendarEvents(options: {
+  feedId: string;
+  events: CalendarEventSyncInput[];
+  deletedExternalIds?: string[];
+  replaceAll?: boolean;
+}): Promise<void> {
+  const {
+    feedId,
+    events,
+    deletedExternalIds = [],
+    replaceAll = false,
+  } = options;
+
+  await prisma.$transaction(
+    async (tx) => {
+      if (replaceAll) {
+        await tx.calendarEvent.deleteMany({ where: { feedId } });
+      } else if (deletedExternalIds.length > 0) {
+        await tx.calendarEvent.deleteMany({
+          where: {
+            feedId,
+            externalEventId: { in: deletedExternalIds },
+          },
+        });
+      }
+
+      for (const event of events) {
+        const existing = await tx.calendarEvent.findFirst({
+          where: { feedId, externalEventId: event.externalEventId },
+          select: { id: true },
+        });
+        const data = {
+          ...event,
+          feedId,
+          isMaster: false,
+          masterEventId: null,
+        };
+
+        if (existing) {
+          await tx.calendarEvent.update({
+            where: { id: existing.id },
+            data,
+          });
+        } else {
+          await tx.calendarEvent.create({ data });
+        }
+      }
+    },
+    { timeout: 30_000 }
+  );
+}
+
+export async function upsertCalendarWebhook(input: CalendarWebhookInput) {
+  return prisma.calendarWebhook.upsert({
+    where: {
+      provider_feedId: {
+        provider: input.provider,
+        feedId: input.feedId,
+      },
+    },
+    update: input,
+    create: input,
+  });
+}
+
+export async function getCalendarWebhookForFeed(
+  provider: "GOOGLE" | "OUTLOOK",
+  feedId: string
+) {
+  return prisma.calendarWebhook.findUnique({
+    where: { provider_feedId: { provider, feedId } },
+    include: { feed: { include: { account: true } } },
+  });
+}
+
+export async function findGoogleWebhook(channelId: string, resourceId: string) {
+  return prisma.calendarWebhook.findFirst({
+    where: {
+      provider: "GOOGLE",
+      channelId,
+      resourceId,
+    },
+    include: { feed: true },
+  });
+}
+
+export async function findOutlookWebhook(subscriptionId: string) {
+  return prisma.calendarWebhook.findFirst({
+    where: {
+      provider: "OUTLOOK",
+      subscriptionId,
+    },
+    include: { feed: true },
+  });
+}
+
+export async function listCalendarWebhooks(options?: {
+  provider?: "GOOGLE" | "OUTLOOK";
+  feedId?: string;
+}) {
+  return prisma.calendarWebhook.findMany({
+    where: {
+      provider: options?.provider,
+      feedId: options?.feedId,
+    },
+    include: { feed: { include: { account: true } } },
+  });
+}
+
+export async function listPushEnabledCalendarFeeds() {
+  return prisma.calendarFeed.findMany({
+    where: {
+      enabled: true,
+      type: { in: ["GOOGLE", "OUTLOOK"] },
+      accountId: { not: null },
+      userId: { not: null },
+      url: { not: null },
+    },
+    select: {
+      id: true,
+      type: true,
+      webhooks: { select: { id: true } },
+    },
+  });
+}
+
+export async function deleteCalendarWebhook(
+  provider: "GOOGLE" | "OUTLOOK",
+  feedId: string
+): Promise<void> {
+  await prisma.calendarWebhook.deleteMany({ where: { provider, feedId } });
+}
 
 export async function getEvent(
   eventId: string

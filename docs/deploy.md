@@ -108,7 +108,7 @@ curl -H "x-cron-secret: $CRON_SECRET" https://use.needt.app/api/cron/reschedule
 curl -H "x-cron-secret: $CRON_SECRET" https://use.needt.app/api/cron/sync-calendars
 ```
 
-The calendar cron syncs CalDAV directly in this build. Google/Outlook sync remains route-driven until their OAuth refresh flow is factored into reusable cron-safe services.
+The calendar cron remains a CalDAV safety net. Google and Outlook changes use verified provider webhooks plus the separate BullMQ worker documented in [realtime-sync.md](./realtime-sync.md); manual provider sync routes remain available.
 
 ## 7. Health Check
 

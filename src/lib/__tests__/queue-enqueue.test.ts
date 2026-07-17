@@ -1,0 +1,48 @@
+import {
+  enqueueCalendarSync,
+  enqueueReschedule,
+  enqueueWebhookRenew,
+} from "@/lib/queue/enqueue";
+
+const calendarAdd = jest.fn();
+const rescheduleAdd = jest.fn();
+const renewAdd = jest.fn();
+
+jest.mock("@/lib/queue/queues", () => ({
+  getCalendarSyncQueue: () => ({ add: calendarAdd }),
+  getRescheduleQueue: () => ({ add: rescheduleAdd }),
+  getWebhookRenewQueue: () => ({ add: renewAdd }),
+}));
+
+describe("queue enqueue helpers", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("deduplicates calendar sync jobs by feed", async () => {
+    await enqueueCalendarSync("feed-123");
+    expect(calendarAdd).toHaveBeenCalledWith(
+      "sync-feed",
+      { feedId: "feed-123" },
+      { jobId: "calendar-sync-feed-123" }
+    );
+  });
+
+  test("deduplicates rescheduling by user", async () => {
+    await enqueueReschedule("user-123");
+    expect(rescheduleAdd).toHaveBeenCalledWith(
+      "reschedule-user",
+      { userId: "user-123" },
+      { jobId: "reschedule-user-123" }
+    );
+  });
+
+  test("scopes explicit webhook renewals to provider and feed", async () => {
+    await enqueueWebhookRenew({ provider: "GOOGLE", feedId: "feed-123" });
+    expect(renewAdd).toHaveBeenCalledWith(
+      "renew-webhooks",
+      { provider: "GOOGLE", feedId: "feed-123" },
+      { jobId: "webhook-renew-GOOGLE-feed-123" }
+    );
+  });
+});

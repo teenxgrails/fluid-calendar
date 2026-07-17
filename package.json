@@ -18,8 +18,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:worker": "esbuild src/worker/index.ts --bundle --platform=node --target=node22 --format=cjs --outfile=dist/worker/index.js --external:@prisma/client --external:.prisma",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
+    "start:worker": "node dist/worker/index.js",
     "lint": "next lint",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
@@ -130,6 +132,7 @@
     "@types/node": "^22.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.25.0",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
     "eslint-config-prettier": "^9.1.0",

@@ -143,8 +143,28 @@ model CalendarFeed {
   // CalDAV specific fields
   caldavPath        String? // Path to the specific calendar on the server
   ctag              String? // CalDAV collection tag for change detection
+  webhooks          CalendarWebhook[]
 
   @@index([accountId])
+}
+
+model CalendarWebhook {
+  id             String       @id @default(cuid())
+  provider       String
+  feedId         String
+  feed           CalendarFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  channelId      String?
+  subscriptionId String?
+  resourceId     String?
+  expiration     DateTime
+  clientState    String?
+  channelToken   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([provider, feedId])
+  @@index([channelId])
+  @@index([subscriptionId])
 }
 
 model CalendarEvent {

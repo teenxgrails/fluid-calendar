@@ -12,6 +12,8 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 NEXTAUTH_SECRET="replace-with-a-random-32-plus-character-secret"
 CRON_SECRET="replace-with-random-cron-secret"
+REDIS_URL="redis://localhost:6379"
+WEBHOOK_BASE_URL="http://localhost:3000"
 ```
 
 Notes:
@@ -21,6 +23,8 @@ Notes:
 - `NEXTAUTH_URL` must match the exact URL opened in the browser because OAuth redirects are derived from it.
 - `NEXTAUTH_SECRET` has a local fallback in code, but it should always be set explicitly.
 - `CRON_SECRET` protects Vercel Cron endpoints and must be supplied as the `x-cron-secret` header when testing manually.
+- `REDIS_URL` is shared by the web process and the separate BullMQ worker. In Docker/Coolify, point both services at the same Redis instance.
+- `WEBHOOK_BASE_URL` is the public HTTPS origin providers call for calendar change notifications. It defaults to `NEXTAUTH_URL`; set it explicitly when the public webhook origin differs.
 
 ## Human-Supplied Calendar OAuth
 

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added BullMQ-backed calendar sync, rescheduling, and webhook-renewal queues with a separately deployable worker bundle.
+- Added verified Google Calendar push channels and Microsoft Graph subscriptions, incremental provider sync, and automatic subscription renewal.
+- Added authenticated Redis-backed SSE updates so calendar and task changes refresh connected clients within seconds.
 - Added a Motion-style Settings information architecture with dedicated Calendars, Auto-scheduling, Task defaults, Theme, Timezone, Notifications, Schedules, Desktop app, Integrations, API, Privacy, AI Assistant, and Account pages.
 - Added a full-screen weekly schedule editor with per-day drag selection, copy-to-week, timezone context, and persistent scheduling-engine work hours.
 - Added a minimal `/quick-add` route: a single brain-dump input that runs text through the existing `/api/ai/parse-tasks` parser and creates the resulting tasks (Cmd/Ctrl+Enter to submit), house-format and dependency-free.

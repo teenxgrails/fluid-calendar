@@ -25,6 +25,7 @@ COPY package*.json ./
 RUN npm ci --include=dev --legacy-peer-deps --ignore-scripts
 COPY . .
 RUN npm run prisma:generate
+RUN npm run build:worker
 RUN npm run build
 
 # Production stage
@@ -36,6 +37,8 @@ ENV NODE_ENV=production
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/dist/worker ./dist/worker
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 COPY entrypoint.sh .
@@ -44,4 +47,7 @@ RUN chmod +x /app/entrypoint.sh
 EXPOSE 3000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
+# Run the web service with the default command. In Coolify, create a second
+# service from the same image and override its command with:
+# node dist/worker/index.js
 CMD ["node", "server.js"] 

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { authenticateRequest } from "@/lib/auth/api-auth";
+import { disableOutlookSubscription } from "@/lib/calendar-webhooks/outlook";
+import { registerCalendarWebhookBestEffort } from "@/lib/calendar-webhooks/register";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
@@ -72,6 +74,11 @@ export async function PATCH(
       },
       data: updates,
     });
+    if (updated.type === "OUTLOOK" && updates.enabled === true) {
+      await registerCalendarWebhookBestEffort(updated.id, "OUTLOOK");
+    } else if (updated.type === "OUTLOOK" && updates.enabled === false) {
+      await disableOutlookSubscription(updated.id);
+    }
     return NextResponse.json(updated);
   } catch (error) {
     logger.error(

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { authenticateRequest } from "@/lib/auth/api-auth";
+import { registerCalendarWebhookBestEffort } from "@/lib/calendar-webhooks/register";
 import { newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 import { getOutlookClient } from "@/lib/outlook-calendar";
@@ -88,11 +89,20 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    await syncOutlookCalendar(
+    const { nextSyncToken } = await syncOutlookCalendar(
       client,
       { id: feed.id, url: feed.url as string },
       null
     );
+    await prisma.calendarFeed.update({
+      where: { id: feed.id },
+      data: {
+        lastSync: newDate(),
+        syncToken: nextSyncToken,
+        error: null,
+      },
+    });
+    await registerCalendarWebhookBestEffort(feed.id, "OUTLOOK");
 
     return NextResponse.json(feed);
   } catch (error) {
@@ -146,7 +156,7 @@ export async function PUT(req: NextRequest) {
       "Starting Outlook calendar sync",
       {
         feedId: String(feedId),
-        timestamp: new Date().toISOString(),
+        timestamp: newDate().toISOString(),
       },
       LOG_SOURCE
     );
@@ -162,8 +172,7 @@ export async function PUT(req: NextRequest) {
     const { processedEventIds, nextSyncToken } = await syncOutlookCalendar(
       client,
       { id: feed.id, url: feed.url as string },
-      feed.syncToken,
-      true
+      feed.syncToken
     );
 
     // Update the feed's sync token
@@ -181,6 +190,7 @@ export async function PUT(req: NextRequest) {
       where: { id: feed.id, userId },
       data: {
         lastSync: newDate(),
+        error: null,
       },
     });
 
