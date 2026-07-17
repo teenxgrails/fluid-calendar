@@ -22,6 +22,11 @@ import {
 
 import { CalendarTaskActionsMenu } from "@/components/calendar/CalendarTaskActionsMenu";
 import {
+  APP_TOOLBAR_BUTTON_CLASS,
+  APP_TOOLBAR_SEGMENT_BUTTON_CLASS,
+  APP_TOOLBAR_SEGMENT_CLASS,
+} from "@/components/ui/app-toolbar";
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -55,8 +60,7 @@ interface TaskListProps {
   compact?: boolean;
 }
 
-const CONTROL_CLASS =
-  "flex h-8 items-center gap-1.5 rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] px-2.5 text-[12px] font-medium text-[var(--control-fg-muted)] transition-colors duration-150 hover:bg-[var(--control-bg-hover)] hover:text-[var(--control-fg)] data-[state=open]:bg-[var(--control-bg-hover)] data-[state=open]:text-[var(--control-fg)]";
+const CONTROL_CLASS = APP_TOOLBAR_BUTTON_CLASS;
 
 const MENU_ITEM_CLASS =
   "h-8 rounded px-2 text-[12px] text-[var(--text-primary)] focus:bg-[var(--menu-item-hover)]";
@@ -417,11 +421,14 @@ export function TaskList({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex h-8 items-center rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] p-0.5">
+          <div className={APP_TOOLBAR_SEGMENT_CLASS}>
             <button
               type="button"
               aria-label="List layout"
-              className="flex h-7 items-center gap-1.5 rounded bg-[var(--menu-item-hover)] px-2 text-[12px] text-[var(--text-primary)]"
+              className={cn(
+                APP_TOOLBAR_SEGMENT_BUTTON_CLASS,
+                "bg-[var(--menu-item-hover)] text-[var(--text-primary)]"
+              )}
             >
               <List className="h-3.5 w-3.5" />
               List
@@ -429,7 +436,10 @@ export function TaskList({
             <button
               type="button"
               onClick={() => setViewMode("board")}
-              className="flex h-7 items-center gap-1.5 rounded px-2 text-[12px] text-[var(--text-secondary)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
+              className={cn(
+                APP_TOOLBAR_SEGMENT_BUTTON_CLASS,
+                "hover:bg-[var(--menu-item-hover)]"
+              )}
             >
               <Kanban className="h-3.5 w-3.5" />
               Kanban
@@ -607,7 +617,7 @@ export function TaskList({
               }
               placeholder="Search tasks"
               aria-label="Search tasks"
-              className="h-8 border-[var(--input-border)] bg-[var(--input-bg)] pl-8 text-[12px]"
+              className="h-[var(--calendar-toolbar-height)] border-[var(--input-border)] bg-[var(--input-bg)] pl-8 text-[length:var(--calendar-toolbar-font-size)]"
             />
           </div>
         </div>

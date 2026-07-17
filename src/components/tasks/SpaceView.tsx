@@ -4,6 +4,7 @@ import {
   CSSProperties,
   DragEvent,
   PointerEvent,
+  WheelEvent,
   useMemo,
   useRef,
   useState,
@@ -22,13 +23,17 @@ import {
   Minus,
   Orbit,
   Plus,
-  RotateCcw,
   Search,
   Sparkles,
   TimerReset,
   X,
 } from "lucide-react";
 
+import {
+  APP_TOOLBAR_BUTTON_CLASS,
+  APP_TOOLBAR_SEGMENT_BUTTON_CLASS,
+  APP_TOOLBAR_SEGMENT_CLASS,
+} from "@/components/ui/app-toolbar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,7 +87,7 @@ interface SpaceCluster extends SpacePoint {
   id: string;
   name: string;
   color: string;
-  completedCount: number;
+  unattached: boolean;
   totalCount: number;
   tasks: SpaceTaskNode[];
 }
@@ -108,6 +113,10 @@ const HORIZONS: Array<{ value: SpaceHorizon; label: string }> = [
   { value: 7, label: "7 days" },
   { value: 14, label: "14 days" },
 ];
+
+const MIN_SCALE = 0.7;
+const MAX_SCALE = 1.5;
+const SCALE_STEP = 0.1;
 
 function hashString(value: string) {
   return Array.from(value).reduce(
@@ -181,6 +190,26 @@ function clusterPosition(count: number, index: number): SpacePoint {
   };
 }
 
+function looseTaskPosition(count: number, index: number, seed: number) {
+  const columns = Math.max(2, Math.ceil(Math.sqrt(count * 1.5)));
+  const rows = Math.max(1, Math.ceil(count / columns));
+  const column = index % columns;
+  const row = Math.floor(index / columns);
+  const jitterX = (seed % 9) - 4;
+  const jitterY = (Math.floor(seed / 9) % 9) - 4;
+
+  return {
+    x: Math.min(
+      91,
+      Math.max(9, 13 + (column * 74) / Math.max(1, columns - 1) + jitterX)
+    ),
+    y: Math.min(
+      87,
+      Math.max(13, 18 + (row * 64) / Math.max(1, rows - 1) + jitterY)
+    ),
+  };
+}
+
 function SpaceMetric({
   label,
   value,
@@ -234,6 +263,7 @@ export function SpaceView({
   const [dropPreview, setDropPreview] = useState<DropPreview | null>(null);
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLDivElement>(null);
   const panStart = useRef<{
     pointerX: number;
     pointerY: number;
@@ -249,8 +279,7 @@ export function SpaceView({
     return tasks
       .filter((task) => showCompleted || task.status !== TaskStatus.COMPLETED)
       .filter(
-        (task) =>
-          !selectedProjectId || (task.projectId ?? "none") === selectedProjectId
+        (task) => !selectedProjectId || task.projectId === selectedProjectId
       )
       .filter((task) => {
         if (!normalizedQuery) return true;
@@ -279,19 +308,23 @@ export function SpaceView({
 
   const clusters = useMemo<SpaceCluster[]>(() => {
     const groupIds = Array.from(
-      new Set(visibleTasks.map((task) => task.projectId ?? "none"))
+      new Set(
+        visibleTasks
+          .map((task) => task.projectId)
+          .filter((id): id is string => Boolean(id))
+      )
     );
     const projectLookup = new Map(
       projects.map((project) => [project.id, project])
     );
 
-    return groupIds.map((id, clusterIndex) => {
-      const project = id === "none" ? undefined : projectLookup.get(id);
+    const projectClusters = groupIds.map((id, clusterIndex) => {
+      const project = projectLookup.get(id);
       const center = clusterPosition(groupIds.length, clusterIndex);
       const color =
         project?.color ?? PROJECT_COLORS[clusterIndex % PROJECT_COLORS.length];
       const clusterTasks = visibleTasks
-        .filter((task) => (task.projectId ?? "none") === id)
+        .filter((task) => task.projectId === id)
         .sort((left, right) => {
           const leftDate =
             getTaskStart(left)?.getTime() ?? Number.MAX_SAFE_INTEGER;
@@ -299,15 +332,11 @@ export function SpaceView({
             getTaskStart(right)?.getTime() ?? Number.MAX_SAFE_INTEGER;
           return leftDate - rightDate;
         });
-      const completedCount = clusterTasks.filter(
-        (task) => task.status === TaskStatus.COMPLETED
-      ).length;
-
       return {
         id,
-        name: project?.name ?? "Inbox",
+        name: project?.name ?? clusterTasks[0]?.project?.name ?? "Project",
         color,
-        completedCount,
+        unattached: false,
         totalCount: clusterTasks.length,
         ...center,
         tasks: clusterTasks.map((task, taskIndex) => {
@@ -335,6 +364,23 @@ export function SpaceView({
         }),
       };
     });
+
+    const looseTasks = visibleTasks.filter((task) => !task.projectId);
+    const looseClusters = looseTasks.map((task, index) => {
+      const seed = hashString(task.id);
+      const center = looseTaskPosition(looseTasks.length, index, seed);
+      return {
+        id: `loose-${task.id}`,
+        name: "No project",
+        color: PROJECT_COLORS[seed % PROJECT_COLORS.length],
+        unattached: true,
+        totalCount: 1,
+        ...center,
+        tasks: [{ task, ...center }],
+      };
+    });
+
+    return [...projectClusters, ...looseClusters];
   }, [projects, visibleTasks]);
 
   const selectedTask = visibleTasks.find((task) => task.id === selectedTaskId);
@@ -350,18 +396,49 @@ export function SpaceView({
     (total, task) => total + taskDuration(task),
     0
   );
-  const selectedProjectName =
-    selectedProjectId === "none"
-      ? "Inbox"
-      : projects.find((project) => project.id === selectedProjectId)?.name;
+  const selectedProjectName = projects.find(
+    (project) => project.id === selectedProjectId
+  )?.name;
   const horizonDays = Array.from({ length: horizon }, (_, index) =>
     addDays(today, index)
   );
 
-  const resetSpace = () => {
+  const resetView = () => {
     setScale(1);
     setPan({ x: 0, y: 0 });
-    setSelectedProjectId(null);
+  };
+
+  const zoomTo = (nextScale: number, anchor?: SpacePoint) => {
+    const clampedScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, nextScale));
+    if (clampedScale === scale) return;
+
+    if (anchor) {
+      const worldX = (anchor.x - pan.x) / scale;
+      const worldY = (anchor.y - pan.y) / scale;
+      setPan({
+        x: anchor.x - worldX * clampedScale,
+        y: anchor.y - worldY * clampedScale,
+      });
+    }
+    setScale(clampedScale);
+  };
+
+  const handleCanvasWheel = (event: WheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    zoomTo(scale + direction * SCALE_STEP, {
+      x: event.clientX - bounds.left,
+      y: event.clientY - bounds.top,
+    });
+  };
+
+  const zoomFromCenter = (nextScale: number) => {
+    const bounds = canvasRef.current?.getBoundingClientRect();
+    zoomTo(
+      nextScale,
+      bounds ? { x: bounds.width / 2, y: bounds.height / 2 } : undefined
+    );
   };
 
   const handleCanvasPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -446,35 +523,25 @@ export function SpaceView({
 
   return (
     <section className="flex h-full min-h-[540px] flex-col overflow-hidden bg-[var(--surface-canvas)]">
-      <div className="flex flex-none flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] px-3 py-2">
+      <div className="flex h-10 flex-none items-center gap-1.5 border-b border-[var(--border-subtle)] px-2">
         <div className="mr-1 flex min-w-0 items-center gap-2">
           <Orbit className="h-4 w-4 text-[var(--text-primary)]" />
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-[13px] font-semibold text-[var(--text-primary)]">
-                Task Space
-              </h2>
-              <span className="rounded bg-[var(--surface-raised)] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.08em] text-[var(--text-muted)]">
-                Live
-              </span>
-            </div>
-            <p className="text-[10px] text-[var(--text-muted)]">
-              Your schedule, projects, and focus in one map
-            </p>
-          </div>
+          <h2 className="text-[13px] font-semibold text-[var(--text-primary)]">
+            Task Space
+          </h2>
         </div>
 
-        <div className="flex h-8 items-center rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] p-0.5">
+        <div className={APP_TOOLBAR_SEGMENT_CLASS}>
           {HORIZONS.map((item) => (
             <button
               key={item.value}
               type="button"
               onClick={() => setHorizon(item.value)}
               className={cn(
-                "h-7 rounded px-2.5 text-[11px] font-medium transition-colors duration-150",
+                APP_TOOLBAR_SEGMENT_BUTTON_CLASS,
                 horizon === item.value
-                  ? "bg-[var(--surface-panel)] text-[var(--text-primary)]"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  ? "bg-[var(--surface-hover)] text-[var(--text-primary)]"
+                  : "text-[var(--text-muted)]"
               )}
             >
               {item.label}
@@ -483,7 +550,9 @@ export function SpaceView({
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex h-8 min-w-32 items-center gap-1.5 rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] px-2.5 text-[11px] font-medium text-[var(--control-fg-muted)] hover:bg-[var(--control-bg-hover)] hover:text-[var(--control-fg)]">
+          <DropdownMenuTrigger
+            className={cn(APP_TOOLBAR_BUTTON_CLASS, "min-w-28")}
+          >
             <Box className="h-3.5 w-3.5" />
             <span className="max-w-28 truncate">
               {selectedProjectId
@@ -521,14 +590,6 @@ export function SpaceView({
                 {selectedProjectId === project.id && <Check />}
               </DropdownMenuItem>
             ))}
-            <DropdownMenuItem
-              className="h-8 text-[12px]"
-              onSelect={() => setSelectedProjectId("none")}
-            >
-              <span className="h-2.5 w-2.5 rounded-full bg-[var(--text-muted)]" />
-              Inbox
-              {selectedProjectId === "none" && <Check className="ml-auto" />}
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -539,7 +600,7 @@ export function SpaceView({
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Find a task or project"
             aria-label="Search Task Space"
-            className="h-8 border-[var(--input-border)] bg-[var(--input-bg)] pl-8 text-[11px]"
+            className="h-[var(--calendar-toolbar-height)] border-[var(--input-border)] bg-[var(--input-bg)] pl-8 text-[length:var(--calendar-toolbar-font-size)]"
           />
           {query && (
             <button
@@ -553,49 +614,16 @@ export function SpaceView({
           )}
         </div>
 
-        <label className="flex h-8 items-center gap-1.5 rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] px-2 text-[11px] text-[var(--control-fg-muted)]">
+        <label
+          className={cn(APP_TOOLBAR_BUTTON_CLASS, "ml-auto cursor-pointer")}
+        >
           Completed
           <Switch
             checked={showCompleted}
             onCheckedChange={setShowCompleted}
-            className="scale-75"
+            className="h-4 w-[26px] [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-[12px]"
           />
         </label>
-
-        <div className="flex h-8 items-center rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] p-0.5">
-          <button
-            type="button"
-            aria-label="Zoom out"
-            onClick={() => setScale((value) => Math.max(0.75, value - 0.1))}
-            className="grid h-7 w-7 place-items-center rounded text-[var(--text-secondary)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
-          >
-            <Minus className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Reset zoom"
-            onClick={resetSpace}
-            className="grid h-7 min-w-10 place-items-center rounded px-1 text-[10px] tabular-nums text-[var(--text-secondary)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
-          >
-            {Math.round(scale * 100)}%
-          </button>
-          <button
-            type="button"
-            aria-label="Zoom in"
-            onClick={() => setScale((value) => Math.min(1.4, value + 0.1))}
-            className="grid h-7 w-7 place-items-center rounded text-[var(--text-secondary)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Reset Task Space"
-            onClick={resetSpace}
-            className="grid h-7 w-7 place-items-center rounded text-[var(--text-secondary)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
-        </div>
       </div>
 
       <div className="flex h-10 flex-none items-center divide-x divide-[var(--border-subtle)] border-b border-[var(--border-subtle)] bg-[var(--surface-raised)]">
@@ -636,8 +664,10 @@ export function SpaceView({
       </div>
 
       <div
+        ref={canvasRef}
         data-space-canvas
         className="workspace-space-canvas relative min-h-0 flex-1 cursor-grab touch-none overflow-hidden active:cursor-grabbing"
+        onWheel={handleCanvasWheel}
         onPointerDown={handleCanvasPointerDown}
         onPointerMove={handleCanvasPointerMove}
         onPointerUp={handleCanvasPointerUp}
@@ -720,7 +750,7 @@ export function SpaceView({
           </div>
         ) : (
           <div
-            className="absolute inset-0 origin-center transition-transform duration-200 motion-reduce:transition-none"
+            className="absolute inset-0 origin-top-left transition-transform duration-200 motion-reduce:transition-none"
             style={{
               transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${scale})`,
             }}
@@ -729,93 +759,61 @@ export function SpaceView({
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 h-full w-full"
             >
-              {clusters.map((cluster) => (
-                <g key={`orbit-${cluster.id}`}>
-                  <ellipse
-                    cx={`${cluster.x}%`}
-                    cy={`${cluster.y}%`}
-                    rx="11.5%"
-                    ry="9%"
-                    fill="none"
-                    stroke={cluster.color}
-                    strokeOpacity="0.13"
-                    strokeWidth="1"
-                    strokeDasharray="3 7"
-                  />
-                  <ellipse
-                    cx={`${cluster.x}%`}
-                    cy={`${cluster.y}%`}
-                    rx="16%"
-                    ry="13%"
-                    fill="none"
-                    stroke={cluster.color}
-                    strokeOpacity="0.07"
-                    strokeWidth="1"
-                  />
-                </g>
-              ))}
-              {clusters.flatMap((cluster) =>
-                cluster.tasks.map(({ task, x, y }) => (
-                  <line
-                    key={`${cluster.id}-${task.id}`}
-                    x1={`${cluster.x}%`}
-                    y1={`${cluster.y}%`}
-                    x2={`${x}%`}
-                    y2={`${y}%`}
-                    stroke={cluster.color}
-                    strokeOpacity={selectedTaskId === task.id ? "0.45" : "0.13"}
-                    strokeWidth={selectedTaskId === task.id ? "1.5" : "1"}
-                  />
-                ))
-              )}
+              {clusters
+                .filter((cluster) => !cluster.unattached)
+                .flatMap((cluster) =>
+                  cluster.tasks.map(({ task, x, y }) => (
+                    <line
+                      key={`${cluster.id}-${task.id}`}
+                      x1={`${cluster.x}%`}
+                      y1={`${cluster.y}%`}
+                      x2={`${x}%`}
+                      y2={`${y}%`}
+                      stroke={cluster.color}
+                      strokeOpacity={
+                        selectedTaskId === task.id ? "0.45" : "0.13"
+                      }
+                      strokeWidth={selectedTaskId === task.id ? "1.5" : "1"}
+                    />
+                  ))
+                )}
             </svg>
 
             {clusters.map((cluster) => {
-              const progress = cluster.totalCount
-                ? Math.round(
-                    (cluster.completedCount / cluster.totalCount) * 100
-                  )
-                : 0;
               return (
                 <div key={cluster.id} className="contents">
-                  <Tooltip delayDuration={250}>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedProjectId((current) =>
-                            current === cluster.id ? null : cluster.id
-                          )
-                        }
-                        aria-label={`Focus ${cluster.name} project`}
-                        className="workspace-space-project absolute z-10 grid h-[68px] w-[68px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--space-text-primary)]"
-                        style={
-                          {
+                  {!cluster.unattached && (
+                    <Tooltip delayDuration={250}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedProjectId((current) =>
+                              current === cluster.id ? null : cluster.id
+                            )
+                          }
+                          aria-label={`Focus ${cluster.name} project`}
+                          className="absolute z-10 flex h-7 -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-md border border-[var(--space-project-border)] bg-[var(--space-panel)] px-2 text-[11px] font-medium text-[var(--space-text-primary)] transition-colors duration-150 hover:bg-[var(--space-panel-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-control)]"
+                          style={{
                             left: `${cluster.x}%`,
                             top: `${cluster.y}%`,
-                            "--cluster-color": cluster.color,
-                            "--cluster-progress": `${progress * 3.6}deg`,
-                          } as CSSProperties
-                        }
-                      >
-                        <span className="grid h-[54px] w-[54px] place-items-center rounded-full border border-[var(--space-project-border)] bg-[var(--space-panel)]">
+                          }}
+                        >
                           <Box
-                            className="h-4 w-4"
+                            className="h-3.5 w-3.5"
                             style={{ color: cluster.color }}
                           />
-                        </span>
-                        <span className="pointer-events-none absolute left-1/2 top-[76px] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded bg-[var(--space-label-bg)] px-2 py-1 text-[11px] font-medium text-[var(--space-text-primary)]">
                           {cluster.name}
                           <span className="text-[9px] font-normal text-[var(--space-text-muted)]">
                             {cluster.totalCount}
                           </span>
-                        </span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="border-[var(--menu-border)] bg-[var(--menu-bg)] text-[var(--text-primary)]">
-                      Click to focus this project
-                    </TooltipContent>
-                  </Tooltip>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="border-[var(--menu-border)] bg-[var(--menu-bg)] text-[var(--text-primary)]">
+                        Click to focus this project
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
 
                   {cluster.tasks.map(({ task, x, y }, taskIndex) => {
                     const selected = selectedTaskId === task.id;
@@ -936,7 +934,7 @@ export function SpaceView({
                 />
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] uppercase tracking-[0.08em] text-[var(--space-text-muted)]">
-                    {selectedTask.project?.name ?? "Inbox"}
+                    {selectedTask.project?.name ?? "No project"}
                   </p>
                   <h3 className="mt-0.5 line-clamp-2 text-[13px] font-semibold leading-5">
                     {selectedTask.title}
@@ -1024,9 +1022,44 @@ export function SpaceView({
           </aside>
         )}
 
+        <div
+          className="absolute bottom-3 right-3 z-30 flex w-10 flex-col items-center overflow-hidden rounded-md border border-[var(--calendar-toolbar-border)] bg-[var(--calendar-toolbar-bg)] text-[var(--text-secondary)]"
+          aria-label="Space zoom controls"
+        >
+          <button
+            type="button"
+            aria-label="Zoom in"
+            title="Zoom in"
+            onClick={() => zoomFromCenter(scale + SCALE_STEP)}
+            disabled={scale >= MAX_SCALE}
+            className="grid h-8 w-full place-items-center transition-colors duration-150 hover:bg-[var(--calendar-toolbar-bg-hover)] hover:text-[var(--text-primary)] disabled:opacity-35"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Reset zoom to 100 percent"
+            title="Reset zoom"
+            onClick={resetView}
+            className="grid h-7 w-full place-items-center border-y border-[var(--border-subtle)] text-[9px] tabular-nums transition-colors duration-150 hover:bg-[var(--calendar-toolbar-bg-hover)] hover:text-[var(--text-primary)]"
+          >
+            {Math.round(scale * 100)}%
+          </button>
+          <button
+            type="button"
+            aria-label="Zoom out"
+            title="Zoom out"
+            onClick={() => zoomFromCenter(scale - SCALE_STEP)}
+            disabled={scale <= MIN_SCALE}
+            className="grid h-8 w-full place-items-center transition-colors duration-150 hover:bg-[var(--calendar-toolbar-bg-hover)] hover:text-[var(--text-primary)] disabled:opacity-35"
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
         <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-[var(--control-radius)] border border-[var(--space-border)] bg-[var(--space-label-bg)] px-3 py-1.5 text-[9px] text-[var(--space-text-muted)]">
           <Crosshair className="h-3 w-3" />
-          Click to inspect · Double-click a task to edit · Drag to reschedule ·
+          Click to inspect · Scroll to zoom · Drag the canvas to move ·
           Double-click empty space to create
         </div>
       </div>

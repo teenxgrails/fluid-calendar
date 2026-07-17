@@ -23,6 +23,10 @@ import { TaskModal } from "@/components/tasks/TaskModal";
 import { TimelineView } from "@/components/tasks/TimelineView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  APP_TOOLBAR_BUTTON_CLASS,
+  APP_TOOLBAR_ICON_BUTTON_CLASS,
+} from "@/components/ui/app-toolbar";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -45,7 +49,7 @@ import { NewTask, Task, TaskStatus } from "@/types/task";
 
 const LOG_SOURCE = "TasksPage";
 const VIEW_BUTTON_CLASS =
-  "relative flex h-9 items-center gap-1.5 border-b-2 px-3 text-[12px] font-medium transition-colors duration-150";
+  "flex h-[var(--calendar-toolbar-height)] items-center gap-1.5 rounded-md px-2 text-[length:var(--calendar-toolbar-font-size)] font-medium transition-colors duration-150";
 
 const PRIMARY_VIEWS: Array<{
   id: ViewMode;
@@ -204,22 +208,10 @@ export default function TasksPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--surface-canvas)] text-[var(--text-primary)]">
-      <header className="flex h-14 flex-none items-center border-b border-[var(--border-subtle)] px-3">
+      <header className="flex h-12 flex-none items-center border-b border-[var(--border-subtle)] px-2">
         <div className="flex min-w-0 items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-[var(--control-radius)] border border-[var(--border-control)] bg-[var(--surface-raised)]">
-            <Box className="h-4 w-4 text-[var(--text-secondary)]" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h1 className="truncate text-[14px] font-semibold">Workspace</h1>
-              <span className="rounded bg-[var(--surface-raised)] px-1.5 py-0.5 text-[9px] uppercase tracking-[0.08em] text-[var(--text-muted)]">
-                Solo
-              </span>
-            </div>
-            <p className="text-[10px] text-[var(--text-muted)]">
-              Plan, focus, and move work without losing the day
-            </p>
-          </div>
+          <Box className="h-4 w-4 text-[var(--text-secondary)]" />
+          <h1 className="truncate text-[14px] font-semibold">Workspace</h1>
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
@@ -227,7 +219,7 @@ export default function TasksPage() {
             type="button"
             onClick={handleReflow}
             disabled={isReflowing}
-            className="flex h-8 items-center gap-1.5 rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] px-2.5 text-[12px] font-medium text-[var(--control-fg-muted)] hover:bg-[var(--control-bg-hover)] hover:text-[var(--control-fg)]"
+            className={APP_TOOLBAR_BUTTON_CLASS}
           >
             <RotateCw
               className={cn("h-3.5 w-3.5", isReflowing && "animate-spin")}
@@ -235,7 +227,7 @@ export default function TasksPage() {
             {isReflowing ? "Reflowing..." : "Reflow schedule"}
           </button>
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex h-8 items-center gap-1.5 rounded-[var(--control-radius)] border border-[var(--control-border)] bg-[var(--control-bg)] px-2.5 text-[12px] font-medium text-[var(--control-fg)] hover:bg-[var(--control-bg-hover)]">
+            <DropdownMenuTrigger className={APP_TOOLBAR_BUTTON_CLASS}>
               <Plus className="h-3.5 w-3.5" />
               New
               <ChevronDown className="h-3 w-3" />
@@ -260,8 +252,11 @@ export default function TasksPage() {
         </div>
       </header>
 
-      <div className="flex h-10 flex-none items-end border-b border-[var(--border-subtle)] px-2">
-        <nav aria-label="Workspace views" className="flex min-w-0 items-end">
+      <div className="flex h-10 flex-none items-center gap-1 border-b border-[var(--border-subtle)] px-2">
+        <nav
+          aria-label="Workspace views"
+          className="flex min-w-0 items-center gap-0.5"
+        >
           {PRIMARY_VIEWS.map((view) => {
             const Icon = view.icon;
             const isActive = activePrimaryView === view.id;
@@ -273,8 +268,8 @@ export default function TasksPage() {
                 className={cn(
                   VIEW_BUTTON_CLASS,
                   isActive
-                    ? "border-[var(--text-primary)] text-[var(--text-primary)]"
-                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                    ? "bg-[var(--surface-hover)] text-[var(--text-primary)]"
+                    : "text-[var(--text-muted)] hover:bg-[var(--calendar-toolbar-bg)] hover:text-[var(--text-primary)]"
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -287,7 +282,7 @@ export default function TasksPage() {
               type="button"
               className={cn(
                 VIEW_BUTTON_CLASS,
-                "border-[var(--text-primary)] text-[var(--text-primary)]"
+                "bg-[var(--surface-hover)] text-[var(--text-primary)]"
               )}
             >
               <CalendarRange className="h-3.5 w-3.5" />
@@ -299,7 +294,7 @@ export default function TasksPage() {
               type="button"
               className={cn(
                 VIEW_BUTTON_CLASS,
-                "border-[var(--text-primary)] text-[var(--text-primary)]"
+                "bg-[var(--surface-hover)] text-[var(--text-primary)]"
               )}
             >
               <Kanban className="h-3.5 w-3.5" />
@@ -311,7 +306,10 @@ export default function TasksPage() {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="Manage workspace views"
-            className="mb-1 grid h-7 w-7 place-items-center rounded text-[var(--text-muted)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
+            className={cn(
+              APP_TOOLBAR_ICON_BUTTON_CLASS,
+              "border-transparent bg-transparent text-[var(--text-muted)]"
+            )}
           >
             <MoreHorizontal className="h-4 w-4" />
           </DropdownMenuTrigger>
@@ -342,7 +340,10 @@ export default function TasksPage() {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="Add workspace view"
-            className="mb-1 grid h-7 w-7 place-items-center rounded text-[var(--text-muted)] hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)]"
+            className={cn(
+              APP_TOOLBAR_ICON_BUTTON_CLASS,
+              "border-transparent bg-transparent text-[var(--text-muted)]"
+            )}
           >
             <Plus className="h-4 w-4" />
           </DropdownMenuTrigger>

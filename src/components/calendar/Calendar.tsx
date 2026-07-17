@@ -25,6 +25,10 @@ import { MultiMonthView } from "@/components/calendar/MultiMonthView";
 import { WeekView } from "@/components/calendar/WeekView";
 import { TaskModal } from "@/components/tasks/TaskModal";
 import {
+  APP_TOOLBAR_BUTTON_CLASS,
+  APP_TOOLBAR_ICON_BUTTON_CLASS,
+} from "@/components/ui/app-toolbar";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -72,10 +76,6 @@ const VIEW_ORDER: Array<"day" | "week" | "month" | "multiMonth"> = [
 ];
 
 const LOG_SOURCE = "Calendar";
-const TOOLBAR_BUTTON_CLASS =
-  "flex h-[var(--calendar-toolbar-height)] items-center gap-1.5 rounded-md border border-[var(--calendar-toolbar-border)] bg-[var(--calendar-toolbar-bg)] px-1.5 py-[3px] text-[length:var(--calendar-toolbar-font-size)] font-medium leading-[17px] text-[var(--text-primary)] transition-colors duration-150 ease-out hover:bg-[var(--calendar-toolbar-bg-hover)] disabled:cursor-wait disabled:opacity-70";
-const TOOLBAR_ICON_BUTTON_CLASS =
-  "grid h-[var(--calendar-toolbar-icon-size)] w-[var(--calendar-toolbar-icon-size)] place-items-center rounded-md border border-[var(--calendar-toolbar-border)] bg-[var(--calendar-toolbar-bg)] text-[var(--text-primary)] transition-colors duration-150 ease-out hover:bg-[var(--calendar-toolbar-bg-hover)]";
 
 interface CalendarProps {
   initialFeeds?: CalendarFeed[];
@@ -180,7 +180,7 @@ export function Calendar({
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  className={TOOLBAR_BUTTON_CLASS}
+                  className={APP_TOOLBAR_BUTTON_CLASS}
                   title="Calendar options"
                 >
                   <IoOptionsOutline className="h-4 w-4" />
@@ -285,7 +285,7 @@ export function Calendar({
               onClick={handleAutoSchedule}
               disabled={isRefreshingTasks}
               aria-busy={isRefreshingTasks}
-              className={TOOLBAR_BUTTON_CLASS}
+              className={APP_TOOLBAR_BUTTON_CLASS}
               title="Refresh all tasks"
               data-testid="refresh-all-tasks"
             >
@@ -298,7 +298,7 @@ export function Calendar({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={TOOLBAR_ICON_BUTTON_CLASS}
+                  className={APP_TOOLBAR_ICON_BUTTON_CLASS}
                   title="Create"
                   aria-label="Create task or event"
                 >
@@ -330,7 +330,7 @@ export function Calendar({
             {/* View switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className={TOOLBAR_BUTTON_CLASS}>
+                <button className={APP_TOOLBAR_BUTTON_CLASS}>
                   {VIEW_LABELS[view]}
                   <IoChevronDown className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
                 </button>

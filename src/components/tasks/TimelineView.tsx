@@ -64,7 +64,10 @@ export function TimelineView({ tasks }: TimelineViewProps) {
     const rangeStart = startOfDay(new Date(minTime));
     const dayCount = Math.max(7, Math.ceil((maxTime - minTime) / DAY_MS) + 1);
 
-    const grouped = new Map<string, { label: string; tasks: typeof datedTasks }>();
+    const grouped = new Map<
+      string,
+      { label: string; tasks: typeof datedTasks }
+    >();
     datedTasks.forEach((item) => {
       const id = item.task.projectId || "none";
       const label = item.task.project?.name || "No Project";
@@ -77,7 +80,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
 
   if (rows.groups.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center rounded-md border border-[#323234] bg-[#262627] p-8 text-center text-sm text-[#9AA0A6]">
+      <div className="flex h-full items-center justify-center rounded-md border border-[var(--border-control)] bg-[var(--surface-raised)] p-8 text-center text-sm text-[var(--text-secondary)]">
         No dated tasks yet. Add start, deadline, due, or scheduled dates to show
         a timeline.
       </div>
@@ -85,14 +88,14 @@ export function TimelineView({ tasks }: TimelineViewProps) {
   }
 
   return (
-    <div className="h-full overflow-auto rounded-md border border-[#323234] bg-[#1B1D1E]">
+    <div className="h-full overflow-auto rounded-md border border-[var(--border-control)] bg-[var(--surface-canvas)]">
       <div
         className="grid min-w-[760px]"
         style={{
           gridTemplateColumns: `180px repeat(${rows.dayCount}, minmax(42px, 1fr))`,
         }}
       >
-        <div className="sticky left-0 z-10 border-b border-r border-[#323234] bg-[#1B1D1E] p-2 text-xs text-[#9AA0A6]">
+        <div className="sticky left-0 z-10 border-b border-r border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-2 text-xs text-[var(--text-secondary)]">
           Project
         </div>
         {Array.from({ length: rows.dayCount }).map((_, index) => {
@@ -100,7 +103,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
           return (
             <div
               key={date.toISOString()}
-              className="border-b border-r border-[#323234] p-2 text-center text-[11px] text-[#9AA0A6]"
+              className="border-b border-r border-[var(--border-subtle)] p-2 text-center text-[11px] text-[var(--text-secondary)]"
             >
               {date.toLocaleDateString([], { month: "short", day: "numeric" })}
             </div>
@@ -109,11 +112,11 @@ export function TimelineView({ tasks }: TimelineViewProps) {
 
         {rows.groups.map((group) => (
           <div key={group.label} className="contents">
-            <div className="sticky left-0 z-10 border-b border-r border-[#323234] bg-[#1B1D1E] p-2 text-sm text-white">
+            <div className="sticky left-0 z-10 border-b border-r border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-2 text-sm text-[var(--text-primary)]">
               {group.label}
             </div>
             <div
-              className="relative col-span-full grid min-h-16 border-b border-[#323234]"
+              className="relative col-span-full grid min-h-16 border-b border-[var(--border-subtle)]"
               style={{
                 gridColumn: `2 / span ${rows.dayCount}`,
                 gridTemplateColumns: `repeat(${rows.dayCount}, minmax(42px, 1fr))`,
@@ -122,20 +125,26 @@ export function TimelineView({ tasks }: TimelineViewProps) {
               {Array.from({ length: rows.dayCount }).map((_, index) => (
                 <div
                   key={index}
-                  className="border-r border-[#323234]/70"
+                  className="border-r border-[var(--border-subtle)]"
                 />
               ))}
               {group.tasks.map(({ task, start, end }, index) => {
                 const offset =
-                  Math.floor((start.getTime() - rows.rangeStart.getTime()) / DAY_MS) + 1;
-                const span =
-                  Math.max(1, Math.floor((end.getTime() - start.getTime()) / DAY_MS) + 1);
-                const color = task.project?.color || "#6366F1";
+                  Math.floor(
+                    (start.getTime() - rows.rangeStart.getTime()) / DAY_MS
+                  ) + 1;
+                const span = Math.max(
+                  1,
+                  Math.floor((end.getTime() - start.getTime()) / DAY_MS) + 1
+                );
+                const color = task.project?.color || "var(--color-accent)";
                 return (
                   <motion.div
                     key={task.id}
                     layout={!prefersReducedMotion}
-                    initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
+                    initial={
+                      prefersReducedMotion ? false : { opacity: 0, y: 4 }
+                    }
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
                     className="absolute h-7 truncate rounded-md px-2 py-1 text-xs text-white"
@@ -143,7 +152,10 @@ export function TimelineView({ tasks }: TimelineViewProps) {
                       left: `calc(${((offset - 1) / rows.dayCount) * 100}% + 4px)`,
                       top: 8 + index * 30,
                       width: `calc(${(span / rows.dayCount) * 100}% - 8px)`,
-                      background: task.status === TaskStatus.COMPLETED ? "#3A3D3F" : color,
+                      background:
+                        task.status === TaskStatus.COMPLETED
+                          ? "var(--surface-control)"
+                          : color,
                     }}
                     title={task.title}
                   >

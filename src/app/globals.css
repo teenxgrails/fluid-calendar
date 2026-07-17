@@ -587,6 +587,21 @@
    loop or force simulation runs on the main thread. */
 .workspace-space-canvas {
   background-color: var(--space-canvas);
+  isolation: isolate;
+}
+
+.workspace-space-canvas::before,
+.workspace-space-canvas::after {
+  position: absolute;
+  z-index: 0;
+  inset: -8%;
+  content: "";
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.workspace-space-canvas::before {
+  opacity: 0.52;
   background-image:
     radial-gradient(
       circle at 15% 18%,
@@ -613,39 +628,26 @@
     230px 210px,
     290px 250px,
     360px 330px;
-}
-
-.workspace-space-canvas::before {
-  position: absolute;
-  inset: -5%;
-  content: "";
-  pointer-events: none;
-  opacity: 0.3;
-  background:
-    radial-gradient(
-      ellipse at 22% 44%,
-      color-mix(in srgb, var(--space-cluster-blue) 11%, transparent),
-      transparent 34%
-    ),
-    radial-gradient(
-      ellipse at 76% 58%,
-      color-mix(in srgb, var(--space-cluster-violet) 9%, transparent),
-      transparent 30%
-    );
-  animation: workspace-space-drift 18s ease-in-out infinite alternate;
+  animation: workspace-star-drift-a 17s ease-in-out infinite alternate;
 }
 
 .workspace-space-canvas::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  pointer-events: none;
-  opacity: 0.55;
+  opacity: 0.28;
   background-image:
-    linear-gradient(var(--space-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--space-grid) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(circle at center, black 18%, transparent 82%);
+    radial-gradient(
+      circle at 27% 31%,
+      color-mix(in srgb, var(--space-star) 76%, transparent) 0 0.8px,
+      transparent 1.4px
+    ),
+    radial-gradient(
+      circle at 74% 66%,
+      color-mix(in srgb, var(--space-star) 58%, transparent) 0 0.8px,
+      transparent 1.4px
+    );
+  background-size:
+    110px 130px,
+    190px 175px;
+  animation: workspace-star-drift-b 23s ease-in-out infinite alternate;
 }
 
 .workspace-space-task {
@@ -654,20 +656,35 @@
   will-change: translate;
 }
 
-.workspace-space-project {
-  background: conic-gradient(
-    var(--cluster-color) 0 var(--cluster-progress),
-    color-mix(in srgb, var(--cluster-color) 12%, transparent)
-      var(--cluster-progress) 360deg
-  );
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cluster-color) 18%, transparent),
-    0 16px 46px color-mix(in srgb, var(--cluster-color) 13%, transparent);
+@keyframes workspace-star-drift-a {
+  0% {
+    opacity: 0.38;
+    transform: translate3d(-0.4%, 0.35%, 0);
+  }
+
+  52% {
+    opacity: 0.68;
+  }
+
+  to {
+    opacity: 0.48;
+    transform: translate3d(1.1%, -0.75%, 0);
+  }
 }
 
-@keyframes workspace-space-drift {
+@keyframes workspace-star-drift-b {
+  0% {
+    opacity: 0.2;
+    transform: translate3d(0.55%, -0.35%, 0);
+  }
+
+  45% {
+    opacity: 0.46;
+  }
+
   to {
-    transform: translate3d(1.2%, -0.8%, 0) scale(1.015);
+    opacity: 0.3;
+    transform: translate3d(-0.9%, 0.65%, 0);
   }
 }
 
