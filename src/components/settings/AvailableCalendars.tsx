@@ -4,7 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { logger } from "@/lib/logger";
+
 import { extractCalendarFetchError } from "./available-calendars-error";
+
+const LOG_SOURCE = "AvailableCalendars";
 
 interface AvailableCalendar {
   id: string;
@@ -59,7 +63,11 @@ export function AvailableCalendars({ accountId, provider }: Props) {
       const data = await response.json();
       setCalendars(data);
     } catch (error) {
-      console.error("Failed to load available calendars:", error);
+      logger.error(
+        "Failed to load available calendars",
+        { error: error instanceof Error ? error.message : "Unknown error" },
+        LOG_SOURCE
+      );
       setErrorMessage("Failed to load available calendars");
     } finally {
       setIsLoading(false);
@@ -127,7 +135,15 @@ export function AvailableCalendars({ accountId, provider }: Props) {
           })
         );
       } catch (error) {
-        console.error("Failed to add calendar:", error);
+        logger.error(
+          "Failed to add calendar",
+          {
+            accountId,
+            calendarId: calendar.id,
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+          LOG_SOURCE
+        );
         setErrorMessage("Failed to add calendar");
       } finally {
         setAddingCalendars((prev) => {
@@ -146,7 +162,7 @@ export function AvailableCalendars({ accountId, provider }: Props) {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="flex items-center justify-between rounded-md border bg-card p-4"
+            className="flex items-center justify-between rounded-[var(--control-radius)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-3"
           >
             <div className="flex items-center gap-2">
               <Skeleton className="h-5 w-16" />
@@ -162,7 +178,7 @@ export function AvailableCalendars({ accountId, provider }: Props) {
   if (errorMessage) {
     return (
       <div className="space-y-3">
-        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+        <div className="rounded-[var(--control-radius)] border border-[var(--border-control)] bg-[var(--surface-raised)] p-3 text-[13px] text-[var(--text-secondary)]">
           {errorMessage}
         </div>
         <div className="flex justify-end">
@@ -181,7 +197,7 @@ export function AvailableCalendars({ accountId, provider }: Props) {
 
   if (calendars.length === 0) {
     return (
-      <div className="py-4 text-center text-muted-foreground">
+      <div className="py-8 text-center text-[13px] text-[var(--text-secondary)]">
         No available calendars found
       </div>
     );
@@ -189,18 +205,22 @@ export function AvailableCalendars({ accountId, provider }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
+      <div className="overflow-hidden border border-[var(--border-subtle)]">
         {calendars.map((calendar) => (
           <div
             key={calendar.id}
-            className="flex items-center justify-between rounded-md border bg-card p-4"
+            className="flex min-h-[52px] items-center justify-between gap-3 border-t border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 first:border-t-0"
           >
             <div className="flex items-center gap-2">
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: calendar.color }}
+              />
+              <span className="text-[14px]">{calendar.name}</span>
               <Badge variant="outline" className="capitalize">
                 {calendar.accessRole?.toLowerCase() ||
                   (calendar.canEdit ? "owner" : "reader")}
               </Badge>
-              <span className="text-sm">{calendar.name}</span>
             </div>
             <Button
               size="sm"

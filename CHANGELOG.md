@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added persistent Motion-style task defaults for project, status, priority, scheduling, duration, chunks, dates, deadlines, and schedule; new task forms now consume those defaults.
+- Added a user-ready Billing page backed by the existing subscription model, with plan state and included-usage details.
 - Added BullMQ-backed calendar sync, rescheduling, and webhook-renewal queues with a separately deployable worker bundle.
 - Added verified Google Calendar push channels and Microsoft Graph subscriptions, incremental provider sync, and automatic subscription renewal.
 - Added authenticated Redis-backed SSE updates so calendar and task changes refresh connected clients within seconds.
@@ -33,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Finished the ordinary-user Settings experience around Motion's measured layout: matching calendar account/group dialogs, compact auto-scheduling choices, searchable task pickers, integration cards, a unified canvas background, and collapsed advanced-only controls.
+- Removed System and Logs from the user Settings navigation and replaced calendar credential error panels with quiet provider availability feedback.
 - Rebuilt Settings around the measured Motion layout: a compact 230px navigation rail, 57px page header, dense token-based rows, and shared Needt controls throughout.
 - Moved existing Needt-only features into the closest Settings homes without dropping functionality: task sync under Integrations, connector tokens and webhooks under API, import/export and retention under Privacy, and advanced energy rules under Auto-scheduling.
 - Rebranded the application shell, metadata, PWA assets, AI copy, local calendars, and documentation from Flowday to Needt through the shared app configuration.

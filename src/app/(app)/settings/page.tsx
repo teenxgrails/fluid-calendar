@@ -11,12 +11,11 @@ import {
   ChevronLeft,
   Clock3,
   Code2,
+  CreditCard,
   Eye,
   Laptop,
-  Logs,
   Palette,
   Plug,
-  Server,
   SlidersHorizontal,
   UserRound,
 } from "lucide-react";
@@ -25,6 +24,7 @@ import { AIAssistantSettings } from "@/components/settings/AIAssistantSettings";
 import { AccountManager } from "@/components/settings/AccountManager";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { AutoScheduleSettings } from "@/components/settings/AutoScheduleSettings";
+import { BillingSettings } from "@/components/settings/BillingSettings";
 import { CalendarSettings } from "@/components/settings/CalendarSettings";
 import { ConnectorSettings } from "@/components/settings/ConnectorSettings";
 import { CustomizationSettings } from "@/components/settings/CustomizationSettings";
@@ -32,19 +32,15 @@ import { DataSettings } from "@/components/settings/DataSettings";
 import { DesktopSettings } from "@/components/settings/DesktopSettings";
 import { ImportExportSettings } from "@/components/settings/ImportExportSettings";
 import { IntegrationSettings } from "@/components/settings/IntegrationSettings";
-import { LogViewer } from "@/components/settings/LogViewer";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { ScheduleSettings } from "@/components/settings/ScheduleSettings";
 import { SettingsPanelBoundary } from "@/components/settings/SettingsPanelBoundary";
 import { SmartSchedulingSettings } from "@/components/settings/SmartSchedulingSettings";
-import { SystemSettings } from "@/components/settings/SystemSettings";
-import { TaskSyncSettings } from "@/components/settings/TaskSyncSettings";
+import { TaskDefaultsSettings } from "@/components/settings/TaskDefaultsSettings";
 import { TaskUrgencySettings } from "@/components/settings/TaskUrgencySettings";
 import { UserSettings } from "@/components/settings/UserSettings";
 
 import { cn } from "@/lib/utils";
-
-import { useAdmin } from "@/hooks/use-admin";
 
 import { useSettingsStore } from "@/store/settings";
 
@@ -62,14 +58,12 @@ type SettingsTab =
   | "privacy"
   | "ai"
   | "account"
-  | "system"
-  | "logs";
+  | "billing";
 
 interface SettingsNavItem {
   id: SettingsTab;
   label: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  adminOnly?: boolean;
 }
 
 const GENERAL_TABS: SettingsNavItem[] = [
@@ -93,8 +87,7 @@ const GENERAL_TABS: SettingsNavItem[] = [
 
 const ACCOUNT_TABS: SettingsNavItem[] = [
   { id: "account", label: "Account settings", icon: UserRound },
-  { id: "system", label: "System", icon: Server, adminOnly: true },
-  { id: "logs", label: "Logs", icon: Logs, adminOnly: true },
+  { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
 const LEGACY_TAB_MAP: Record<string, SettingsTab> = {
@@ -112,6 +105,7 @@ const LEGACY_TAB_MAP: Record<string, SettingsTab> = {
   connectors: "api",
   "import-export": "privacy",
   accounts: "account",
+  subscription: "billing",
 };
 
 const ALL_TAB_IDS = [...GENERAL_TABS, ...ACCOUNT_TABS].map(({ id }) => id);
@@ -163,15 +157,11 @@ function SettingsNavGroup({
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("calendars");
   const [isHydrated, setIsHydrated] = useState(false);
-  const { isAdmin, isLoading: isAdminLoading } = useAdmin();
   const initializeSettings = useSettingsStore(
     (state) => state.initializeSettings
   );
 
-  const accountTabs = useMemo(
-    () => ACCOUNT_TABS.filter((tab) => !tab.adminOnly || isAdmin),
-    [isAdmin]
-  );
+  const accountTabs = useMemo(() => ACCOUNT_TABS, []);
   const activeLabel =
     [...GENERAL_TABS, ...ACCOUNT_TABS].find((tab) => tab.id === activeTab)
       ?.label ?? "Settings";
@@ -206,22 +196,6 @@ export default function SettingsPage() {
   };
 
   const renderTabContent = () => {
-    if (["system", "logs"].includes(activeTab) && isAdminLoading) {
-      return (
-        <div className="text-[13px] text-[var(--text-secondary)]">
-          Checking access privileges…
-        </div>
-      );
-    }
-
-    if (["system", "logs"].includes(activeTab) && !isAdmin) {
-      return (
-        <div className="text-[13px] text-[var(--text-secondary)]">
-          Administrator access is required for this page.
-        </div>
-      );
-    }
-
     switch (activeTab) {
       case "calendars":
         return (
@@ -240,6 +214,7 @@ export default function SettingsPage() {
       case "task-defaults":
         return (
           <div className="space-y-9">
+            <TaskDefaultsSettings />
             <TaskUrgencySettings />
           </div>
         );
@@ -259,12 +234,7 @@ export default function SettingsPage() {
       case "desktop":
         return <DesktopSettings />;
       case "integrations":
-        return (
-          <div className="space-y-9">
-            <IntegrationSettings />
-            <TaskSyncSettings />
-          </div>
-        );
+        return <IntegrationSettings />;
       case "api":
         return <ConnectorSettings />;
       case "privacy":
@@ -278,10 +248,8 @@ export default function SettingsPage() {
         return <AIAssistantSettings />;
       case "account":
         return <AccountSettings />;
-      case "system":
-        return <SystemSettings />;
-      case "logs":
-        return <LogViewer />;
+      case "billing":
+        return <BillingSettings />;
       default:
         return null;
     }
@@ -314,8 +282,8 @@ export default function SettingsPage() {
           </div>
         </aside>
 
-        <main className="ml-[230px] min-h-screen min-w-0 flex-1 bg-[var(--surface-panel)]">
-          <header className="sticky top-0 z-10 flex h-[57px] items-center border-b border-[var(--border-subtle)] bg-[var(--surface-panel)] px-12">
+        <main className="ml-[230px] min-h-screen min-w-0 flex-1 bg-[var(--surface-canvas)]">
+          <header className="sticky top-0 z-10 flex h-[57px] items-center border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-12">
             <h1 className="text-[18px] font-semibold leading-7">
               {activeLabel}
             </h1>

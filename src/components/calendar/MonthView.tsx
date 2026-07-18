@@ -23,6 +23,7 @@ import { newDate } from "@/lib/date-utils";
 import { useTaskMutations } from "@/hooks/useTaskMutations";
 
 import { useCalendarStore } from "@/store/calendar";
+import { useCalendarVisibilityStore } from "@/store/calendar-visibility";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
 
@@ -43,6 +44,9 @@ interface MonthViewProps {
 export function MonthView({ currentDate, onDateClick }: MonthViewProps) {
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
+  const showTasksOnCalendar = useCalendarVisibilityStore(
+    (state) => state.showTasksOnCalendar
+  );
   const { user: userSettings } = useSettingsStore();
   const { updateTask, completeTask, deleteTask } = useTaskMutations();
   const [selectedEvent, setSelectedEvent] = useState<Partial<CalendarEvent>>();
@@ -83,7 +87,7 @@ export function MonthView({ currentDate, onDateClick }: MonthViewProps) {
       const items = getAllCalendarItems(arg.start, arg.end);
       const formattedItems = items
         .filter((item) => {
-          if (item.feedId === "tasks") return true;
+          if (item.feedId === "tasks") return showTasksOnCalendar;
           const feed = feeds.find((f) => f.id === item.feedId);
           return feed?.enabled;
         })
@@ -122,7 +126,7 @@ export function MonthView({ currentDate, onDateClick }: MonthViewProps) {
 
       setEvents(formattedItems);
     },
-    [feeds, getAllCalendarItems]
+    [feeds, getAllCalendarItems, showTasksOnCalendar]
   );
 
   // Initial data load

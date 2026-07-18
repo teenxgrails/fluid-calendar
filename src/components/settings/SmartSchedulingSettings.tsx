@@ -205,226 +205,237 @@ export function SmartSchedulingSettings() {
 
   if (isLoading) {
     return (
-      <SettingsSection
-        title="Energy & focus"
-        description="Loading the energy profile and focus preferences."
-      >
-        <div className="text-sm text-muted-foreground">Loading...</div>
-      </SettingsSection>
+      <div className="max-w-[896px] border-t border-[var(--border-subtle)] pt-4 text-[13px] text-[var(--text-secondary)]">
+        Loading advanced scheduling…
+      </div>
     );
   }
 
   return (
-    <SettingsSection
-      title="Energy & focus"
-      description="Tune the energy curve and focus constraints used by the planner."
-    >
-      <SettingRow
-        label="Energy Profile"
-        description="Daily windows that tell the scheduler when deep work, admin, or recovery blocks fit best."
+    <details className="group max-w-[896px] border-t border-[var(--border-subtle)] pt-4">
+      <summary className="cursor-pointer list-none text-[14px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+        Advanced scheduling
+      </summary>
+      <SettingsSection
+        title="Energy & focus"
+        description="Tune the energy curve and focus constraints used by the planner."
       >
-        <div className="space-y-3">
-          {sortedEnergyProfile.map((window) => {
-            const index = energyProfile.indexOf(window);
-            return (
-              <div
-                key={`${window.dayOfWeek}-${window.startTime}-${window.endTime}-${index}`}
-                className="grid gap-2 rounded-md border p-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto]"
-              >
-                <Select
-                  value={window.dayOfWeek.toString()}
-                  onValueChange={(value) =>
-                    updateEnergyWindow(index, { dayOfWeek: Number(value) })
-                  }
+        <SettingRow
+          label="Energy Profile"
+          description="Daily windows that tell the scheduler when deep work, admin, or recovery blocks fit best."
+        >
+          <div className="space-y-3">
+            {sortedEnergyProfile.map((window) => {
+              const index = energyProfile.indexOf(window);
+              return (
+                <div
+                  key={`${window.dayOfWeek}-${window.startTime}-${window.endTime}-${index}`}
+                  className="grid gap-2 rounded-md border p-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto]"
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DAYS.map((day) => (
-                      <SelectItem key={day.value} value={day.value.toString()}>
-                        {day.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={window.startTime}
-                  onValueChange={(value) =>
-                    updateEnergyWindow(index, { startTime: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIME_OPTIONS.map((time) => (
-                      <SelectItem key={time.value} value={time.value}>
-                        {time.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={window.endTime}
-                  onValueChange={(value) =>
-                    updateEnergyWindow(index, { endTime: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIME_OPTIONS.map((time) => (
-                      <SelectItem key={time.value} value={time.value}>
-                        {time.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={window.energyLevel}
-                  onValueChange={(value) =>
-                    updateEnergyWindow(index, {
-                      energyLevel: value as SchedulingEnergyLevel,
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="HIGH">High</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="LOW">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeEnergyWindow(index)}
-                  aria-label="Remove energy window"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            );
-          })}
-          <Button type="button" variant="outline" onClick={addEnergyWindow}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Window
+                  <Select
+                    value={window.dayOfWeek.toString()}
+                    onValueChange={(value) =>
+                      updateEnergyWindow(index, { dayOfWeek: Number(value) })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DAYS.map((day) => (
+                        <SelectItem
+                          key={day.value}
+                          value={day.value.toString()}
+                        >
+                          {day.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={window.startTime}
+                    onValueChange={(value) =>
+                      updateEnergyWindow(index, { startTime: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIME_OPTIONS.map((time) => (
+                        <SelectItem key={time.value} value={time.value}>
+                          {time.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={window.endTime}
+                    onValueChange={(value) =>
+                      updateEnergyWindow(index, { endTime: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIME_OPTIONS.map((time) => (
+                        <SelectItem key={time.value} value={time.value}>
+                          {time.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={window.energyLevel}
+                    onValueChange={(value) =>
+                      updateEnergyWindow(index, {
+                        energyLevel: value as SchedulingEnergyLevel,
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="LOW">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeEnergyWindow(index)}
+                    aria-label="Remove energy window"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              );
+            })}
+            <Button type="button" variant="outline" onClick={addEnergyWindow}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Window
+            </Button>
+          </div>
+        </SettingRow>
+
+        <SettingRow
+          label="Break & estimate buffers"
+          description="Set the minimum break and time-blindness multiplier for scheduled work."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="minBreakMinutes">Min break</Label>
+              <Input
+                id="minBreakMinutes"
+                type="number"
+                min={0}
+                value={preferences.minBreakMinutes}
+                onChange={(event) =>
+                  updatePreference(
+                    "minBreakMinutes",
+                    Number(event.target.value)
+                  )
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bufferMultiplier">Multiplier</Label>
+              <Input
+                id="bufferMultiplier"
+                type="number"
+                min={1}
+                step={0.1}
+                value={preferences.bufferMultiplier}
+                onChange={(event) =>
+                  updatePreference(
+                    "bufferMultiplier",
+                    Number(event.target.value)
+                  )
+                }
+              />
+            </div>
+          </div>
+        </SettingRow>
+
+        <SettingRow
+          label="Deep Work Limit"
+          description="Daily maximum for high-energy focus blocks and the latest hard stop."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="maxDeepWorkPerDay">Max deep work minutes</Label>
+              <Input
+                id="maxDeepWorkPerDay"
+                type="number"
+                min={0}
+                value={preferences.maxDeepWorkPerDay}
+                onChange={(event) =>
+                  updatePreference(
+                    "maxDeepWorkPerDay",
+                    Number(event.target.value)
+                  )
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hardStopTime">Hard stop</Label>
+              <Input
+                id="hardStopTime"
+                value={preferences.hardStopTime}
+                onChange={(event) =>
+                  updatePreference("hardStopTime", event.target.value)
+                }
+              />
+            </div>
+          </div>
+        </SettingRow>
+
+        <SettingRow
+          label="ADHD Options"
+          description="Cosmetic body-doubling prompts, batching, and automatic miss recovery."
+        >
+          <div className="space-y-3">
+            <label className="flex items-center justify-between gap-4">
+              <span className="text-sm">Auto-reschedule missed work</span>
+              <Switch
+                checked={preferences.autoRescheduleOnMiss}
+                onCheckedChange={(checked) =>
+                  updatePreference("autoRescheduleOnMiss", checked)
+                }
+              />
+            </label>
+            <label className="flex items-center justify-between gap-4">
+              <span className="text-sm">Body-doubling reminders</span>
+              <Switch
+                checked={preferences.enableBodyDoubling}
+                onCheckedChange={(checked) =>
+                  updatePreference("enableBodyDoubling", checked)
+                }
+              />
+            </label>
+            <label className="flex items-center justify-between gap-4">
+              <span className="text-sm">Batch similar task contexts</span>
+              <Switch
+                checked={preferences.enableTaskBatching}
+                onCheckedChange={(checked) =>
+                  updatePreference("enableTaskBatching", checked)
+                }
+              />
+            </label>
+          </div>
+        </SettingRow>
+
+        <div className="flex justify-end">
+          <Button type="button" onClick={saveSettings} disabled={isSaving}>
+            <Save className="mr-2 h-4 w-4" />
+            {isSaving ? "Saving..." : "Save Smart Scheduling"}
           </Button>
         </div>
-      </SettingRow>
-
-      <SettingRow
-        label="Break & estimate buffers"
-        description="Set the minimum break and time-blindness multiplier for scheduled work."
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="minBreakMinutes">Min break</Label>
-            <Input
-              id="minBreakMinutes"
-              type="number"
-              min={0}
-              value={preferences.minBreakMinutes}
-              onChange={(event) =>
-                updatePreference("minBreakMinutes", Number(event.target.value))
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="bufferMultiplier">Multiplier</Label>
-            <Input
-              id="bufferMultiplier"
-              type="number"
-              min={1}
-              step={0.1}
-              value={preferences.bufferMultiplier}
-              onChange={(event) =>
-                updatePreference("bufferMultiplier", Number(event.target.value))
-              }
-            />
-          </div>
-        </div>
-      </SettingRow>
-
-      <SettingRow
-        label="Deep Work Limit"
-        description="Daily maximum for high-energy focus blocks and the latest hard stop."
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="maxDeepWorkPerDay">Max deep work minutes</Label>
-            <Input
-              id="maxDeepWorkPerDay"
-              type="number"
-              min={0}
-              value={preferences.maxDeepWorkPerDay}
-              onChange={(event) =>
-                updatePreference(
-                  "maxDeepWorkPerDay",
-                  Number(event.target.value)
-                )
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="hardStopTime">Hard stop</Label>
-            <Input
-              id="hardStopTime"
-              value={preferences.hardStopTime}
-              onChange={(event) =>
-                updatePreference("hardStopTime", event.target.value)
-              }
-            />
-          </div>
-        </div>
-      </SettingRow>
-
-      <SettingRow
-        label="ADHD Options"
-        description="Cosmetic body-doubling prompts, batching, and automatic miss recovery."
-      >
-        <div className="space-y-3">
-          <label className="flex items-center justify-between gap-4">
-            <span className="text-sm">Auto-reschedule missed work</span>
-            <Switch
-              checked={preferences.autoRescheduleOnMiss}
-              onCheckedChange={(checked) =>
-                updatePreference("autoRescheduleOnMiss", checked)
-              }
-            />
-          </label>
-          <label className="flex items-center justify-between gap-4">
-            <span className="text-sm">Body-doubling reminders</span>
-            <Switch
-              checked={preferences.enableBodyDoubling}
-              onCheckedChange={(checked) =>
-                updatePreference("enableBodyDoubling", checked)
-              }
-            />
-          </label>
-          <label className="flex items-center justify-between gap-4">
-            <span className="text-sm">Batch similar task contexts</span>
-            <Switch
-              checked={preferences.enableTaskBatching}
-              onCheckedChange={(checked) =>
-                updatePreference("enableTaskBatching", checked)
-              }
-            />
-          </label>
-        </div>
-      </SettingRow>
-
-      <div className="flex justify-end">
-        <Button type="button" onClick={saveSettings} disabled={isSaving}>
-          <Save className="mr-2 h-4 w-4" />
-          {isSaving ? "Saving..." : "Save Smart Scheduling"}
-        </Button>
-      </div>
-    </SettingsSection>
+      </SettingsSection>
+    </details>
   );
 }

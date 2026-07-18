@@ -23,6 +23,7 @@ import { newDate } from "@/lib/date-utils";
 import { useTaskMutations } from "@/hooks/useTaskMutations";
 
 import { useCalendarStore } from "@/store/calendar";
+import { useCalendarVisibilityStore } from "@/store/calendar-visibility";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
 
@@ -47,6 +48,9 @@ interface DayViewProps {
 export function DayView({ currentDate }: DayViewProps) {
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
+  const showTasksOnCalendar = useCalendarVisibilityStore(
+    (state) => state.showTasksOnCalendar
+  );
   const { user: userSettings, calendar: calendarSettings } = useSettingsStore();
   const { createTask, updateTask, completeTask, deleteTask } =
     useTaskMutations();
@@ -100,7 +104,7 @@ export function DayView({ currentDate }: DayViewProps) {
       const items = getAllCalendarItems(arg.start, arg.end);
       const formattedItems = items
         .filter((item) => {
-          if (item.feedId === "tasks") return true;
+          if (item.feedId === "tasks") return showTasksOnCalendar;
           const feed = feeds.find((f) => f.id === item.feedId);
           return feed?.enabled;
         })
@@ -134,7 +138,7 @@ export function DayView({ currentDate }: DayViewProps) {
 
       setEvents(formattedItems);
     },
-    [feeds, getAllCalendarItems]
+    [feeds, getAllCalendarItems, showTasksOnCalendar]
   );
 
   // Initial data load

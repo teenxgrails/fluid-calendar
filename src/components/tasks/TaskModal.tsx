@@ -65,6 +65,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { format, newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
+import { readTaskDefaults, resolveTaskDefaultDate } from "@/lib/task-defaults";
 import { cn } from "@/lib/utils";
 
 import { useProjectStore } from "@/store/project";
@@ -208,19 +209,22 @@ export function TaskModal({
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = useCallback(() => {
+    const defaults = readTaskDefaults();
     setTitle("");
     setDescription("");
-    setStatus(TaskStatus.TODO);
+    setStatus(defaults.status);
     setDueDate("");
-    setStartDate("");
-    setDuration("");
-    setEstimatedMinutes("");
+    setStartDate(resolveTaskDefaultDate(defaults.startPreset));
+    setDuration(String(defaults.durationMinutes));
+    setEstimatedMinutes(String(defaults.durationMinutes));
     setEstOptimistic("");
-    setEstLikely("");
+    setEstLikely(String(defaults.durationMinutes));
     setEstPessimistic("");
-    setMinChunkMinutes("");
+    setMinChunkMinutes(
+      defaults.minChunkMinutes > 0 ? String(defaults.minChunkMinutes) : ""
+    );
     setMaxChunkMinutes("");
-    setDeadline("");
+    setDeadline(resolveTaskDefaultDate(defaults.deadlinePreset, true));
     setContextTag("");
     setEnergyLevel("");
     setEnergyRequired(SchedulingEnergyLevel.MEDIUM);
@@ -228,13 +232,16 @@ export function TaskModal({
     setSelectedTagIds([]);
     setNewTagName("");
     setNewTagColor("#E5E7EB");
-    setProjectId(initialProjectId ?? null);
+    setProjectId(
+      initialProjectId ??
+        (defaults.projectId === "none" ? null : defaults.projectId)
+    );
     setIsRecurring(false);
     setRecurrenceRule(undefined);
-    setIsAutoScheduled(true);
-    setScheduleLocked(false);
+    setIsAutoScheduled(defaults.autoScheduled);
+    setScheduleLocked(defaults.hardDeadline);
     setIsFrozen(false);
-    setPriority(null);
+    setPriority(defaults.priority === "none" ? null : defaults.priority);
     setPriorityLevel(SchedulingTaskPriority.MEDIUM);
     setIsAdvancedOpen(false);
     setIsTemplateMenuOpen(false);

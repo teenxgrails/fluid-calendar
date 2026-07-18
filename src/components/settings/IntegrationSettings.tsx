@@ -1,154 +1,139 @@
-import { CalendarDays } from "lucide-react";
-import { SiGooglecalendar } from "react-icons/si";
+"use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { CheckSquare2, Code2, Mail, Webhook } from "lucide-react";
+import { FaApple, FaMicrosoft } from "react-icons/fa";
+import { SiGooglecalendar } from "react-icons/si";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
 
 import { useSettingsStore } from "@/store/settings";
 
-import { SettingRow, SettingsSection } from "./SettingsSection";
-
-const SYNC_INTERVALS = [1, 5, 10, 15, 30, 60];
+interface IntegrationCard {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  action: string;
+  onClick: () => void;
+  status?: string;
+}
 
 export function IntegrationSettings() {
-  const { integrations, updateIntegrationSettings } = useSettingsStore();
+  const { accounts } = useSettingsStore();
+  const hasGoogle = accounts.some((account) => account.provider === "GOOGLE");
+  const hasOutlook = accounts.some((account) => account.provider === "OUTLOOK");
+  const hasApple = accounts.some((account) => account.provider === "CALDAV");
+
+  const goTo = (hash: string) => {
+    window.location.hash = hash;
+  };
+
+  const integrations: IntegrationCard[] = [
+    {
+      id: "google-calendar",
+      name: "Google Calendar",
+      description: "Sync events and scheduled task blocks.",
+      icon: <SiGooglecalendar className="h-8 w-8" />,
+      action: hasGoogle ? "Manage" : "Connect",
+      status: hasGoogle ? "Connected" : undefined,
+      onClick: () => goTo("calendars"),
+    },
+    {
+      id: "outlook-calendar",
+      name: "Outlook Calendar",
+      description: "Keep Microsoft calendars in sync with Needt.",
+      icon: <FaMicrosoft className="h-8 w-8 text-[#6CA9FF]" />,
+      action: hasOutlook ? "Manage" : "Connect",
+      status: hasOutlook ? "Connected" : undefined,
+      onClick: () => goTo("calendars"),
+    },
+    {
+      id: "icloud-calendar",
+      name: "iCloud Calendar",
+      description: "Connect Apple Calendar with an app-specific password.",
+      icon: <FaApple className="h-8 w-8 text-[var(--text-secondary)]" />,
+      action: hasApple ? "Manage" : "Connect",
+      status: hasApple ? "Connected" : undefined,
+      onClick: () => goTo("calendars"),
+    },
+    {
+      id: "task-providers",
+      name: "External Tasks",
+      description: "Import Google Tasks, Microsoft To Do, and CalDAV tasks.",
+      icon: <CheckSquare2 className="h-8 w-8 text-[var(--text-secondary)]" />,
+      action: "Configure",
+      onClick: () =>
+        toast.info(
+          "Connect a calendar account first, then choose its task lists"
+        ),
+    },
+    {
+      id: "zapier",
+      name: "Zapier",
+      description: "Connect Needt with thousands of other apps.",
+      icon: (
+        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#FF4F00] text-sm font-bold text-white">
+          zap
+        </span>
+      ),
+      action: "Coming soon",
+      onClick: () => toast.info("Zapier integration is coming soon"),
+    },
+    {
+      id: "email",
+      name: "Email",
+      description: "Turn an email into a task in your Needt inbox.",
+      icon: <Mail className="h-8 w-8 text-[var(--text-secondary)]" />,
+      action: "See how",
+      onClick: () => toast.info("Email-to-task addresses are coming soon"),
+    },
+    {
+      id: "api",
+      name: "Needt API",
+      description: "Create tasks and read your schedule from local tools.",
+      icon: <Code2 className="h-8 w-8 text-[var(--text-secondary)]" />,
+      action: "Configure",
+      onClick: () => goTo("api"),
+    },
+    {
+      id: "webhooks",
+      name: "Webhooks",
+      description: "Notify automations when schedules or tasks change.",
+      icon: <Webhook className="h-8 w-8 text-[var(--text-secondary)]" />,
+      action: "Configure",
+      onClick: () => goTo("api"),
+    },
+  ];
 
   return (
-    <SettingsSection
-      title="Calendar integrations"
-      description="Control background synchronization for connected calendar accounts."
-    >
-      <SettingRow
-        label="Google Calendar"
-        description="Keep changes synchronized with connected Google calendars."
-      >
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <SiGooglecalendar className="h-4 w-4 text-[var(--text-secondary)]" />
-            <span className="flex-1 text-[13px]">Enable integration</span>
-            <Switch
-              checked={integrations.googleCalendar.enabled}
-              onCheckedChange={(enabled) =>
-                updateIntegrationSettings({
-                  googleCalendar: {
-                    ...integrations.googleCalendar,
-                    enabled,
-                  },
-                })
-              }
-            />
+    <div className="grid max-w-[1100px] gap-4 md:grid-cols-2">
+      {integrations.map((integration) => (
+        <article
+          key={integration.id}
+          className="flex min-h-[180px] flex-col rounded-[var(--control-radius)] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4"
+        >
+          <div className="flex items-start justify-between gap-4">
+            {integration.icon}
+            {integration.status && (
+              <span className="rounded-full bg-[var(--surface-control)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]">
+                {integration.status}
+              </span>
+            )}
           </div>
-          {integrations.googleCalendar.enabled && (
-            <div className="grid gap-3 border-t border-[var(--border-subtle)] pt-3 sm:grid-cols-2">
-              <label className="flex items-center justify-between gap-3 text-[13px]">
-                Automatic sync
-                <Switch
-                  checked={integrations.googleCalendar.autoSync}
-                  onCheckedChange={(autoSync) =>
-                    updateIntegrationSettings({
-                      googleCalendar: {
-                        ...integrations.googleCalendar,
-                        autoSync,
-                      },
-                    })
-                  }
-                />
-              </label>
-              <Select
-                value={String(integrations.googleCalendar.syncInterval)}
-                onValueChange={(value) =>
-                  updateIntegrationSettings({
-                    googleCalendar: {
-                      ...integrations.googleCalendar,
-                      syncInterval: Number(value),
-                    },
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SYNC_INTERVALS.map((minutes) => (
-                    <SelectItem key={minutes} value={String(minutes)}>
-                      Every {minutes} {minutes === 1 ? "minute" : "minutes"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-      </SettingRow>
-
-      <SettingRow
-        label="Outlook Calendar"
-        description="Keep changes synchronized with connected Microsoft calendars."
-      >
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <CalendarDays className="h-4 w-4 text-[var(--text-secondary)]" />
-            <span className="flex-1 text-[13px]">Enable integration</span>
-            <Switch
-              checked={integrations.outlookCalendar.enabled}
-              onCheckedChange={(enabled) =>
-                updateIntegrationSettings({
-                  outlookCalendar: {
-                    ...integrations.outlookCalendar,
-                    enabled,
-                  },
-                })
-              }
-            />
-          </div>
-          {integrations.outlookCalendar.enabled && (
-            <div className="grid gap-3 border-t border-[var(--border-subtle)] pt-3 sm:grid-cols-2">
-              <label className="flex items-center justify-between gap-3 text-[13px]">
-                Automatic sync
-                <Switch
-                  checked={integrations.outlookCalendar.autoSync}
-                  onCheckedChange={(autoSync) =>
-                    updateIntegrationSettings({
-                      outlookCalendar: {
-                        ...integrations.outlookCalendar,
-                        autoSync,
-                      },
-                    })
-                  }
-                />
-              </label>
-              <Select
-                value={String(integrations.outlookCalendar.syncInterval)}
-                onValueChange={(value) =>
-                  updateIntegrationSettings({
-                    outlookCalendar: {
-                      ...integrations.outlookCalendar,
-                      syncInterval: Number(value),
-                    },
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SYNC_INTERVALS.map((minutes) => (
-                    <SelectItem key={minutes} value={String(minutes)}>
-                      Every {minutes} {minutes === 1 ? "minute" : "minutes"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-      </SettingRow>
-    </SettingsSection>
+          <h2 className="mt-4 text-[15px] font-semibold">{integration.name}</h2>
+          <p className="mt-1 flex-1 text-[13px] leading-5 text-[var(--text-secondary)]">
+            {integration.description}
+          </p>
+          <Button
+            variant="outline"
+            onClick={integration.onClick}
+            className="mt-4 w-full"
+          >
+            {integration.action}
+          </Button>
+        </article>
+      ))}
+    </div>
   );
 }

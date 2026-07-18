@@ -1,10 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+"use client";
 
-import { AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { FaApple, FaMicrosoft } from "react-icons/fa";
+import { SiGooglecalendar } from "react-icons/si";
+import { toast } from "sonner";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { logger } from "@/lib/logger";
 
@@ -12,228 +27,213 @@ import { useSettingsStore } from "@/store/settings";
 
 import { AvailableCalendars } from "./AvailableCalendars";
 import { CalDAVAccountForm } from "./CalDAVAccountForm";
-import { SettingRow, SettingsSection } from "./SettingsSection";
+import { SettingsSection } from "./SettingsSection";
 
 const LOG_SOURCE = "AccountManager";
-
-const DEFAULT_INTEGRATION_STATUS: IntegrationStatus = {
-  google: { configured: false },
-  outlook: { configured: false },
-};
 
 interface IntegrationStatus {
   google: { configured: boolean };
   outlook: { configured: boolean };
 }
 
+const DEFAULT_INTEGRATION_STATUS: IntegrationStatus = {
+  google: { configured: false },
+  outlook: { configured: false },
+};
+
+function ProviderIcon({
+  provider,
+  className = "h-4 w-4",
+}: {
+  provider: "GOOGLE" | "OUTLOOK" | "CALDAV";
+  className?: string;
+}) {
+  if (provider === "GOOGLE") {
+    return <SiGooglecalendar className={className} aria-hidden="true" />;
+  }
+  if (provider === "OUTLOOK") {
+    return (
+      <FaMicrosoft
+        className={`${className} text-[#6CA9FF]`}
+        aria-hidden="true"
+      />
+    );
+  }
+  return (
+    <FaApple
+      className={`${className} text-[var(--text-secondary)]`}
+      aria-hidden="true"
+    />
+  );
+}
+
 export function AccountManager() {
-  const { accounts, refreshAccounts, removeAccount } = useSettingsStore();
+  const { accounts, calendar, refreshAccounts } = useSettingsStore();
   const connectedAccounts = Array.isArray(accounts) ? accounts : [];
-  const [showAvailableFor, setShowAvailableFor] = useState<string | null>(null);
+  const [calendarAccountId, setCalendarAccountId] = useState<string | null>(
+    null
+  );
   const [showCalDAVForm, setShowCalDAVForm] = useState(false);
   const [integrationStatus, setIntegrationStatus] = useState<IntegrationStatus>(
     DEFAULT_INTEGRATION_STATUS
   );
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    refreshAccounts();
+    void refreshAccounts();
   }, [refreshAccounts]);
 
   useEffect(() => {
-    // Fetch integration status
     fetch("/api/integration-status")
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error("Failed to load calendar connection status");
-        }
-        return (await res.json()) as unknown;
+      .then(async (response) => {
+        if (!response.ok) return DEFAULT_INTEGRATION_STATUS;
+        return (await response.json()) as IntegrationStatus;
       })
-      .then((data) => {
-        const status =
-          data && typeof data === "object"
-            ? (data as Partial<IntegrationStatus>)
-            : DEFAULT_INTEGRATION_STATUS;
-        setIntegrationStatus({
-          google: {
-            configured: status.google?.configured === true,
-          },
-          outlook: {
-            configured: status.outlook?.configured === true,
-          },
-        });
-        setIsLoading(false);
-      })
+      .then((status) => setIntegrationStatus(status))
       .catch((error) => {
         logger.error(
-          "Failed to fetch integration status",
+          "Failed to load calendar provider status",
           { error: error instanceof Error ? error.message : "Unknown error" },
           LOG_SOURCE
         );
-        setIsLoading(false);
       });
   }, []);
 
-  const handleConnect = (provider: "GOOGLE" | "OUTLOOK") => {
-    if (provider === "GOOGLE") {
-      window.location.href = `/api/calendar/google/auth`;
-    } else if (provider === "OUTLOOK") {
-      window.location.href = `/api/calendar/outlook/auth`;
-    }
-  };
-
-  const handleRemove = async (accountId: string) => {
-    try {
-      await removeAccount(accountId);
-    } catch (error) {
-      logger.error(
-        "Failed to remove calendar account",
-        {
-          accountId,
-          error: error instanceof Error ? error.message : "Unknown error",
-        },
-        LOG_SOURCE
+  const connectProvider = (provider: "GOOGLE" | "OUTLOOK") => {
+    const configured =
+      provider === "GOOGLE"
+        ? integrationStatus.google.configured
+        : integrationStatus.outlook.configured;
+    if (!configured) {
+      toast.info(
+        `${provider === "GOOGLE" ? "Google" : "Outlook"} Calendar is not configured yet`
       );
+      return;
     }
+    window.location.href =
+      provider === "GOOGLE"
+        ? "/api/calendar/google/auth"
+        : "/api/calendar/outlook/auth";
   };
 
-  const toggleAvailableCalendars = useCallback((accountId: string) => {
-    setShowAvailableFor((current) =>
-      current === accountId ? null : accountId
-    );
-  }, []);
-
-  const handleCalDAVSuccess = () => {
-    setShowCalDAVForm(false);
-    refreshAccounts();
-  };
+  const selectedAccount = connectedAccounts.find(
+    (account) => account.id === calendarAccountId
+  );
 
   return (
-    <SettingsSection
-      title="Connected calendars"
-      description="Connect calendar accounts, choose the calendars to show, or remove an account."
-    >
-      {!integrationStatus.google.configured && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Missing Google Credentials</AlertTitle>
-          <AlertDescription>
-            Add Google credentials in System settings to connect Google
-            Calendar.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {!integrationStatus.outlook.configured && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Missing Outlook Credentials</AlertTitle>
-          <AlertDescription>
-            Add Outlook credentials in System settings to connect Outlook
-            Calendar.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <SettingRow
-        label="Add account"
-        description="Connect Google, Outlook, or Apple / iCloud Calendar."
-      >
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => handleConnect("GOOGLE")}
-            disabled={!integrationStatus.google.configured || isLoading}
-          >
-            Connect Google Calendar
-          </Button>
-          <Button
-            onClick={() => handleConnect("OUTLOOK")}
-            disabled={!integrationStatus.outlook.configured || isLoading}
-          >
-            Connect Outlook Calendar
-          </Button>
-          <Button onClick={() => setShowCalDAVForm(true)} variant="outline">
-            Connect Apple / iCloud Calendar
-          </Button>
-        </div>
-      </SettingRow>
-
-      {showCalDAVForm && (
-        <SettingRow
-          label="Apple / iCloud Calendar"
-          description="Use an app-specific password from your Apple ID account."
-        >
-          <CalDAVAccountForm
-            onSuccess={handleCalDAVSuccess}
-            onCancel={() => setShowCalDAVForm(false)}
-          />
-        </SettingRow>
-      )}
-
-      <div className="space-y-5">
-        {connectedAccounts.map((account) => (
-          <div key={account.id} className="space-y-4">
-            <SettingRow
-              label={`${account.provider === "CALDAV" ? "Apple / iCloud" : account.provider[0] + account.provider.slice(1).toLowerCase()} Calendar`}
-              description={account.email}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant={
-                      account.provider === "GOOGLE"
-                        ? "default"
-                        : account.provider === "OUTLOOK"
-                          ? "secondary"
-                          : "outline"
-                    }
-                    className="capitalize"
-                  >
-                    {account.provider.toLowerCase()}
-                  </Badge>
-                  <span className="text-sm font-medium">{account.email}</span>
-                  {account.provider === "CALDAV" && account.caldavUrl && (
-                    <span
-                      className="text-muted-foreground max-w-full truncate text-xs"
-                      title={account.caldavUrl}
-                    >
-                      {account.caldavUrl}
+    <>
+      <SettingsSection title="Accounts">
+        <div className="overflow-hidden border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+          {connectedAccounts.length === 0 ? (
+            <div className="flex min-h-[58px] items-center px-4 text-[13px] text-[var(--text-secondary)]">
+              No calendar accounts connected yet.
+            </div>
+          ) : (
+            connectedAccounts.map((account) => {
+              const isMain =
+                account.calendars.some(
+                  (feed) => feed.id === calendar.defaultCalendarId
+                ) ||
+                (!calendar.defaultCalendarId &&
+                  account.id === connectedAccounts[0]?.id);
+              return (
+                <button
+                  key={account.id}
+                  type="button"
+                  onClick={() => setCalendarAccountId(account.id)}
+                  className="flex min-h-[58px] w-full items-center gap-3 border-t border-[var(--border-subtle)] px-4 text-left transition-colors first:border-t-0 hover:bg-[var(--surface-hover)]"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-control)]">
+                    <ProviderIcon provider={account.provider} />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[14px]">
+                    {account.email}
+                  </span>
+                  {isMain && (
+                    <span className="rounded-full bg-[var(--surface-control)] px-2 py-0.5 text-[12px] text-[var(--text-secondary)]">
+                      Main Calendar
                     </span>
                   )}
-                  <Badge variant="outline" className="text-xs">
-                    {account.calendars.length} calendars
-                  </Badge>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toggleAvailableCalendars(account.id)}
-                  >
-                    {showAvailableFor === account.id ? "Hide" : "Show"}{" "}
-                    Calendars
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleRemove(account.id)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            </SettingRow>
-            {showAvailableFor === account.id && (
-              <div className="border-t border-[#2B2F31] pt-5 md:pl-[calc(50%+0.75rem)]">
-                <AvailableCalendars
-                  accountId={account.id}
-                  provider={account.provider}
-                />
-              </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="mt-3 flex h-8 items-center gap-2 rounded-[var(--control-radius)] px-2 text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            >
+              <Plus className="h-4 w-4" />
+              Add account
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[310px]">
+            <DropdownMenuItem
+              onSelect={() => connectProvider("GOOGLE")}
+              className="min-h-10 rounded-[var(--control-radius)] px-3 text-[14px]"
+            >
+              <SiGooglecalendar className="h-5 w-5" />
+              Add Google Calendar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => connectProvider("OUTLOOK")}
+              className="min-h-10 rounded-[var(--control-radius)] px-3 text-[14px]"
+            >
+              <FaMicrosoft className="h-5 w-5 text-[#6CA9FF]" />
+              Add Outlook Calendar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setShowCalDAVForm(true)}
+              className="min-h-10 rounded-[var(--control-radius)] px-3 text-[14px]"
+            >
+              <FaApple className="h-5 w-5 text-[var(--text-secondary)]" />
+              Add iCloud Calendar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SettingsSection>
+
+      <Dialog
+        open={Boolean(selectedAccount)}
+        onOpenChange={(open) => !open && setCalendarAccountId(null)}
+      >
+        <DialogContent className="max-h-[min(720px,calc(100dvh-32px))] max-w-[620px] overflow-y-auto p-0">
+          <DialogHeader className="border-b border-[var(--border-subtle)] p-5 pr-12">
+            <DialogTitle>Manage Calendars</DialogTitle>
+            <DialogDescription>
+              {selectedAccount?.email || "Connected calendar account"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-5">
+            {selectedAccount && (
+              <AvailableCalendars
+                accountId={selectedAccount.id}
+                provider={selectedAccount.provider}
+              />
             )}
           </div>
-        ))}
-      </div>
-    </SettingsSection>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCalDAVForm} onOpenChange={setShowCalDAVForm}>
+        <DialogContent className="max-h-[min(760px,calc(100dvh-32px))] max-w-[680px] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Connect iCloud Calendar</DialogTitle>
+            <DialogDescription>
+              Use an app-specific password from your Apple ID account.
+            </DialogDescription>
+          </DialogHeader>
+          <CalDAVAccountForm
+            onSuccess={() => {
+              setShowCalDAVForm(false);
+              void refreshAccounts();
+            }}
+            onCancel={() => setShowCalDAVForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
