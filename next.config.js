@@ -20,6 +20,11 @@ const nextConfig = {
 
   // Needt has one unified build with the standard Next.js extensions.
   pageExtensions: ["ts", "tsx", "js", "jsx"],
+
+  // isomorphic-dompurify uses jsdom on the server. Keep both packages outside
+  // the route bundle so jsdom can resolve its runtime assets normally while
+  // Next standalone output still traces them into the image.
+  serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
 };
 
 module.exports = nextConfig;

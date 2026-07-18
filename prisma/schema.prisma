@@ -21,6 +21,7 @@ model ConnectedAccount {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   calendars      CalendarFeed[]
+  mailAccounts   MailAccount[]
   // CalDAV specific fields
   caldavUrl      String? // Base URL for CalDAV server
   caldavUsername String? // Username for Basic Auth
@@ -105,6 +106,7 @@ model User {
   tasks                 Task[]
   projects              Project[]
   connectedAccounts     ConnectedAccount[]
+  mailAccounts          MailAccount[]
   tags                  Tag[]
   JobRecord             JobRecord[]
   taskProviders         TaskProvider[]
@@ -201,6 +203,52 @@ model CalendarEvent {
   @@index([externalEventId])
   @@index([masterEventId])
   @@index([recurringEventId])
+}
+
+model MailAccount {
+  id                   String            @id @default(cuid())
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider             MailProvider
+  address              String
+  encryptedCredentials String?
+  connectionRef        String?
+  connection           ConnectedAccount? @relation(fields: [connectionRef], references: [id], onDelete: SetNull)
+  status               MailAccountStatus @default(ACTIVE)
+  syncCursor           String?
+  lastSyncAt           DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  messages             MailMessage[]
+
+  @@unique([userId, provider, address])
+  @@index([userId])
+  @@index([connectionRef])
+  @@index([status])
+}
+
+model MailMessage {
+  id          String      @id @default(cuid())
+  accountId   String
+  account     MailAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  externalId  String
+  threadId    String?
+  fromName    String?
+  fromAddress String?
+  toAddresses Json
+  subject     String
+  snippet     String
+  date        DateTime
+  isRead      Boolean     @default(false)
+  isArchived  Boolean     @default(false)
+  labels      Json
+  bodyHtml    String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([accountId, externalId])
+  @@index([accountId, date])
+  @@index([accountId, isRead, isArchived])
 }
 
 model Project {
@@ -541,7 +589,7 @@ model AiMessage {
   content        String
   toolName       String?
   toolPayload    Json?
-  requiresConfirm Boolean       @default(false)
+  requiresConfirm Boolean        @default(false)
   createdAt      DateTime      @default(now())
 
   @@index([conversationId, createdAt])
@@ -977,6 +1025,18 @@ enum AIProvider {
   GROK
   GLM
   CUSTOM
+}
+
+enum MailProvider {
+  GMAIL
+  OUTLOOK
+  IMAP
+}
+
+enum MailAccountStatus {
+  ACTIVE
+  ERROR
+  DISCONNECTED
 }
 
 model Subscription {

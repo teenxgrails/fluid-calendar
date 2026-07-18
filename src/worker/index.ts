@@ -10,16 +10,27 @@ import { renewCalendarWebhooks } from "@/lib/calendar-webhooks/renew";
 import { newDate } from "@/lib/date-utils";
 import { syncGoogleCalendar } from "@/lib/google-sync";
 import { logger } from "@/lib/logger";
+import {
+  closeImapIdleWatchers,
+  ensureImapIdleWatcher,
+} from "@/lib/mail/imap-idle";
+import { listActiveMailAccountIds } from "@/lib/mail-db";
+import { syncMailAccount } from "@/lib/mail/sync";
 import { getOutlookClient } from "@/lib/outlook-calendar";
 import { syncOutlookCalendar } from "@/lib/outlook-sync";
 import {
   closeRedisConnection,
   getRedisConnection,
 } from "@/lib/queue/connection";
-import { enqueueReschedule, enqueueWebhookRenew } from "@/lib/queue/enqueue";
+import {
+  enqueueReschedule,
+  enqueueWebhookRenew,
+  ensureMailSyncSchedule,
+} from "@/lib/queue/enqueue";
 import { closeQueues, getWebhookRenewQueue } from "@/lib/queue/queues";
 import {
   CalendarSyncJobData,
+  MailSyncJobData,
   QUEUE_NAMES,
   RescheduleJobData,
   WebhookRenewJobData,
@@ -92,6 +103,11 @@ async function processWebhookRenew(job: Job<WebhookRenewJobData>) {
   await renewCalendarWebhooks(job.data);
 }
 
+async function processMailSync(job: Job<MailSyncJobData>) {
+  await syncMailAccount(job.data.accountId);
+  await ensureImapIdleWatcher(job.data.accountId);
+}
+
 // See src/lib/queue/queues.ts: pnpm may keep two compatible ioredis patch
 // versions, so bridge their nominal types at this BullMQ boundary.
 const connection = getRedisConnection() as unknown as ConnectionOptions;
@@ -110,6 +126,10 @@ const workers = [
     processWebhookRenew,
     { connection, concurrency: 1 }
   ),
+  new Worker<MailSyncJobData>(QUEUE_NAMES.mailSync, processMailSync, {
+    connection,
+    concurrency: 3,
+  }),
 ];
 
 for (const worker of workers) {
@@ -133,6 +153,13 @@ async function start(): Promise<void> {
     { name: "renew-webhooks", data: {} }
   );
   await enqueueWebhookRenew();
+  const mailAccountIds = await listActiveMailAccountIds();
+  await Promise.all(
+    mailAccountIds.map((accountId) => ensureMailSyncSchedule(accountId))
+  );
+  await Promise.all(
+    mailAccountIds.map((accountId) => ensureImapIdleWatcher(accountId))
+  );
   await logger.info(
     "Needt background worker started",
     { queues: workers.map((worker) => worker.name) },
@@ -145,6 +172,7 @@ async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
   await logger.info("Needt background worker stopping", { signal }, LOG_SOURCE);
+  await closeImapIdleWatchers();
   await Promise.all(workers.map((worker) => worker.close()));
   await closeQueues();
   await closeRedisConnection();

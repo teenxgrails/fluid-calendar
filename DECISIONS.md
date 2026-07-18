@@ -1,5 +1,6 @@
 # Decisions
 
+- 2026-07-18: Mail OAuth requests the specified Gmail `gmail.readonly` and Microsoft `Mail.Read` scopes incrementally, plus `gmail.modify` and `Mail.ReadWrite`, because the required mark-read and archive actions cannot sync back to providers with read-only scopes alone.
 - 2026-07-07: The product name requested by the human for this fork is "Mina Calendar"; the Phase 1 visible app rebrand will still follow AGENTS.md and use configurable `APP_NAME = "teenx planner"` unless the human changes that requirement.
 - 2026-07-07: Phase 0 used the bundled pnpm executable only to run `npm@10.9.3` because the desktop shell did not expose `npm`; dependencies were installed from the existing `package-lock.json`, so no package-manager migration is intended.
 - 2026-07-07: Baseline auto-scheduler behavior is documented in `ARCHITECTURE.md` before changing scheduling logic.

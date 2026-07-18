@@ -1,0 +1,16 @@
+{
+  "id": "gmail-123",
+  "threadId": "thread-1",
+  "historyId": "901",
+  "internalDate": "1767261600000",
+  "labelIds": ["INBOX", "UNREAD", "CATEGORY_PERSONAL"],
+  "snippet": "The weekly plan is ready to review.",
+  "payload": {
+    "headers": [
+      { "name": "From", "value": "Alex Doe <alex@example.com>" },
+      { "name": "To", "value": "Planner <me@example.com>" },
+      { "name": "Subject", "value": "Weekly plan" },
+      { "name": "Date", "value": "Thu, 1 Jan 2026 10:00:00 +0000" }
+    ]
+  }
+}

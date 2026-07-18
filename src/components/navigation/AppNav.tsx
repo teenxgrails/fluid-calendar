@@ -10,6 +10,7 @@ import {
   CheckSquare,
   Download,
   Focus,
+  Mail,
   Search,
   Settings,
   Sparkles,
@@ -26,6 +27,7 @@ import {
 
 import { APP_NAME } from "@/lib/app-config";
 import { newDate } from "@/lib/date-utils";
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 import { useViewStore } from "@/store/calendar";
@@ -35,6 +37,8 @@ import { useTaskStore } from "@/store/task";
 import { TaskStatus } from "@/types/task";
 
 import { UserMenu } from "./UserMenu";
+
+const LOG_SOURCE = "AppNav";
 
 interface AppNavProps {
   className?: string;
@@ -54,6 +58,7 @@ function openCommandPalette() {
 export const AppNav = memo(function AppNav({ className }: AppNavProps) {
   const pathname = usePathname();
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [unreadMailCount, setUnreadMailCount] = useState(0);
   const overdueCount = useTaskStore(
     (state) =>
       state.tasks.filter(
@@ -72,10 +77,39 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
   // Warm the router cache for every section so switching is instant (matters in
   // production, where prefetch is enabled).
   useEffect(() => {
-    ["/calendar", "/tasks", "/focus", "/settings", "/chat"].forEach((route) =>
-      router.prefetch(route)
+    ["/calendar", "/tasks", "/focus", "/mail", "/settings", "/chat"].forEach(
+      (route) => router.prefetch(route)
     );
   }, [router]);
+
+  useEffect(() => {
+    if (pathname.startsWith("/auth") || pathname === "/setup") return;
+    const refreshUnread = async () => {
+      try {
+        const response = await fetch("/api/mail/accounts");
+        if (!response.ok) return;
+        const accounts = (await response.json()) as Array<{
+          _count: { messages: number };
+        }>;
+        setUnreadMailCount(
+          accounts.reduce(
+            (total, account) => total + account._count.messages,
+            0
+          )
+        );
+      } catch (error) {
+        void logger.debug(
+          "Unread mail badge is unavailable",
+          { error: error instanceof Error ? error.message : String(error) },
+          LOG_SOURCE
+        );
+      }
+    };
+    void refreshUnread();
+    window.addEventListener("mail-unread-changed", refreshUnread);
+    return () =>
+      window.removeEventListener("mail-unread-changed", refreshUnread);
+  }, [pathname]);
 
   const todayLabel = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
@@ -103,6 +137,7 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
       badge: overdueCount,
     },
     { href: "/focus", label: "Focus", icon: Focus },
+    { href: "/mail", label: "Mail", icon: Mail, badge: unreadMailCount },
   ];
 
   return (

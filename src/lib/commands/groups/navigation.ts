@@ -6,6 +6,7 @@ import {
   HiOutlineClipboardList,
   HiOutlineCog,
   HiOutlineLightningBolt,
+  HiOutlineMail,
 } from "react-icons/hi";
 
 import { Command } from "../types";
@@ -54,6 +55,17 @@ export function useNavigationCommands(): Command[] {
       shortcut: "ga",
       perform: (router?: AppRouterInstance) => {
         if (router) router.push("/chat");
+      },
+    },
+    {
+      id: "navigation.mail",
+      title: "Go to Mail",
+      keywords: ["navigation", "inbox", "email"],
+      icon: HiOutlineMail,
+      section: "navigation",
+      shortcut: "gm",
+      perform: (router?: AppRouterInstance) => {
+        if (router) router.push("/mail");
       },
     },
     {

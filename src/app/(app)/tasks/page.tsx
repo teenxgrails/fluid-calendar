@@ -84,12 +84,24 @@ export default function TasksPage() {
   >(undefined);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [isReflowing, setIsReflowing] = useState(false);
+  const [openedTaskParam, setOpenedTaskParam] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTasks();
     fetchTags();
     fetchProjects();
   }, [fetchProjects, fetchTags, fetchTasks]);
+
+  useEffect(() => {
+    const taskId = new URLSearchParams(window.location.search).get("task");
+    if (!taskId || taskId === openedTaskParam) return;
+    const task = tasks.find((candidate) => candidate.id === taskId);
+    if (!task) return;
+    setSelectedTask(task);
+    setInitialProjectId(undefined);
+    setOpen(true);
+    setOpenedTaskParam(taskId);
+  }, [openedTaskParam, setOpen, tasks]);
 
   const deadlineTasks = useMemo(
     () => tasks.filter((task) => task.deadline || task.dueDate),

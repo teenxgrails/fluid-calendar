@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a local-first, read-only unified Mail inbox for Gmail, Outlook, and IMAP with encrypted IMAP credentials, provider cursor sync in the existing BullMQ worker, lazy sanitized message bodies, remote-image blocking, unread/archive actions, and task creation from email.
 - Added persistent Motion-style task defaults for project, status, priority, scheduling, duration, chunks, dates, deadlines, and schedule; new task forms now consume those defaults.
 - Added a user-ready Billing page backed by the existing subscription model, with plan state and included-usage details.
 - Added BullMQ-backed calendar sync, rescheduling, and webhook-renewal queues with a separately deployable worker bundle.

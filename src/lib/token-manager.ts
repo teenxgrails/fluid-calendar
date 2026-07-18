@@ -2,10 +2,13 @@ import { Prisma } from "@prisma/client";
 
 import { getOutlookCredentials } from "@/lib/auth";
 import { createGoogleOAuthClient } from "@/lib/google";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
 import { newDate } from "./date-utils";
 import { MICROSOFT_GRAPH_AUTH_ENDPOINTS } from "./outlook";
+
+const LOG_SOURCE = "TokenManager";
 
 export type Provider = "GOOGLE" | "OUTLOOK" | "CALDAV";
 
@@ -43,6 +46,23 @@ export class TokenManager {
       refreshToken: account.refreshToken || undefined,
       expiresAt: account.expiresAt,
     };
+  }
+
+  async getValidAccessToken(
+    provider: Extract<Provider, "GOOGLE" | "OUTLOOK">,
+    accountId: string,
+    userId: string
+  ): Promise<string | null> {
+    const tokens = await this.getTokens(accountId, userId);
+    if (!tokens) return null;
+    if (tokens.expiresAt.getTime() > newDate().getTime() + 60_000) {
+      return tokens.accessToken;
+    }
+    const refreshed =
+      provider === "GOOGLE"
+        ? await this.refreshGoogleTokens(accountId, userId)
+        : await this.refreshOutlookTokens(accountId, userId);
+    return refreshed?.accessToken ?? null;
   }
 
   async refreshGoogleTokens(
@@ -89,7 +109,11 @@ export class TokenManager {
         expiresAt: updatedAccount.expiresAt,
       };
     } catch (error) {
-      console.error("Failed to refresh Google tokens:", error);
+      await logger.error(
+        "Failed to refresh Google tokens",
+        { error: error instanceof Error ? error.message : String(error) },
+        LOG_SOURCE
+      );
       return null;
     }
   }
@@ -211,7 +235,11 @@ export class TokenManager {
         expiresAt: updatedAccount.expiresAt,
       };
     } catch (error) {
-      console.error("Failed to refresh Outlook tokens:", error);
+      await logger.error(
+        "Failed to refresh Outlook tokens",
+        { error: error instanceof Error ? error.message : String(error) },
+        LOG_SOURCE
+      );
       return null;
     }
   }

@@ -1,5 +1,6 @@
 import {
   enqueueCalendarSync,
+  enqueueMailSync,
   enqueueReschedule,
   enqueueWebhookRenew,
 } from "@/lib/queue/enqueue";
@@ -7,11 +8,13 @@ import {
 const calendarAdd = jest.fn();
 const rescheduleAdd = jest.fn();
 const renewAdd = jest.fn();
+const mailAdd = jest.fn();
 
 jest.mock("@/lib/queue/queues", () => ({
   getCalendarSyncQueue: () => ({ add: calendarAdd }),
   getRescheduleQueue: () => ({ add: rescheduleAdd }),
   getWebhookRenewQueue: () => ({ add: renewAdd }),
+  getMailSyncQueue: () => ({ add: mailAdd }),
 }));
 
 describe("queue enqueue helpers", () => {
@@ -34,6 +37,19 @@ describe("queue enqueue helpers", () => {
       "reschedule-user",
       { userId: "user-123" },
       { jobId: "reschedule-user-123" }
+    );
+  });
+
+  test("deduplicates mail sync jobs by account", async () => {
+    await enqueueMailSync("account-123");
+    expect(mailAdd).toHaveBeenCalledWith(
+      "sync-account",
+      { accountId: "account-123" },
+      {
+        jobId: "mail-sync-account-123",
+        removeOnComplete: true,
+        removeOnFail: 50,
+      }
     );
   });
 

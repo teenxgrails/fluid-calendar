@@ -1,0 +1,15 @@
+{
+  "id": "graph-123",
+  "conversationId": "conversation-1",
+  "subject": "Project update",
+  "bodyPreview": "Here is the latest project update.",
+  "receivedDateTime": "2026-01-01T11:00:00Z",
+  "isRead": true,
+  "categories": ["Work"],
+  "from": {
+    "emailAddress": { "name": "Jordan Lee", "address": "jordan@example.com" }
+  },
+  "toRecipients": [
+    { "emailAddress": { "name": "Planner", "address": "me@example.com" } }
+  ]
+}
