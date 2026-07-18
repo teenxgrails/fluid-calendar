@@ -1,6 +1,7 @@
 import { recomputeTaskActuals } from "@/services/time-tracking/timeEntries";
 import { FocusSessionMode, TimeEntrySource } from "@prisma/client";
 
+import { addDays, newDate, startOfDay } from "@/lib/date-utils";
 import { prisma } from "@/lib/prisma";
 
 export interface WeeklyFocusReport {
@@ -8,15 +9,13 @@ export interface WeeklyFocusReport {
   sessionsCompleted: number;
   bestDay: string | null;
   estimateAccuracyPercent: number | null;
+  /** Focused minutes per day for the last 7 days, oldest first (bar chart). */
+  dailyMinutes: { label: string; minutes: number }[];
   streakStatus: {
     current: number;
     longest: number;
     atRisk: boolean;
   };
-}
-
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function daysBetween(a: Date, b: Date): number {
@@ -130,17 +129,17 @@ export async function recomputeFocusStats(userId: string) {
   let run = 0;
   let previous: Date | null = null;
   for (const dayMs of uniqueDays) {
-    const day = new Date(dayMs);
+    const day = newDate(dayMs);
     run = previous && daysBetween(day, previous) === 1 ? run + 1 : 1;
     longestStreak = Math.max(longestStreak, run);
     previous = day;
   }
 
   const lastFocusDate = uniqueDays.length
-    ? new Date(uniqueDays[uniqueDays.length - 1])
+    ? newDate(uniqueDays[uniqueDays.length - 1])
     : null;
   const currentStreak =
-    lastFocusDate && daysBetween(new Date(), lastFocusDate) <= 1 ? run : 0;
+    lastFocusDate && daysBetween(newDate(), lastFocusDate) <= 1 ? run : 0;
 
   return prisma.focusStats.upsert({
     where: { userId },
@@ -165,9 +164,7 @@ export async function recomputeFocusStats(userId: string) {
 export async function getWeeklyFocusReport(
   userId: string
 ): Promise<WeeklyFocusReport> {
-  const since = new Date();
-  since.setDate(since.getDate() - 7);
-  since.setHours(0, 0, 0, 0);
+  const since = startOfDay(addDays(newDate(), -7));
 
   const [sessions, stats, accuracy] = await Promise.all([
     prisma.focusSession.findMany({
@@ -194,6 +191,26 @@ export async function getWeeklyFocusReport(
     [...minutesByDay.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   const lastFocusDate = stats?.lastFocusDate ?? null;
 
+  // Fixed 7-day window (oldest first) so the bar chart always has 7 columns,
+  // including days with no focus.
+  const dailyMinutes: { label: string; minutes: number }[] = [];
+  const today = startOfDay(newDate());
+  const minutesByDayKey = new Map<number, number>();
+  for (const session of completed) {
+    const key = startOfDay(session.startedAt).getTime();
+    minutesByDayKey.set(
+      key,
+      (minutesByDayKey.get(key) ?? 0) + session.elapsedMinutes
+    );
+  }
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = addDays(today, -offset);
+    dailyMinutes.push({
+      label: day.toLocaleDateString("en-US", { weekday: "narrow" }),
+      minutes: minutesByDayKey.get(day.getTime()) ?? 0,
+    });
+  }
+
   return {
     focusMinutes: completed.reduce(
       (total, session) => total + session.elapsedMinutes,
@@ -201,12 +218,13 @@ export async function getWeeklyFocusReport(
     ),
     sessionsCompleted: completed.length,
     bestDay,
+    dailyMinutes,
     estimateAccuracyPercent: Math.round(accuracy * 100),
     streakStatus: {
       current: stats?.currentStreak ?? 0,
       longest: stats?.longestStreak ?? 0,
       atRisk: lastFocusDate
-        ? daysBetween(new Date(), lastFocusDate) === 1
+        ? daysBetween(newDate(), lastFocusDate) === 1
         : false,
     },
   };

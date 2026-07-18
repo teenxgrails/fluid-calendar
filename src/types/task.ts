@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 import { ChangeType } from "@/lib/task-sync/task-change-tracker";
 
 import { Project } from "./project";
@@ -98,6 +100,11 @@ export interface Task {
   source?: string | null;
   externalListId?: string | null;
   lastSyncedAt?: Date | null;
+  // Boards (additive; independent of the scheduling engine)
+  boardId?: string | null;
+  boardColumnId?: string | null;
+  boardPosition?: number | null;
+  properties?: Prisma.JsonValue | null;
 }
 
 export interface ScheduledTaskBlock {

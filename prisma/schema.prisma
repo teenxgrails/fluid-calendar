@@ -112,6 +112,8 @@ model User {
   taskProviders         TaskProvider[]
   TaskChange            TaskChange[]
   PasswordReset         PasswordReset[]
+  boards                Board[]
+  savedViews            SavedView[]
 }
 
 model VerificationToken {
@@ -301,6 +303,7 @@ model Task {
   estLikely        Int?
   estPessimistic   Int?
   actualMinutes    Int?
+  actualFocusedMinutes Int @default(0)
   estimateDelta    Int?
   optimisticDelta  Int?
   likelyDelta      Int?
@@ -370,11 +373,24 @@ model Task {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id])
 
+  // Boards: a task can live on one board in one column. These are additive and
+  // do NOT affect the scheduling engine — a board task is the same task the
+  // auto-scheduler works with. `properties` is reserved for future custom
+  // fields. boardPosition is a fractional index (see @/lib/board-position).
+  boardId       String?
+  board         Board?       @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  boardColumnId String?
+  boardColumn   BoardColumn? @relation(fields: [boardColumnId], references: [id], onDelete: SetNull)
+  boardPosition Float?
+  properties    Json?
+
   @@index([status])
   @@index([dueDate])
   @@index([startDate])
   @@index([priority])
   @@index([projectId])
+  @@index([boardId])
+  @@index([boardColumnId])
   @@index([isRecurring])
   @@index([isAutoScheduled])
   @@index([scheduledStart, scheduledEnd])
@@ -441,15 +457,21 @@ model FocusSession {
   task           Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
   mode           FocusSessionMode
   plannedMinutes Int?
-  elapsedMinutes Int
+  elapsedMinutes Int              @default(0)
   completed      Boolean          @default(false)
   abandoned      Boolean          @default(false)
-  startedAt      DateTime
-  endedAt        DateTime
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  // Server-truth timing. An active session has endedAt = null. pausedTotalSeconds
+  // accumulates completed pause spans; pausedAt is set while currently paused.
+  startedAt          DateTime
+  endedAt            DateTime?
+  pausedAt           DateTime?
+  pausedTotalSeconds Int       @default(0)
+  source             String    @default("web")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@index([userId, startedAt])
+  @@index([userId, endedAt])
   @@index([taskId])
   @@index([mode])
   @@index([completed])
@@ -466,6 +488,58 @@ model FocusStats {
   lastFocusDate   DateTime?
   updatedAt       DateTime  @updatedAt
   createdAt       DateTime  @default(now())
+}
+
+model Board {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  icon      String? // emoji
+  position  Float         @default(0)
+  // "manual" columns, or auto-group by status | priority | project | tag.
+  groupBy   String        @default("manual")
+  columns   BoardColumn[]
+  tasks     Task[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model BoardColumn {
+  id       String  @id @default(cuid())
+  boardId  String
+  board    Board   @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  name     String
+  color    String?
+  position Float   @default(0)
+  // For auto-grouped boards, the derived value this column maps to (e.g. a
+  // status or priority value). Null for manual columns.
+  mappingKey String?
+  tasks    Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boardId])
+}
+
+model SavedView {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  boardId  String?
+  // board | list | timeline | calendar
+  type     String
+  groupBy  String?
+  filters  Json?
+  sort     Json?
+  position Float   @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([boardId])
 }
 
 model EnergyProfileWindow {

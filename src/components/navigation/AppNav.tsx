@@ -14,8 +14,10 @@ import {
   Search,
   Settings,
   Sparkles,
+  Sun,
 } from "lucide-react";
 
+import { BoardsSidebarSection } from "@/components/boards/BoardsSidebarSection";
 import { MiniCalendar } from "@/components/calendar/MiniCalendar";
 import { DownloadAppsModal } from "@/components/navigation/DownloadAppsModal";
 import { TodaysTasksPanel } from "@/components/tasks/TodaysTasksPanel";
@@ -31,11 +33,11 @@ import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 import { useViewStore } from "@/store/calendar";
-import { useFocusModeStore } from "@/store/focusMode";
 import { useTaskStore } from "@/store/task";
 
 import { TaskStatus } from "@/types/task";
 
+import { FocusNavBadge } from "./FocusNavBadge";
 import { UserMenu } from "./UserMenu";
 
 const LOG_SOURCE = "AppNav";
@@ -68,8 +70,6 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
           newDate(task.dueDate) < newDate()
       ).length
   );
-  const currentTaskId = useFocusModeStore((state) => state.currentTaskId);
-  const isProcessing = useFocusModeStore((state) => state.isProcessing);
   const currentDate = useViewStore((state) => state.date);
   const setDate = useViewStore((state) => state.setDate);
   const router = useRouter();
@@ -77,9 +77,15 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
   // Warm the router cache for every section so switching is instant (matters in
   // production, where prefetch is enabled).
   useEffect(() => {
-    ["/calendar", "/tasks", "/focus", "/mail", "/settings", "/chat"].forEach(
-      (route) => router.prefetch(route)
-    );
+    [
+      "/today",
+      "/calendar",
+      "/tasks",
+      "/focus",
+      "/mail",
+      "/settings",
+      "/chat",
+    ].forEach((route) => router.prefetch(route));
   }, [router]);
 
   useEffect(() => {
@@ -124,6 +130,7 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
   }
 
   const links = [
+    { href: "/today", label: "Today", icon: Sun },
     {
       href: "/calendar",
       label: "Calendar",
@@ -174,7 +181,6 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
           const Icon = link.icon;
           const isActive = pathname === link.href;
           const isFocus = link.href === "/focus";
-          const focusLive = isFocus && (currentTaskId || isProcessing);
 
           return (
             <Link
@@ -208,15 +214,15 @@ export const AppNav = memo(function AppNav({ className }: AppNavProps) {
                   ‼ {link.badge}
                 </span>
               )}
-              {focusLive && (
-                <span className="rounded bg-[var(--accent)] px-1.5 py-0.5 text-[10px] font-medium text-white max-md:hidden">
-                  Live
-                </span>
-              )}
+              {isFocus && <FocusNavBadge />}
             </Link>
           );
         })}
       </nav>
+
+      <div className="min-h-0 flex-1 overflow-y-auto max-md:hidden">
+        <BoardsSidebarSection />
+      </div>
 
       <div className="mt-auto max-md:hidden">
         <Link
