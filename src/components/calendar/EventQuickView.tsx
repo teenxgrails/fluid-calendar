@@ -48,10 +48,10 @@ interface EventQuickViewProps {
 
 //TODO: move to utils
 const priorityColors = {
-  [Priority.HIGH]: "text-destructive dark:text-destructive",
-  [Priority.MEDIUM]: "text-warning dark:text-warning",
-  [Priority.LOW]: "text-primary dark:text-primary",
-  [Priority.NONE]: "text-muted-foreground",
+  [Priority.HIGH]: "text-[var(--color-danger)]",
+  [Priority.MEDIUM]: "text-[var(--color-warning)]",
+  [Priority.LOW]: "text-[var(--primitive-blue-500)]",
+  [Priority.NONE]: "text-[var(--text-muted)]",
 };
 
 export function EventQuickView({
@@ -68,14 +68,14 @@ export function EventQuickView({
     switch (status?.toUpperCase()) {
       case "ACCEPTED":
       case TaskStatus.COMPLETED:
-        return "text-green-600 dark:text-green-400";
+        return "text-[var(--color-success)]";
       case "TENTATIVE":
       case TaskStatus.IN_PROGRESS:
-        return "text-warning dark:text-warning";
+        return "text-[var(--color-warning)]";
       case "DECLINED":
-        return "text-destructive dark:text-destructive";
+        return "text-[var(--color-danger)]";
       default:
-        return "text-muted-foreground";
+        return "text-[var(--text-muted)]";
     }
   };
 
@@ -104,7 +104,7 @@ export function EventQuickView({
         />
       </PopoverAnchor>
       <PopoverContent
-        className="z-[10000] w-80 rounded-lg border border-border bg-background p-4 shadow-lg"
+        className="z-[10000] w-[min(340px,calc(100vw-24px))] border-[var(--popover-border)] bg-[var(--popover-bg)] p-4 text-[var(--text-primary)] shadow-lg"
         align="start"
         sideOffset={24}
         onOpenAutoFocus={(e) => e.preventDefault()}
@@ -112,19 +112,19 @@ export function EventQuickView({
       >
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="event-title flex items-center gap-2 font-medium text-foreground">
+            <h3 className="event-title flex items-center gap-2 font-medium text-[var(--text-primary)]">
               {item.title}
               {isTask ? (
                 <>
                   {taskItem?.isRecurring && (
                     <IoRepeat
-                      className="h-4 w-4 text-primary"
+                      className="h-4 w-4 text-[var(--color-accent)]"
                       title="Recurring task"
                     />
                   )}
                   {taskItem?.scheduleLocked && (
                     <IoLockClosedOutline
-                      className="h-4 w-4 text-warning"
+                      className="h-4 w-4 text-[var(--color-warning)]"
                       title="Schedule locked"
                     />
                   )}
@@ -132,7 +132,7 @@ export function EventQuickView({
               ) : (
                 eventItem?.isRecurring && (
                   <IoRepeat
-                    className="h-4 w-4 text-primary"
+                    className="h-4 w-4 text-[var(--color-accent)]"
                     title="Recurring event"
                   />
                 )
@@ -152,8 +152,8 @@ export function EventQuickView({
                   className={cn(
                     "rounded-md p-1.5",
                     taskItem.status === TaskStatus.COMPLETED
-                      ? "bg-green-500/20 text-green-700 hover:bg-green-500/30 dark:text-green-400"
-                      : "text-muted-foreground hover:bg-muted hover:text-green-600"
+                      ? "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-[var(--color-success)]"
+                      : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--color-success)]"
                   )}
                   title={
                     taskItem.status === TaskStatus.COMPLETED
@@ -166,14 +166,14 @@ export function EventQuickView({
               )}
               <button
                 onClick={onEdit}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
+                className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                 title="Edit"
               >
                 <HiPencil className="h-4 w-4" />
               </button>
               <button
                 onClick={onDelete}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"
+                className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--color-danger)]"
                 title="Delete"
               >
                 <HiTrash className="h-4 w-4" />
@@ -182,7 +182,7 @@ export function EventQuickView({
           </div>
 
           {!isTask && eventItem && (
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2 text-sm text-[var(--text-secondary)]">
               <div className="flex items-center gap-2">
                 <IoTimeOutline className="h-4 w-4 flex-shrink-0" />
                 <span>
@@ -227,7 +227,7 @@ export function EventQuickView({
                 </div>
               )}
               {eventItem.description && (
-                <div className="event-description mt-2 line-clamp-2 text-xs text-muted-foreground">
+                <div className="event-description mt-2 line-clamp-2 text-xs text-[var(--text-muted)]">
                   {eventItem.description}
                 </div>
               )}
@@ -235,17 +235,16 @@ export function EventQuickView({
           )}
 
           {isTask && taskItem && (
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2 text-sm text-[var(--text-secondary)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <IoTimeOutline className="h-4 w-4 flex-shrink-0" />
                   {taskItem.dueDate ? (
                     <span
                       className={cn(
-                        isOverdue &&
-                          "text-destructive dark:text-destructive font-medium",
+                        isOverdue && "font-medium text-[var(--color-danger)]",
                         isFutureDate(taskItem.dueDate) &&
-                          "text-primary font-medium"
+                          "font-medium text-[var(--text-primary)]"
                       )}
                     >
                       Due {format(newDate(taskItem.dueDate), "PPp")}
@@ -258,11 +257,11 @@ export function EventQuickView({
                 </div>
                 <span
                   className={cn("rounded-full px-2 py-0.5 text-xs", {
-                    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100":
+                    "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-[var(--color-success)]":
                       taskItem.status === TaskStatus.COMPLETED,
-                    "bg-warning/10 text-warning":
+                    "bg-[color-mix(in_srgb,var(--color-warning)_12%,transparent)] text-[var(--color-warning)]":
                       taskItem.status === TaskStatus.IN_PROGRESS,
-                    "bg-muted text-muted-foreground":
+                    "bg-[var(--surface-control)] text-[var(--text-secondary)]":
                       taskItem.status === TaskStatus.TODO,
                   })}
                 >
@@ -276,7 +275,7 @@ export function EventQuickView({
                   <span
                     className={cn(
                       isFutureDate(taskItem.startDate) &&
-                        "text-primary font-medium"
+                        "font-medium text-[var(--text-primary)]"
                     )}
                   >
                     Starts {format(newDate(taskItem.startDate), "PPp")}
@@ -310,7 +309,7 @@ export function EventQuickView({
                         {format(newDate(taskItem.scheduledEnd), "p")}
                       </div>
                       {taskItem.scheduleScore !== undefined && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-[var(--text-muted)]">
                           Confidence:{" "}
                           {Math.round((taskItem.scheduleScore ?? 0) * 100)}%
                         </div>
@@ -365,7 +364,7 @@ export function EventQuickView({
                 <TaskDescription
                   value={taskItem.description}
                   compact
-                  className="task-description mt-2 text-xs text-muted-foreground"
+                  className="task-description mt-2 text-xs text-[var(--text-muted)]"
                 />
               )}
             </div>

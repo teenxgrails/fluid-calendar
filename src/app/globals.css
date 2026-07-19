@@ -42,6 +42,9 @@
     --primitive-neutral-950: #151718;
     --primitive-indigo-500: #6366f1;
     --primitive-blue-500: #4a7bff;
+    --primitive-blue-550: #3e63dd;
+    --primitive-blue-450: #5373e7;
+    --primitive-blue-400: #6683ee;
     --primitive-violet-500: #8b5cf6;
     --primitive-magenta-500: #e64bd0;
     --primitive-teal-400: #2dd4bf;
@@ -83,9 +86,13 @@
     --input-bg: var(--surface-input);
     --input-border: var(--border-control);
     --input-border-focus: var(--border-control);
-    --button-primary-bg: var(--color-accent);
-    --button-primary-border: var(--color-accent);
+    --button-primary-bg: var(--primitive-blue-550);
+    --button-primary-bg-hover: var(--primitive-blue-450);
+    --button-primary-border: var(--primitive-blue-450);
     --button-primary-fg: var(--color-accent-contrast);
+    --button-primary-shadow:
+      0 1px 4px color-mix(in srgb, var(--primitive-black) 20%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--primitive-white) 18%, transparent);
     --button-secondary-bg: var(--control-bg);
     --button-secondary-bg-hover: var(--control-bg-hover);
     --button-secondary-border: var(--control-border);
@@ -137,12 +144,16 @@
     --calendar-task-bg: var(--surface-control);
     --calendar-task-border: var(--border-control);
     --calendar-now-indicator: var(--text-primary);
-    --calendar-now-dot-size: 10px;
+    --calendar-now-dot-size: 8px;
     --calendar-now-line-end-inset: 8px;
     --calendar-week-slot-label-offset: -16px;
     --calendar-day-slot-label-offset: -17.5px;
     --calendar-hover-guide: var(--primitive-neutral-525);
     --calendar-hover-guide-label: var(--primitive-neutral-250);
+    --motion-duration-fast: 150ms;
+    --motion-duration-base: 200ms;
+    --motion-duration-slow: 250ms;
+    --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
     /* Space canvas: intentionally dark in every app theme. Keeping its
        palette semantic makes future custom themes a token swap instead of a
@@ -344,7 +355,7 @@
 
 @layer base {
   * {
-    @apply border-border transition-colors duration-200;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
@@ -355,6 +366,10 @@
       -apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     letter-spacing: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   html:not(.dark) body {
@@ -1332,6 +1347,46 @@ html[data-animations="off"] *::after {
   color: var(--text-primary);
 }
 
+@media (max-width: 639px) {
+  .fc-tz-corner .fc-timegrid-axis,
+  .fc-tz-corner .fc-timegrid-slot-label,
+  .fc .fc-timegrid-axis,
+  .fc .fc-timegrid-slot-label {
+    width: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .fc-tz-corner .fc-timegrid-slot-label-cushion {
+    width: 44px;
+    padding-right: 6px;
+    font-size: 11px;
+  }
+
+  .fc-tz-corner .fc-scrollgrid-section-header .fc-timegrid-axis::after {
+    left: 5px;
+    max-width: 38px;
+    overflow: hidden;
+    font-size: 10px;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    padding-inline: 3px !important;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 68px;
+  }
+
+  .fc .fc-daygrid-event {
+    margin-inline: 1px;
+  }
+
+  .fc .fc-daygrid-day-number {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}
+
 /* Command Palette Styles */
 [cmdk-root] {
   max-width: 640px;
@@ -1593,7 +1648,7 @@ html[data-animations="off"] *::after {
   margin-left: 0;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .settings-desktop-sidebar {
     display: block;
   }

@@ -7,6 +7,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 
+import { cn } from "@/lib/utils";
+
 import { useSettingsStore } from "@/store/settings";
 
 interface IntegrationCard {
@@ -16,7 +18,8 @@ interface IntegrationCard {
   icon: React.ReactNode;
   action: string;
   onClick: () => void;
-  status?: string;
+  status: "Connected" | "Not configured" | "Unavailable";
+  disabled?: boolean;
 }
 
 export function IntegrationSettings() {
@@ -36,7 +39,7 @@ export function IntegrationSettings() {
       description: "Sync events and scheduled task blocks.",
       icon: <SiGooglecalendar className="h-8 w-8" />,
       action: hasGoogle ? "Manage" : "Connect",
-      status: hasGoogle ? "Connected" : undefined,
+      status: hasGoogle ? "Connected" : "Not configured",
       onClick: () => goTo("calendars"),
     },
     {
@@ -45,7 +48,7 @@ export function IntegrationSettings() {
       description: "Keep Microsoft calendars in sync with Needt.",
       icon: <FaMicrosoft className="h-8 w-8 text-[#6CA9FF]" />,
       action: hasOutlook ? "Manage" : "Connect",
-      status: hasOutlook ? "Connected" : undefined,
+      status: hasOutlook ? "Connected" : "Not configured",
       onClick: () => goTo("calendars"),
     },
     {
@@ -54,7 +57,7 @@ export function IntegrationSettings() {
       description: "Connect Apple Calendar with an app-specific password.",
       icon: <FaApple className="h-8 w-8 text-[var(--text-secondary)]" />,
       action: hasApple ? "Manage" : "Connect",
-      status: hasApple ? "Connected" : undefined,
+      status: hasApple ? "Connected" : "Not configured",
       onClick: () => goTo("calendars"),
     },
     {
@@ -63,6 +66,7 @@ export function IntegrationSettings() {
       description: "Import Google Tasks, Microsoft To Do, and CalDAV tasks.",
       icon: <CheckSquare2 className="h-8 w-8 text-[var(--text-secondary)]" />,
       action: "Configure",
+      status: "Not configured",
       onClick: () =>
         toast.info(
           "Connect a calendar account first, then choose its task lists"
@@ -78,7 +82,9 @@ export function IntegrationSettings() {
         </span>
       ),
       action: "Coming soon",
-      onClick: () => toast.info("Zapier integration is coming soon"),
+      status: "Unavailable",
+      disabled: true,
+      onClick: () => undefined,
     },
     {
       id: "email",
@@ -86,7 +92,9 @@ export function IntegrationSettings() {
       description: "Turn an email into a task in your Needt inbox.",
       icon: <Mail className="h-8 w-8 text-[var(--text-secondary)]" />,
       action: "See how",
-      onClick: () => toast.info("Email-to-task addresses are coming soon"),
+      status: "Unavailable",
+      disabled: true,
+      onClick: () => undefined,
     },
     {
       id: "api",
@@ -94,6 +102,7 @@ export function IntegrationSettings() {
       description: "Create tasks and read your schedule from local tools.",
       icon: <Code2 className="h-8 w-8 text-[var(--text-secondary)]" />,
       action: "Configure",
+      status: "Not configured",
       onClick: () => goTo("api"),
     },
     {
@@ -102,6 +111,7 @@ export function IntegrationSettings() {
       description: "Notify automations when schedules or tasks change.",
       icon: <Webhook className="h-8 w-8 text-[var(--text-secondary)]" />,
       action: "Configure",
+      status: "Not configured",
       onClick: () => goTo("api"),
     },
   ];
@@ -115,11 +125,16 @@ export function IntegrationSettings() {
         >
           <div className="flex items-start justify-between gap-4">
             {integration.icon}
-            {integration.status && (
-              <span className="rounded-full bg-[var(--surface-control)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]">
-                {integration.status}
-              </span>
-            )}
+            <span
+              className={cn(
+                "rounded-full bg-[var(--surface-control)] px-2 py-0.5 text-[11px]",
+                integration.status === "Connected"
+                  ? "text-[var(--color-success)]"
+                  : "text-[var(--text-muted)]"
+              )}
+            >
+              {integration.status}
+            </span>
           </div>
           <h2 className="mt-4 text-[15px] font-semibold">{integration.name}</h2>
           <p className="mt-1 flex-1 text-[13px] leading-5 text-[var(--text-secondary)]">
@@ -128,6 +143,7 @@ export function IntegrationSettings() {
           <Button
             variant="outline"
             onClick={integration.onClick}
+            disabled={integration.disabled}
             className="mt-4 w-full"
           >
             {integration.action}

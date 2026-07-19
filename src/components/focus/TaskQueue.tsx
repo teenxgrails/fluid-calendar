@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { Target } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 import { format, isBefore, newDate } from "@/lib/date-utils";
@@ -99,9 +101,9 @@ export function TaskQueue() {
       variant="ghost"
       className={cn(
         "h-auto w-full justify-start px-3 py-2",
-        "hover:bg-white/[0.07] hover:text-foreground",
+        "hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]",
         task.id === currentTaskId &&
-          "bg-white/10 font-medium text-foreground shadow-[0_0_24px_-18px_var(--acc-blue)]"
+          "bg-[var(--surface-hover)] font-medium text-[var(--text-primary)]"
       )}
       onClick={() => switchToTask(task.id)}
     >
@@ -160,7 +162,7 @@ export function TaskQueue() {
       <div className="mb-4">
         <h3
           className={cn(
-            "mb-1 rounded-xl px-3 py-1 text-xs font-medium",
+            "mb-1 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]",
             accentColor
           )}
         >
@@ -193,33 +195,33 @@ export function TaskQueue() {
           "Top Tasks",
           queuedTasks,
           "queued",
-          "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+          "text-[var(--color-accent)]"
         )}
         {renderSection(
           "Past Due",
           pastDueTasks,
           "pastDue",
-          "bg-red-500/10 text-red-700 dark:text-red-400"
+          "text-[var(--color-danger)]"
         )}
         {renderSection(
           "Postponed",
           postponedTasks,
           "postponed",
-          "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+          "text-[var(--color-warning)]"
         )}
         {renderSection(
           "Recently Completed",
           recentlyCompletedTasks,
           "completed",
-          "bg-green-500/10 text-green-700 dark:text-green-400"
+          "text-[var(--color-success)]"
         )}
 
         {queuedTasks.length === 0 &&
           pastDueTasks.length === 0 &&
           postponedTasks.length === 0 &&
           recentlyCompletedTasks.length === 0 && (
-            <div className="glass--subtle py-5 text-center text-sm text-muted-foreground">
-              <div className="flowday-orb mx-auto mb-3 h-10 w-10 opacity-75" />
+            <div className="py-7 text-center text-sm text-[var(--text-muted)]">
+              <Target className="mx-auto mb-3 h-6 w-6 opacity-70" />
               No tasks available
             </div>
           )}

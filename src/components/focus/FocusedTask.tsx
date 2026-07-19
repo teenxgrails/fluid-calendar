@@ -25,10 +25,10 @@ export function FocusedTask({ task }: FocusedTaskProps) {
     <section className="flex flex-1 flex-col pt-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <p className="mb-2 text-[11px] font-medium uppercase text-[#9BA1A6]">
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--text-muted)]">
             Now
           </p>
-          <h2 className="task-title text-2xl font-semibold text-white">
+          <h2 className="task-title text-2xl font-semibold text-[var(--text-primary)]">
             {task.title}
           </h2>
 
@@ -56,7 +56,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {task.dueDate && (
-          <div className="border-l-2 border-[var(--accent)] bg-[#202425] p-3">
+          <div className="border-l-2 border-[var(--accent)] bg-[var(--surface-panel)] p-3">
             <h3 className="mb-1 text-sm font-medium">Due Date</h3>
             <p className="text-muted-foreground">
               {format(task.dueDate, "PPP")}
@@ -64,7 +64,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.completedAt && task.status === TaskStatus.COMPLETED && (
-          <div className="border-l-2 border-[#4D9A72] bg-[#202425] p-3">
+          <div className="border-l-2 border-[var(--color-success)] bg-[var(--surface-panel)] p-3">
             <h3 className="mb-1 text-sm font-medium">Completed On</h3>
             <p className="text-muted-foreground">
               {format(task.completedAt, "PPP p")}
@@ -72,13 +72,13 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.duration && (
-          <div className="border-l-2 border-[#697177] bg-[#202425] p-3">
+          <div className="border-l-2 border-[var(--border-control)] bg-[var(--surface-panel)] p-3">
             <h3 className="mb-1 text-sm font-medium">Estimated Duration</h3>
             <p className="text-muted-foreground">{task.duration} minutes</p>
           </div>
         )}
         {task.scheduleScore && (
-          <div className="border-l-2 border-[#697177] bg-[#202425] p-3">
+          <div className="border-l-2 border-[var(--border-control)] bg-[var(--surface-panel)] p-3">
             <h3 className="mb-1 text-sm font-medium">Focus Score</h3>
             <p className="text-muted-foreground">
               {task.scheduleScore.toFixed(2)}
@@ -86,7 +86,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
           </div>
         )}
         {task.isRecurring && (
-          <div className="border-l-2 border-[#697177] bg-[#202425] p-3">
+          <div className="border-l-2 border-[var(--border-control)] bg-[var(--surface-panel)] p-3">
             <h3 className="mb-1 text-sm font-medium">Recurring Task</h3>
             <p className="text-muted-foreground">This task repeats</p>
           </div>
@@ -104,7 +104,7 @@ export function FocusedTask({ task }: FocusedTaskProps) {
 
       {/* Task description with hyperlinks */}
       {task.description && (
-        <div className="border-t border-[#2B2F31] pt-4">
+        <div className="border-t border-[var(--border-subtle)] pt-4">
           <h3 className="mb-2 text-sm font-medium">Description</h3>
           <TaskDescription
             value={task.description}

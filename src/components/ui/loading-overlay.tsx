@@ -1,7 +1,7 @@
 export function LoadingOverlay() {
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xl">
-      <div className="glass--strong grid h-20 w-20 place-items-center">
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/45">
+      <div className="grid h-16 w-16 place-items-center rounded-lg border border-[var(--dialog-border)] bg-[var(--dialog-bg)]">
         <svg
           className="h-8 w-8 animate-spin text-[var(--acc-blue)]"
           viewBox="0 0 24 24"

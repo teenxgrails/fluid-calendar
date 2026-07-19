@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { TaskTimer } from "@/components/tasks/TaskTimer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -188,6 +189,10 @@ export function TaskModal({
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("#E5E7EB");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  );
+  const [isDirty, setIsDirty] = useState(false);
   const [projectId, setProjectId] = useState<string | null | undefined>(
     initialProjectId || task?.projectId
   );
@@ -251,6 +256,8 @@ export function TaskModal({
     setPriorityLevel(SchedulingTaskPriority.MEDIUM);
     setIsAdvancedOpen(false);
     setIsTemplateMenuOpen(false);
+    setIsDirty(false);
+    setSaveState("idle");
   }, [initialProjectId]);
 
   // Reset form when modal opens/closes
@@ -348,6 +355,15 @@ export function TaskModal({
     }
   }, [task, isOpen, initialProjectId, initialStart, initialEnd, resetForm]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const frame = window.requestAnimationFrame(() => {
+      setIsDirty(false);
+      setSaveState("idle");
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen, task?.id]);
+
   // Focus title input when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -430,8 +446,12 @@ export function TaskModal({
   const save = async (statusValue: TaskStatus) => {
     if (!title.trim()) return;
     setIsSubmitting(true);
+    setSaveState("saving");
     try {
       await onSave(buildPayload(statusValue));
+      setIsDirty(false);
+      setSaveState("saved");
+      await new Promise((resolve) => window.setTimeout(resolve, 240));
       onClose();
     } catch (error) {
       void logger.error(
@@ -444,6 +464,7 @@ export function TaskModal({
       );
     } finally {
       setIsSubmitting(false);
+      setSaveState((current) => (current === "saved" ? current : "idle"));
     }
   };
 
@@ -462,6 +483,17 @@ export function TaskModal({
     !!task.deadline &&
     status !== TaskStatus.COMPLETED &&
     newDate(task.deadline).getTime() < Date.now();
+
+  const requestClose = () => {
+    if (
+      isDirty &&
+      !isSubmitting &&
+      !window.confirm("Discard your unsaved task changes?")
+    ) {
+      return;
+    }
+    onClose();
+  };
 
   const handleCreateTag = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -520,15 +552,20 @@ export function TaskModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && requestClose()}>
       <DialogContent
         data-testid="task-modal"
-        className="h-[min(767px,calc(100dvh-1rem))] max-h-[calc(100dvh-1rem)] !w-[calc(100vw-1rem)] gap-0 overflow-hidden border-[var(--dialog-border)] bg-[var(--surface-canvas)] p-0 text-[var(--text-primary)] shadow-none sm:h-[min(767px,calc(100dvh-3.875rem))] sm:max-h-[calc(100dvh-3.875rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1016px] lg:[&>button.absolute]:-right-8 lg:[&>button.absolute]:top-0"
+        className="!bottom-0 !left-0 !top-auto h-[92dvh] max-h-[92dvh] !w-full !max-w-none !translate-x-0 !translate-y-0 gap-0 overflow-hidden !rounded-b-none !rounded-t-2xl border-[var(--dialog-border)] bg-[var(--surface-canvas)] p-0 text-[var(--text-primary)] shadow-lg sm:!bottom-auto sm:!left-1/2 sm:!top-1/2 sm:h-[min(767px,calc(100dvh-3.875rem))] sm:max-h-[calc(100dvh-3.875rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1016px] sm:!-translate-x-1/2 sm:!-translate-y-1/2 sm:!rounded-[var(--dialog-radius)] lg:[&>button.absolute]:-right-8 lg:[&>button.absolute]:top-0"
       >
         {isSubmitting && <LoadingOverlay />}
+        <div
+          aria-hidden="true"
+          className="absolute left-1/2 top-2 z-10 h-1 w-9 -translate-x-1/2 rounded-full bg-[var(--border-control)] sm:hidden"
+        />
         <form
           onSubmit={handleSubmit}
-          className="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,696px)_320px] lg:grid-rows-[95px_minmax(0,1fr)_54px] lg:[grid-template-areas:'header_aside''main_aside''mainFooter_asideFooter']"
+          onChangeCapture={() => setIsDirty(true)}
+          className="flex h-full min-h-0 flex-col overflow-y-auto lg:grid lg:grid-cols-[minmax(0,696px)_320px] lg:grid-rows-[95px_minmax(0,1fr)_54px] lg:overflow-hidden lg:[grid-template-areas:'header_aside''main_aside''mainFooter_asideFooter']"
         >
           <DialogHeader className="space-y-0 px-6 py-4 lg:[grid-area:header] lg:px-10 lg:pt-4">
             <DialogDescription className="sr-only">
@@ -656,10 +693,13 @@ export function TaskModal({
             />
           </DialogHeader>
 
-          <main className="flex min-h-0 flex-col px-6 pb-3 lg:[grid-area:main] lg:px-10 lg:pb-6">
+          <main className="flex min-h-[280px] flex-none flex-col px-6 pb-3 lg:min-h-0 lg:[grid-area:main] lg:px-10 lg:pb-6">
             <TaskDescriptionEditor
               value={description}
-              onChange={setDescription}
+              onChange={(value) => {
+                setDescription(value);
+                setIsDirty(true);
+              }}
             />
             <div className="flex h-[50px] flex-none items-center justify-between text-[13px]">
               <span className="flex items-center gap-2 font-semibold text-[var(--text-primary)]">
@@ -675,7 +715,7 @@ export function TaskModal({
             </div>
           </main>
 
-          <aside className="min-h-0 overflow-y-auto border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] lg:[grid-area:aside] lg:border-l lg:border-t-0">
+          <aside className="flex-none border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] lg:min-h-0 lg:overflow-y-auto lg:[grid-area:aside] lg:border-l lg:border-t-0">
             <div className="space-y-0.5 px-3 py-4 lg:px-5">
               <div
                 className="flex h-[28px] w-full items-center gap-2 px-1 text-left text-[14px]"
@@ -828,12 +868,20 @@ export function TaskModal({
                 <span className="w-[76px] text-[var(--text-secondary)]">
                   Start date:
                 </span>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={startDate}
-                  onChange={(event) => setStartDate(event.target.value)}
-                  className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none focus-visible:ring-0"
+                <DatePicker
+                  value={
+                    startDate
+                      ? new Date(`${startDate.split("T")[0]}T00:00:00`)
+                      : null
+                  }
+                  onChange={(date) => {
+                    setStartDate(date ? format(date, "yyyy-MM-dd") : "");
+                    setIsDirty(true);
+                  }}
+                  placeholder="No start date"
+                  ariaLabel="Choose task start date"
+                  showIcon={false}
+                  className="h-[28px] min-w-0 flex-1 px-0"
                 />
               </div>
               <div className="flex h-[30px] items-center gap-2">
@@ -841,12 +889,18 @@ export function TaskModal({
                 <span className="w-[76px] text-[var(--text-secondary)]">
                   Deadline:
                 </span>
-                <Input
-                  id="deadline"
-                  type="datetime-local"
-                  value={deadline}
-                  onChange={(event) => setDeadline(event.target.value)}
-                  className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-0 text-[13px] text-[var(--color-accent)] shadow-none focus-visible:ring-0"
+                <DatePicker
+                  value={deadline ? newDate(deadline) : null}
+                  onChange={(date) => {
+                    setDeadline(date ? formatToLocalISOString(date) : "");
+                    setIsDirty(true);
+                  }}
+                  includeTime
+                  accent
+                  placeholder="No deadline"
+                  ariaLabel="Choose task deadline"
+                  showIcon={false}
+                  className="h-[28px] min-w-0 flex-1 px-0"
                 />
                 <Bell className="h-4 w-4 text-[var(--color-accent)]" />
               </div>
@@ -1145,7 +1199,7 @@ export function TaskModal({
             )}
           </aside>
 
-          <footer className="flex items-center px-6 lg:[grid-area:mainFooter] lg:px-10">
+          <footer className="hidden items-center px-6 sm:flex lg:[grid-area:mainFooter] lg:px-10">
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -1171,12 +1225,21 @@ export function TaskModal({
               </PopoverContent>
             </Popover>
           </footer>
-          <div className="flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 lg:[grid-area:asideFooter] lg:border-l">
+          <div className="sticky bottom-0 z-10 mt-auto flex min-h-[54px] flex-none items-center justify-end gap-2 border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 lg:static lg:[grid-area:asideFooter] lg:border-l">
+            <span className="mr-auto text-[11px] text-[var(--text-muted)]">
+              {saveState === "saving"
+                ? "Saving…"
+                : saveState === "saved"
+                  ? "Saved"
+                  : isDirty
+                    ? "Unsaved changes"
+                    : "All changes saved"}
+            </span>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={onClose}
+              onClick={requestClose}
               className="h-[30px] px-2 text-[13px] text-[var(--text-secondary)]"
             >
               Cancel{" "}
@@ -1189,7 +1252,13 @@ export function TaskModal({
               disabled={isSubmitting || !title.trim()}
               className="h-[34px] px-3 text-[13px]"
             >
-              {isSubmitting ? "Saving..." : task ? "Save changes" : "Save task"}
+              {saveState === "saving"
+                ? "Saving…"
+                : saveState === "saved"
+                  ? "Saved"
+                  : task
+                    ? "Save changes"
+                    : "Save task"}
             </Button>
           </div>
         </form>

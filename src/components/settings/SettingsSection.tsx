@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 interface SettingsSectionProps {
   title?: string;
   description?: string;
+  showDescription?: boolean;
   children: React.ReactNode;
 }
 
@@ -25,16 +26,17 @@ interface SettingsAdvancedProps {
 export function SettingsSection({
   title,
   description,
+  showDescription = false,
   children,
 }: SettingsSectionProps) {
   return (
     <section className="max-w-[896px] text-[var(--text-primary)]">
-      {(title || description) && (
+      {(title || (description && showDescription)) && (
         <header className="mb-5">
           {title && (
             <h2 className="text-[16px] font-semibold leading-6">{title}</h2>
           )}
-          {description && (
+          {description && showDescription && (
             <p
               className={cn(
                 "max-w-[760px] text-[13px] leading-5 text-[var(--text-secondary)]",

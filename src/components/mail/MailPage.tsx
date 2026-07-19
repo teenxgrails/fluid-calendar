@@ -291,11 +291,11 @@ export function MailPage() {
   }, [loadedImages, openMessage?.bodyHtml]);
 
   return (
-    <div className="flex h-screen min-h-0 overflow-hidden bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+    <div className="flex h-full min-h-0 overflow-hidden bg-[var(--surface-canvas)] text-[var(--text-primary)]">
       <aside
         className={cn(
-          "w-[220px] flex-none border-r border-[var(--border-subtle)] bg-[var(--surface-panel)] max-md:w-full",
-          mobilePane !== "accounts" && "max-md:hidden"
+          "w-[220px] flex-none border-r border-[var(--border-subtle)] bg-[var(--surface-panel)] max-xl:w-full",
+          mobilePane !== "accounts" && "max-xl:hidden"
         )}
       >
         <div className="flex h-12 items-center border-b border-[var(--border-subtle)] px-3">
@@ -311,7 +311,7 @@ export function MailPage() {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <ScrollArea className="h-[calc(100vh-3rem)]">
+        <ScrollArea className="h-[calc(100%_-_3rem)]">
           <nav className="space-y-1 p-2" aria-label="Mail accounts">
             <button
               type="button"
@@ -390,15 +390,15 @@ export function MailPage() {
 
       <section
         className={cn(
-          "w-[360px] flex-none border-r border-[var(--border-subtle)] max-lg:w-[320px] max-md:w-full",
-          mobilePane !== "messages" && "max-md:hidden"
+          "w-[360px] flex-none border-r border-[var(--border-subtle)] max-xl:w-full",
+          mobilePane !== "messages" && "max-xl:hidden"
         )}
       >
         <header className="flex h-12 items-center gap-1 border-b border-[var(--border-subtle)] px-2">
           <Button
             variant="ghost"
             size="icon"
-            className="hidden h-7 w-7 max-md:inline-flex"
+            className="hidden h-7 w-7 max-xl:inline-flex"
             onClick={() => setMobilePane("accounts")}
             aria-label="Show mail accounts"
           >
@@ -421,7 +421,7 @@ export function MailPage() {
             <RefreshCw className={cn("h-4 w-4", syncing && "animate-spin")} />
           </Button>
         </header>
-        <ScrollArea className="h-[calc(100vh-3rem)]">
+        <ScrollArea className="h-[calc(100%_-_3rem)]">
           {loading ? (
             <div className="p-6 text-center text-[12px] text-[var(--text-muted)]">
               Loading inbox...
@@ -477,7 +477,7 @@ export function MailPage() {
                       {message.snippet}
                     </span>
                   </span>
-                  <ChevronRight className="mt-4 hidden h-3.5 w-3.5 text-[var(--text-muted)] max-md:block" />
+                  <ChevronRight className="mt-4 hidden h-3.5 w-3.5 text-[var(--text-muted)] max-xl:block" />
                 </button>
               ))}
             </div>
@@ -509,17 +509,17 @@ export function MailPage() {
 
       <main
         className={cn(
-          "min-w-0 flex-1 max-md:w-full",
-          mobilePane !== "message" && "max-md:hidden"
+          "min-w-0 flex-1 max-xl:w-full",
+          mobilePane !== "message" && "max-xl:hidden"
         )}
       >
         {openMessage ? (
-          <div className="flex h-screen min-h-0 flex-col">
+          <div className="flex h-full min-h-0 flex-col">
             <header className="flex h-12 flex-none items-center gap-1 border-b border-[var(--border-subtle)] px-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="hidden h-7 w-7 max-md:inline-flex"
+                className="hidden h-7 w-7 max-xl:inline-flex"
                 onClick={() => setMobilePane("messages")}
                 aria-label="Back to messages"
               >

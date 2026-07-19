@@ -29,7 +29,7 @@ export function BoardsSidebarSection() {
   }, [loaded, fetchBoards]);
 
   return (
-    <div className="mt-3 max-md:hidden">
+    <div className="mt-3 max-lg:hidden">
       <div className="mb-1 flex items-center justify-between px-2.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-lo)]">
           Boards

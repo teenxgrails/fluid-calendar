@@ -15,6 +15,9 @@ import {
 
 import { APP_NAME } from "@/lib/app-config";
 import { newDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
+
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface AiMessage {
   id: string;
@@ -76,6 +79,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
   const [undoToken, setUndoToken] = useState<string | null>(null);
   const [showBriefing, setShowBriefing] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(!compact);
+  const isMobile = useIsMobile(768);
 
   const active = conversations.find((item) => item.id === activeId) || null;
   const messages = active?.messages || [];
@@ -107,6 +111,10 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
     const prompt = new URLSearchParams(window.location.search).get("prompt");
     if (prompt) setInput(prompt);
   }, []);
+
+  useEffect(() => {
+    if (isMobile) setHistoryOpen(false);
+  }, [isMobile]);
 
   const grouped = useMemo(() => {
     return conversations.reduce<Record<string, AiConversation[]>>(
@@ -299,10 +307,15 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 bg-[#1A1D1E] text-white">
+    <div className="relative flex h-full min-h-0 bg-[var(--surface-canvas)] text-[var(--text-primary)]">
       {historyOpen && (
-        <aside className="w-[260px] flex-none border-r border-[#323234] bg-[#1A1D1E] p-2">
-          <div className="mb-2 flex items-center gap-2 rounded-md border border-[#323234] bg-[#262627] px-2.5 py-2 text-[13px] text-[#9AA0A6]">
+        <aside
+          className={cn(
+            "w-[260px] flex-none border-r border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-2",
+            isMobile && "absolute inset-y-0 left-0 z-20 shadow-xl"
+          )}
+        >
+          <div className="mb-2 flex items-center gap-2 rounded-md border border-[var(--border-control)] bg-[var(--surface-panel)] px-2.5 py-2 text-[13px] text-[var(--text-secondary)]">
             <Search className="h-4 w-4" strokeWidth={1.75} />
             Search chats...
           </div>
@@ -316,16 +329,17 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
           </button>
           {Object.entries(grouped).map(([day, items]) => (
             <div key={day} className="mb-3">
-              <div className="px-2 text-[11px] uppercase text-[#9AA0A6]">
+              <div className="px-2 text-[11px] uppercase text-[var(--text-muted)]">
                 {day}
               </div>
               {items.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveId(item.id)}
-                  className={`mt-1 w-full truncate rounded-md px-2.5 py-2 text-left text-[13px] ${
-                    item.id === activeId ? "bg-[#2B2F31]" : "hover:bg-[#262627]"
-                  }`}
+                  className={cn(
+                    "mt-1 w-full truncate rounded-md px-2.5 py-2 text-left text-[13px] transition-colors duration-150 hover:bg-[var(--surface-hover)]",
+                    item.id === activeId && "bg-[var(--surface-hover)]"
+                  )}
                 >
                   {item.title}
                 </button>
@@ -336,11 +350,11 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
       )}
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-11 items-center border-b border-[#323234] px-3">
+        <header className="flex h-11 items-center border-b border-[var(--border-subtle)] px-3">
           <button
             type="button"
             onClick={() => setHistoryOpen((open) => !open)}
-            className="grid h-8 w-8 place-items-center rounded-md text-[#9AA0A6] hover:bg-[#2B2F31] hover:text-white"
+            className="grid h-8 w-8 place-items-center rounded-md text-[var(--text-secondary)] transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           >
             <PanelLeftClose className="h-4 w-4" />
           </button>
@@ -351,7 +365,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
           {!messages.length ? (
             <div className="mx-auto flex h-full max-w-[760px] flex-col justify-center text-center">
               <h1 className="text-2xl font-medium">{APP_NAME} is ready.</h1>
-              <p className="mt-2 text-sm text-[#9AA0A6]">
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
                 What can I help you get done?
               </p>
               {showBriefing && canChat && (
@@ -376,7 +390,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
                   <button
                     key={prompt}
                     onClick={() => setInput(prompt)}
-                    className="rounded-md border border-[#323234] bg-[#262627] px-4 py-3 text-left text-sm hover:bg-[#2B2F31]"
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-4 py-3 text-left text-sm transition-colors duration-150 hover:bg-[var(--surface-hover)]"
                   >
                     {prompt}
                   </button>
@@ -388,11 +402,12 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`rounded-md border border-[#323234] px-3 py-2 text-sm ${
+                  className={cn(
+                    "rounded-md border border-[var(--border-subtle)] px-3 py-2 text-sm",
                     message.role === "user"
-                      ? "ml-auto max-w-[78%] bg-[#2B2F31]"
-                      : "mr-auto max-w-[86%] bg-[#262627]"
-                  }`}
+                      ? "ml-auto max-w-[82%] bg-[var(--surface-hover)]"
+                      : "mr-auto max-w-[90%] bg-[var(--surface-panel)]"
+                  )}
                 >
                   {message.content}
                 </div>
@@ -401,7 +416,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
           )}
         </div>
 
-        <div className="border-t border-[#323234] p-3">
+        <div className="border-t border-[var(--border-subtle)] p-3">
           {settings?.usage && !settings.hasApiKey && (
             <div className="mx-auto mb-2 max-w-[760px] text-right text-xs text-[var(--text-secondary)]">
               {settings.usage.remaining}/{settings.usage.limit} actions left
@@ -409,11 +424,11 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
             </div>
           )}
           {!canChat && (
-            <div className="mx-auto mb-2 max-w-[760px] rounded-md border border-[#323234] bg-[#262627] px-3 py-2 text-sm text-[#9AA0A6]">
+            <div className="mx-auto mb-2 max-w-[760px] rounded-md border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2 text-sm text-[var(--text-secondary)]">
               {settings?.usage && !settings.usage.allowed
                 ? "Hosted AI limit reached. Add your own key for unlimited actions. "
                 : "Hosted AI is not configured. "}
-              <Link href="/settings" className="text-[#8EA2FF]">
+              <Link href="/settings#ai" className="text-[var(--color-accent)]">
                 Open Settings → AI
               </Link>
             </div>
@@ -451,7 +466,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
                   type="button"
                   onClick={applyPreview}
                   disabled={!preview.changes.length}
-                  className="rounded-md bg-[var(--accent)] px-3 py-1.5 text-xs text-white disabled:opacity-40"
+                  className="rounded-md border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] px-3 py-1.5 text-xs text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)] disabled:opacity-40"
                 >
                   Apply
                 </button>
@@ -472,19 +487,19 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
             </div>
           )}
           {pendingConfirm && (
-            <div className="mx-auto mb-2 flex max-w-[760px] items-center justify-between rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm">
+            <div className="mx-auto mb-2 flex max-w-[760px] items-center justify-between rounded-md border border-[color-mix(in_srgb,var(--color-warning)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)] px-3 py-2 text-sm">
               <span>Confirm this planner-changing action?</span>
               <button
                 type="button"
                 onClick={() => send(pendingConfirm, true)}
-                className="rounded-md bg-[var(--accent)] px-3 py-1.5 text-xs text-white"
+                className="rounded-md border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] px-3 py-1.5 text-xs text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)]"
               >
                 Confirm
               </button>
             </div>
           )}
           <form
-            className="mx-auto flex max-w-[760px] items-center gap-2 rounded-md border border-[#323234] bg-[#262627] p-2"
+            className="mx-auto flex min-h-12 max-w-[760px] items-center gap-2 rounded-[10px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 transition-colors duration-150 focus-within:border-[var(--text-muted)]"
             onSubmit={(event) => {
               event.preventDefault();
               send();
@@ -494,13 +509,13 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
               disabled={!canChat || streaming}
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none placeholder:text-[#9AA0A6]"
+              className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none placeholder:text-[var(--text-muted)]"
               placeholder="Ask anything about your tasks and calendar..."
             />
             <button
               type="submit"
               disabled={!canChat || streaming || !input.trim()}
-              className="grid h-8 w-8 place-items-center rounded-md bg-[var(--accent)] text-white disabled:opacity-40"
+              className="grid h-8 w-8 place-items-center rounded-md border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)] disabled:opacity-40"
             >
               <Send className="h-4 w-4" />
             </button>

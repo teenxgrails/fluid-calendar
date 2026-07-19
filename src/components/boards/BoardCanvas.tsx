@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   closestCorners,
@@ -20,9 +22,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Plus } from "lucide-react";
 
+import { TaskModal } from "@/components/tasks/TaskModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskModal } from "@/components/tasks/TaskModal";
 
 import { cn } from "@/lib/utils";
 
@@ -45,6 +47,7 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
   const { updateTask } = useTaskMutations();
   const { tags, createTag } = useTaskStore();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -71,6 +74,7 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveTaskId(null);
     if (!over || !board) return;
 
     const taskId = String(active.id);
@@ -100,6 +104,14 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
     if (!targetColumnId) return;
     void moveCard(taskId, targetColumnId, targetIndex);
   };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveTaskId(String(event.active.id));
+  };
+
+  const activeTask = activeTaskId
+    ? board?.tasks.find((task) => task.id === activeTaskId)
+    : null;
 
   if (loading) {
     return (
@@ -131,7 +143,9 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveTaskId(null)}
       >
         <div className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto p-3 md:snap-none">
           {board.columns.map((column) => {
@@ -158,6 +172,13 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
             Add column
           </button>
         </div>
+        <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
+          {activeTask ? (
+            <div className="w-64 rotate-1 rounded-md border border-[var(--color-accent)] bg-[var(--surface-panel)] px-3 py-2 text-left text-[13px] text-[var(--text-primary)] shadow-lg">
+              {activeTask.title}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
       <TaskModal
@@ -203,7 +224,7 @@ function BoardColumnView({
   };
 
   return (
-    <section className="flex w-64 flex-none snap-start flex-col rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+    <section className="flex w-[272px] flex-none snap-start flex-col rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
       <header className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-3 py-2">
         {color && (
           <span
@@ -225,6 +246,11 @@ function BoardColumnView({
           strategy={verticalListSortingStrategy}
         >
           <div className="flex min-h-[24px] flex-col gap-2 p-2">
+            {cards.length === 0 && (
+              <div className="grid min-h-24 place-items-center rounded-md border border-dashed border-[var(--border-control)] px-4 text-center text-[12px] leading-5 text-[var(--text-muted)]">
+                Drop a task here or create the first card.
+              </div>
+            )}
             {cards.map((task) => (
               <SortableCard key={task.id} task={task} onOpen={onOpenCard} />
             ))}
@@ -281,9 +307,15 @@ function ColumnDroppable({
   columnId: string;
   children: React.ReactNode;
 }) {
-  const { setNodeRef } = useSortable({ id: `col:${columnId}` });
+  const { setNodeRef, isOver } = useSortable({ id: `col:${columnId}` });
   return (
-    <div ref={setNodeRef} className="flex-1">
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "flex-1 rounded-b-lg transition-colors duration-150",
+        isOver && "bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)]"
+      )}
+    >
       {children}
     </div>
   );
@@ -296,8 +328,14 @@ function SortableCard({
   task: Task;
   onOpen: (task: Task) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: task.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
 
   return (
     <button
@@ -306,8 +344,8 @@ function SortableCard({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       onClick={() => onOpen(task)}
       className={cn(
-        "cursor-grab rounded-md border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2 text-left text-[13px] text-[var(--text-primary)] shadow-sm active:cursor-grabbing",
-        isDragging && "opacity-50"
+        "cursor-grab rounded-md border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2 text-left text-[13px] text-[var(--text-primary)] transition-[border-color,background-color,opacity] duration-150 hover:border-[var(--border-control)] hover:bg-[var(--surface-control)] active:cursor-grabbing",
+        isDragging && "opacity-25"
       )}
       {...attributes}
       {...listeners}

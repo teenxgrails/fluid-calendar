@@ -9,10 +9,17 @@ import {
   CornerDownLeft,
 } from "lucide-react";
 
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetDescription,
+  BottomSheetTitle,
+} from "@/components/ui/bottom-sheet";
 import { Input } from "@/components/ui/input";
 
 import { cn } from "@/lib/utils";
 
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import { useTaskMutations } from "@/hooks/useTaskMutations";
 
 import {
@@ -42,6 +49,7 @@ export function CalendarQuickCreate({
   onOpenEventEditor,
 }: CalendarQuickCreateProps) {
   const { createTask } = useTaskMutations();
+  const isMobile = useIsMobile(640);
   const inputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -107,6 +115,86 @@ export function CalendarQuickCreate({
 
   if (!selection) return null;
 
+  const editor = (
+    <>
+      <div className="flex h-7 items-center gap-2 px-2 text-[12px] text-[var(--text-secondary)]">
+        <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.8} />
+        <span>{selection.allDay ? "All day" : "Selected time"}</span>
+      </div>
+      <Input
+        ref={inputRef}
+        aria-label="Task title"
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            void create();
+          }
+        }}
+        placeholder="What needs to happen?"
+        className="h-10 px-3 text-[14px]"
+      />
+      <div className="mt-1.5 grid grid-cols-2 gap-1">
+        <button
+          type="button"
+          onClick={() => void create()}
+          disabled={!title.trim() || isCreating}
+          className={cn(
+            "flex min-h-11 items-center gap-2 rounded-md border px-2.5 text-left text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]",
+            title.trim()
+              ? "border-[var(--control-border)] bg-[var(--control-bg)] text-[var(--text-primary)] hover:bg-[var(--control-bg-hover)]"
+              : "cursor-not-allowed border-[var(--border-subtle)] bg-[var(--surface-hover)] text-[var(--text-muted)]"
+          )}
+        >
+          <CheckSquare2 className="h-3.5 w-3.5" strokeWidth={1.8} />
+          {isCreating ? "Creating…" : "Create task"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setTitle("");
+            onOpenEventEditor();
+          }}
+          className="flex min-h-11 items-center gap-2 rounded-md px-2.5 text-left text-[13px] text-[var(--text-primary)] transition-colors hover:bg-[var(--menu-item-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
+        >
+          <Clock3
+            className="h-3.5 w-3.5 text-[var(--text-secondary)]"
+            strokeWidth={1.8}
+          />
+          Create event
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          setTitle("");
+          onOpenTaskEditor();
+        }}
+        className="mt-1 flex min-h-11 w-full items-center justify-between rounded-md border-t border-[var(--border-subtle)] px-2.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
+      >
+        <span>More task options</span>
+        <CornerDownLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
+      </button>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <BottomSheet open onOpenChange={(open) => !open && close()}>
+        <BottomSheetContent>
+          <BottomSheetTitle className="text-[15px]">
+            Create in calendar
+          </BottomSheetTitle>
+          <BottomSheetDescription className="mb-3 text-[12px]">
+            Add a quick task or open the full editor.
+          </BottomSheetDescription>
+          {editor}
+        </BottomSheetContent>
+      </BottomSheet>
+    );
+  }
+
   const top = Math.min(
     Math.max(selection.point?.y ?? 220, 84),
     window.innerHeight - 184
@@ -130,65 +218,7 @@ export function CalendarQuickCreate({
         className="fixed z-[70] w-[320px] animate-in rounded-[var(--popover-radius)] border border-[var(--popover-border)] bg-[var(--popover-bg)] p-1.5 text-[var(--text-primary)] shadow-lg fade-in-0 slide-in-from-top-1 duration-150 motion-reduce:animate-none"
         style={{ left, top }}
       >
-        <div className="flex h-7 items-center gap-2 px-2 text-[12px] text-[var(--text-secondary)]">
-          <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.8} />
-          <span>{selection.allDay ? "All day" : "Selected time"}</span>
-        </div>
-        <Input
-          ref={inputRef}
-          aria-label="Task title"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              void create();
-            }
-          }}
-          placeholder="What needs to happen?"
-          className="h-9 px-3 text-[13px]"
-        />
-        <div className="mt-1.5 grid grid-cols-2 gap-1">
-          <button
-            type="button"
-            onClick={() => void create()}
-            disabled={!title.trim() || isCreating}
-            className={cn(
-              "flex h-9 items-center gap-2 rounded-md border px-2.5 text-left text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]",
-              title.trim()
-                ? "border-[var(--control-border)] bg-[var(--control-bg)] text-[var(--text-primary)] hover:bg-[var(--control-bg-hover)]"
-                : "cursor-not-allowed border-[var(--border-subtle)] bg-[var(--surface-hover)] text-[var(--text-muted)]"
-            )}
-          >
-            <CheckSquare2 className="h-3.5 w-3.5" strokeWidth={1.8} />
-            {isCreating ? "Creating…" : "Create task"}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setTitle("");
-              onOpenEventEditor();
-            }}
-            className="flex h-9 items-center gap-2 rounded-md px-2.5 text-left text-[13px] text-[var(--text-primary)] transition-colors hover:bg-[var(--menu-item-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
-          >
-            <Clock3
-              className="h-3.5 w-3.5 text-[var(--text-secondary)]"
-              strokeWidth={1.8}
-            />
-            Create event
-          </button>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            setTitle("");
-            onOpenTaskEditor();
-          }}
-          className="mt-1 flex h-9 w-full items-center justify-between rounded-md border-t border-[var(--border-subtle)] px-2.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
-        >
-          <span>More task options</span>
-          <CornerDownLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
-        </button>
+        {editor}
       </div>
     </>
   );

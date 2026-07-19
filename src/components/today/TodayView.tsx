@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
   CalendarDays,
+  Check,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -32,6 +33,7 @@ import {
   startOfDay,
 } from "@/lib/date-utils";
 import { URGENCY_COLORS, getTaskUrgency } from "@/lib/task-urgency";
+import { cn } from "@/lib/utils";
 
 import { useCalendarStore } from "@/store/calendar";
 import { useTaskStore } from "@/store/task";
@@ -212,6 +214,26 @@ export function TodayView() {
   ]);
 
   const groups = useMemo(() => groupDayItems(dayItems), [dayItems]);
+  const completedTasks = useMemo<DayListItem[]>(
+    () =>
+      tasks
+        .filter((task) => {
+          if (task.status !== TaskStatus.COMPLETED) return false;
+          const date =
+            task.scheduledStart ?? task.startDate ?? task.dueDate ?? null;
+          return Boolean(date && isSameDay(newDate(date), dayStart));
+        })
+        .map((task) => ({
+          id: `completed-${task.id}`,
+          title: task.title,
+          meta: "Completed",
+          color: "var(--color-success)",
+          taskId: task.id,
+          start: task.scheduledStart ? newDate(task.scheduledStart) : null,
+          allDay: !task.scheduledStart,
+        })),
+    [dayStart, tasks]
+  );
   const overdueTasks = useMemo(() => {
     if (!viewingToday) return [];
     return tasks
@@ -274,104 +296,146 @@ export function TodayView() {
 
   return (
     <div className="relative h-full overflow-y-auto bg-[var(--surface-canvas)] pb-24">
-      <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col px-4 py-7 sm:px-7 sm:py-9">
-        <header className="relative mb-8 flex items-center justify-center px-12 text-center">
-          <button
-            type="button"
-            onClick={() => setSelectedDate(addDays(selectedDate, -1))}
-            aria-label="Previous day"
-            className="absolute left-0 grid h-9 w-9 place-items-center rounded-full text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+      <div className="mx-auto grid min-h-full w-full max-w-[1120px] grid-cols-1 xl:grid-cols-[minmax(0,780px)_280px]">
+        <main className="min-w-0 px-5 py-8 sm:px-10 sm:py-12 xl:px-12">
+          <nav
+            aria-label="Day navigation"
+            className="mb-8 flex items-center gap-1 text-[12px] text-[var(--text-secondary)]"
           >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <h1 className="font-serif text-[38px] font-semibold leading-none tracking-[-0.025em] text-[var(--text-primary)] sm:text-[44px]">
-              {selectedDate.toLocaleDateString([], { weekday: "long" })}
-            </h1>
-            <p className="mt-2 text-[15px] text-[var(--text-secondary)]">
+            <button
+              type="button"
+              onClick={() => setSelectedDate(addDays(selectedDate, -1))}
+              aria-label="Previous day"
+              className="grid h-8 w-8 place-items-center rounded-md transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedDate(now)}
+              className="h-8 rounded-md px-2 font-medium transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            >
+              {viewingToday ? "Today" : "Back to today"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+              aria-label="Next day"
+              className="grid h-8 w-8 place-items-center rounded-md transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </nav>
+
+          <header className="mb-10">
+            <div className="mb-4 grid h-8 w-8 place-items-center rounded-md bg-[var(--surface-raised)] text-[var(--text-secondary)]">
+              <CalendarDays className="h-4 w-4" />
+            </div>
+            <h1 className="text-[34px] font-semibold leading-[1.12] tracking-[-0.035em] text-[var(--text-primary)] sm:text-[40px]">
               {selectedDate.toLocaleDateString([], {
-                month: "long",
+                weekday: "short",
+                month: "short",
                 day: "numeric",
-                year: "numeric",
               })}
-            </p>
-            {!viewingToday && (
-              <button
-                type="button"
-                onClick={() => setSelectedDate(now)}
-                className="mt-2 rounded-full bg-[var(--surface-raised)] px-3 py-1 text-[11px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-              >
-                Back to today
-              </button>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-            aria-label="Next day"
-            className="absolute right-0 grid h-9 w-9 place-items-center rounded-full text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </header>
-
-        <div ref={listRef} className="space-y-6">
-          {overdueTasks.length > 0 && (
-            <DaySection
-              label="Overdue"
-              icon={CalendarDays}
-              tone="var(--color-danger)"
-              items={overdueTasks.map((task) => ({
-                id: task.id,
-                title: task.title,
-                meta: task.dueDate ? timeLabel(newDate(task.dueDate)) : "Due",
-                color:
-                  URGENCY_COLORS[
-                    getTaskUrgency(task, {
-                      redThresholdHours,
-                      yellowThresholdHours,
-                    })
-                  ],
-                taskId: task.id,
-                start: null,
-                allDay: true,
-              }))}
-              onComplete={completeTask}
-            />
-          )}
-
-          {groups
-            .filter((group) => group.items.length > 0)
-            .map((group) => (
-              <DaySection
-                key={group.id}
-                label={group.label}
-                icon={group.icon}
-                tone={group.tone}
-                items={group.items}
-                onComplete={completeTask}
-              />
-            ))}
-
-          {dayItems.length === 0 && overdueTasks.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[var(--border-control)] px-5 py-10 text-center">
-              <CalendarDays className="mx-auto h-5 w-5 text-[var(--text-muted)]" />
-              <p className="mt-3 text-sm font-medium text-[var(--text-primary)]">
-                The day is open
-              </p>
-              <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                Add a task and Needt will find it a place.
+            </h1>
+            <div className="mt-7">
+              <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">
+                Your day at a glance
+              </h2>
+              <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[var(--text-secondary)]">
+                {dayItems.length === 0
+                  ? "You have room to plan deliberately. Add a task when you are ready."
+                  : `${dayItems.length} ${
+                      dayItems.length === 1 ? "item is" : "items are"
+                    } planned${
+                      overdueTasks.length > 0
+                        ? `, with ${overdueTasks.length} overdue`
+                        : ""
+                    }. Start with the clearest next action.`}
               </p>
             </div>
+          </header>
+
+          {dayItems.length > 8 && (
+            <div className="mb-8 border-l-2 border-[var(--color-warning)] pl-3 text-[13px] leading-5 text-[var(--text-secondary)]">
+              This is a busy day. Keep the first task small and move anything
+              non-essential before the schedule gets tight.
+            </div>
           )}
-        </div>
+
+          <div ref={listRef} className="space-y-8">
+            {overdueTasks.length > 0 && (
+              <DaySection
+                label="Overdue"
+                icon={CalendarDays}
+                tone="var(--color-danger)"
+                items={overdueTasks.map((task) => ({
+                  id: task.id,
+                  title: task.title,
+                  meta: task.dueDate ? timeLabel(newDate(task.dueDate)) : "Due",
+                  color:
+                    URGENCY_COLORS[
+                      getTaskUrgency(task, {
+                        redThresholdHours,
+                        yellowThresholdHours,
+                      })
+                    ],
+                  taskId: task.id,
+                  start: null,
+                  allDay: true,
+                }))}
+                onComplete={completeTask}
+              />
+            )}
+
+            {groups
+              .filter((group) => group.items.length > 0)
+              .map((group) => (
+                <DaySection
+                  key={group.id}
+                  label={group.label}
+                  icon={group.icon}
+                  tone={group.tone}
+                  items={group.items}
+                  onComplete={completeTask}
+                />
+              ))}
+
+            {completedTasks.length > 0 && (
+              <DaySection
+                label="Completed"
+                icon={Check}
+                tone="var(--color-success)"
+                items={completedTasks}
+                onComplete={completeTask}
+                completed
+              />
+            )}
+
+            {dayItems.length === 0 &&
+              overdueTasks.length === 0 &&
+              completedTasks.length === 0 && (
+                <div className="border-y border-dashed border-[var(--border-control)] px-5 py-12 text-center">
+                  <CalendarDays className="mx-auto h-5 w-5 text-[var(--text-muted)]" />
+                  <p className="mt-3 text-sm font-medium text-[var(--text-primary)]">
+                    The day is open
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                    Add a task and Needt will find it a place.
+                  </p>
+                </div>
+              )}
+          </div>
+        </main>
+
+        <DayRail date={selectedDate} items={dayItems} />
       </div>
 
       <button
         type="button"
         onClick={() => setAddOpen(true)}
         aria-label="Quick add task"
-        className="fixed bottom-20 right-5 z-10 grid h-12 w-12 place-items-center rounded-full border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] text-[var(--button-primary-fg)] shadow-lg transition-transform active:scale-95 md:bottom-6"
+        className="fixed bottom-[calc(84px+env(safe-area-inset-bottom))] right-5 z-10 grid h-12 w-12 touch-manipulation place-items-center rounded-full border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)] transition-[transform,background-color] duration-150 active:scale-95 motion-reduce:transition-none lg:bottom-6"
       >
         <Plus className="h-5 w-5" />
       </button>
@@ -417,29 +481,27 @@ function DaySection({
   tone,
   items,
   onComplete,
+  completed = false,
 }: {
   label: string;
   icon: typeof Clock3;
   tone: string;
   items: DayListItem[];
   onComplete: (taskId: string) => Promise<void>;
+  completed?: boolean;
 }) {
   return (
     <section>
-      <div className="mb-2.5 flex items-center gap-2">
-        <span
-          className="flex h-8 items-center gap-2 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.14em]"
-          style={{
-            color: tone,
-            background: `color-mix(in srgb, ${tone} 10%, transparent)`,
-          }}
-        >
-          <Icon className="h-3.5 w-3.5" />
-          {label} ({items.length})
+      <div className="mb-2 flex items-center gap-2 border-b border-[var(--border-subtle)] pb-2">
+        <span className="flex items-center gap-2 text-[13px] font-semibold text-[var(--text-primary)]">
+          <Icon className="h-3.5 w-3.5" style={{ color: tone }} />
+          {label}
         </span>
-        <div className="h-px flex-1 bg-[var(--border-subtle)]" />
+        <span className="text-[12px] tabular-nums text-[var(--text-muted)]">
+          {items.length}
+        </span>
       </div>
-      <ul className="space-y-2">
+      <ul>
         {items.map((item) => (
           <li key={item.id}>
             <TaskRow
@@ -447,6 +509,7 @@ function DaySection({
               meta={item.meta}
               color={item.color}
               completable={Boolean(item.taskId)}
+              completed={completed}
               onComplete={
                 item.taskId ? () => void onComplete(item.taskId!) : undefined
               }
@@ -463,43 +526,111 @@ function TaskRow({
   meta,
   color,
   completable,
+  completed = false,
   onComplete,
 }: {
   title: string;
   meta: string;
   color: string;
   completable: boolean;
+  completed?: boolean;
   onComplete?: () => void;
 }) {
   return (
-    <div className="group flex min-h-[58px] items-center gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3.5 py-2.5 transition-colors hover:bg-[var(--surface-raised)]">
+    <div className="group flex min-h-11 items-center gap-3 border-b border-[var(--border-subtle)] px-1 py-2 transition-colors duration-150 hover:bg-[var(--surface-hover)]">
       <span
-        className="h-8 w-1 flex-none rounded-full"
-        style={{ backgroundColor: color }}
+        className="h-2 w-2 flex-none rounded-full"
+        style={{ backgroundColor: completed ? "var(--text-muted)" : color }}
         aria-hidden
       />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[14px] font-semibold text-[var(--text-primary)]">
+        <span
+          className={cn(
+            "block truncate text-[14px] font-medium text-[var(--text-primary)]",
+            completed && "text-[var(--text-muted)] line-through"
+          )}
+        >
           {title}
         </span>
-        <span className="mt-0.5 block text-[12px] tabular-nums text-[var(--text-secondary)]">
+        <span className="mt-0.5 block text-[11px] tabular-nums text-[var(--text-muted)]">
           {meta}
         </span>
       </span>
-      {completable ? (
+      {completable && !completed ? (
         <button
           type="button"
           onClick={onComplete}
           aria-label={`Complete ${title}`}
-          className="grid h-7 w-7 flex-none place-items-center rounded-full border-2 transition-transform hover:scale-105"
-          style={{ borderColor: color }}
-        />
+          className="grid h-9 w-9 flex-none touch-manipulation place-items-center rounded-md text-[var(--text-muted)] opacity-70 transition-[color,background-color,opacity] duration-150 hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)] group-hover:opacity-100"
+        >
+          <span
+            aria-hidden
+            className="h-4 w-4 rounded-full border"
+            style={{ borderColor: color }}
+          />
+        </button>
       ) : (
-        <CalendarDays
-          className="h-4 w-4 flex-none text-[var(--text-muted)]"
+        <Check
+          className={cn(
+            "h-4 w-4 flex-none text-[var(--text-muted)]",
+            !completed && "opacity-0"
+          )}
           aria-hidden
         />
       )}
     </div>
+  );
+}
+
+function DayRail({ date, items }: { date: Date; items: DayListItem[] }) {
+  const timedItems = items.filter((item) => item.start && !item.allDay);
+
+  return (
+    <aside className="hidden min-h-full border-l border-[var(--border-subtle)] px-5 py-8 xl:block">
+      <div className="sticky top-0">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
+          {isSameDay(date, newDate()) ? "Today" : "Agenda"}
+        </p>
+        <h2 className="mt-1 text-[15px] font-semibold text-[var(--text-primary)]">
+          {date.toLocaleDateString([], {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          })}
+        </h2>
+        <div className="mt-6">
+          {Array.from({ length: 15 }, (_, index) => index + 6).map((hour) => {
+            const hourItems = timedItems.filter(
+              (item) => item.start?.getHours() === hour
+            );
+            return (
+              <div
+                key={hour}
+                className="grid min-h-12 grid-cols-[42px_1fr] border-t border-[var(--border-subtle)]"
+              >
+                <span className="-translate-y-2 bg-[var(--surface-canvas)] pr-2 text-right text-[10px] tabular-nums text-[var(--text-muted)]">
+                  {new Intl.DateTimeFormat([], {
+                    hour: "numeric",
+                    hour12: true,
+                  }).format(new Date(2000, 0, 1, hour))}
+                </span>
+                <div className="min-w-0 py-1">
+                  {hourItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="truncate rounded-sm border-l-2 px-2 py-1 text-[11px] text-[var(--text-secondary)]"
+                      style={{ borderColor: item.color }}
+                      title={item.title}
+                    >
+                      {item.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </aside>
   );
 }

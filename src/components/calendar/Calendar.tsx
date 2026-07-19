@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
-import { CheckSquare2, Clock3, Settings } from "lucide-react";
+import {
+  CheckSquare2,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Settings,
+} from "lucide-react";
 import {
   AnimatePresence,
   LayoutGroup,
@@ -53,6 +59,7 @@ import { newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import { useTaskMutations } from "@/hooks/useTaskMutations";
 
 import { useCalendarStore, useViewStore } from "@/store/calendar";
@@ -98,6 +105,7 @@ export function Calendar({
   } = useSettingsStore();
   const eventModalStore = useEventModalStore();
   const prefersReducedMotion = useReducedMotion();
+  const isPhone = useIsMobile(640);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isRefreshingTasks, setIsRefreshingTasks] = useState(false);
 
@@ -155,6 +163,34 @@ export function Calendar({
     setView(nextView);
   };
 
+  const effectiveView = isPhone && view === "week" ? "day" : view;
+  const visibleViews = isPhone
+    ? VIEW_ORDER.filter((item) => item === "day" || item === "month")
+    : VIEW_ORDER;
+
+  const moveDate = (direction: -1 | 1) => {
+    const next = new Date(currentDate);
+    if (effectiveView === "day") {
+      next.setDate(next.getDate() + direction);
+    } else if (effectiveView === "week") {
+      next.setDate(next.getDate() + direction * 7);
+    } else if (effectiveView === "month") {
+      next.setMonth(next.getMonth() + direction);
+    } else {
+      next.setFullYear(next.getFullYear() + direction);
+    }
+    setDate(next);
+  };
+
+  const dateLabel = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: effectiveView === "multiMonth" ? undefined : "numeric",
+    year:
+      effectiveView === "month" || effectiveView === "multiMonth"
+        ? "numeric"
+        : undefined,
+  }).format(currentDate);
+
   const handleNewEvent = () => {
     const start = newDate();
     eventModalStore.setDefaultDate(start);
@@ -173,7 +209,34 @@ export function Calendar({
       {/* Main Content */}
       <main className="flex min-w-0 flex-1 flex-col bg-[var(--calendar-canvas-bg)]">
         {/* Header */}
-        <header className="flex h-12 flex-none items-center px-2">
+        <header className="flex h-12 flex-none items-center gap-2 border-b border-transparent px-2 max-lg:border-[var(--border-subtle)]">
+          <div className="flex min-w-0 items-center gap-1 lg:hidden">
+            <button
+              type="button"
+              onClick={() => moveDate(-1)}
+              className={APP_TOOLBAR_ICON_BUTTON_CLASS}
+              aria-label="Previous period"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setDate(newDate())}
+              className="min-w-0 rounded-md px-1.5 py-1 text-[13px] font-semibold text-[var(--text-primary)] transition-colors duration-150 hover:bg-[var(--surface-hover)]"
+            >
+              <span className="block max-w-[86px] truncate sm:max-w-none">
+                {dateLabel}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => moveDate(1)}
+              className={APP_TOOLBAR_ICON_BUTTON_CLASS}
+              aria-label="Next period"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
           {/* Right-side actions */}
           <div className="ml-auto flex items-center gap-1">
             {/* Calendar options panel (Motion-style) */}
@@ -184,7 +247,7 @@ export function Calendar({
                   title="Calendar options"
                 >
                   <IoOptionsOutline className="h-4 w-4" />
-                  <span className="hidden sm:inline">Calendar options</span>
+                  <span className="hidden xl:inline">Calendar options</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent
@@ -292,7 +355,7 @@ export function Calendar({
               <IoRefreshOutline
                 className={cn("h-4 w-4", isRefreshingTasks && "animate-spin")}
               />
-              <span className="hidden md:inline">Refresh all tasks</span>
+              <span className="hidden xl:inline">Refresh all tasks</span>
             </button>
 
             <DropdownMenu>
@@ -331,16 +394,18 @@ export function Calendar({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className={APP_TOOLBAR_BUTTON_CLASS}>
-                  {VIEW_LABELS[view]}
+                  {VIEW_LABELS[effectiveView]}
                   <IoChevronDown className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-32">
-                {VIEW_ORDER.map((v) => (
+                {visibleViews.map((v) => (
                   <DropdownMenuItem
                     key={v}
                     onClick={() => handleViewChange(v)}
-                    className={cn(view === v && "text-[var(--color-accent)]")}
+                    className={cn(
+                      effectiveView === v && "text-[var(--color-accent)]"
+                    )}
                   >
                     {VIEW_LABELS[v]}
                   </DropdownMenuItem>
@@ -358,7 +423,7 @@ export function Calendar({
           <LayoutGroup id="calendar-schedule">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
-                key={view}
+                key={effectiveView}
                 className="h-full"
                 initial={prefersReducedMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -368,11 +433,11 @@ export function Calendar({
                   ease: "easeOut",
                 }}
               >
-                {view === "day" ? (
+                {effectiveView === "day" ? (
                   <DayView currentDate={currentDate} />
-                ) : view === "week" ? (
+                ) : effectiveView === "week" ? (
                   <WeekView currentDate={currentDate} />
-                ) : view === "month" ? (
+                ) : effectiveView === "month" ? (
                   <MonthView currentDate={currentDate} onDateClick={setDate} />
                 ) : (
                   <MultiMonthView
