@@ -212,7 +212,7 @@ export const AppNav = memo(function AppNav({
               key={link.href}
               href={link.href}
               className={cn(
-                "flex w-full touch-manipulation items-center gap-2 rounded-md px-2.5 py-1.5 text-left transition-colors duration-[var(--motion-duration-fast)] max-lg:min-h-14 max-lg:w-auto max-lg:flex-1 max-lg:flex-col max-lg:justify-center max-lg:gap-0.5 max-lg:px-1 max-lg:py-1",
+                "flex w-full touch-manipulation items-center gap-2 rounded-md px-2.5 py-1.5 text-left transition-colors [transition-duration:var(--motion-duration-fast)] max-lg:min-h-14 max-lg:w-auto max-lg:flex-1 max-lg:flex-col max-lg:justify-center max-lg:gap-0.5 max-lg:px-1 max-lg:py-1",
                 isActive
                   ? "needt-active-nav-item bg-[var(--active)] text-[var(--text-hi)]"
                   : "text-[var(--text-lo)] hover:bg-[var(--active)] hover:text-[var(--text-hi)]"

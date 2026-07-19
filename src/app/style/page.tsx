@@ -3,12 +3,22 @@ import {
   Check,
   ChevronRight,
   CircleAlert,
+  CircleMinus,
   Clock3,
   Plus,
+  TriangleAlert,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { StyleDatePickerPreview } from "@/components/ui/style-date-picker-preview";
 import { Switch } from "@/components/ui/switch";
 
 import { APP_NAME } from "@/lib/app-config";
@@ -27,10 +37,10 @@ const surfaces = [
 ] as const;
 
 const statuses = [
-  ["Connected", "--color-success"],
-  ["Needs attention", "--color-warning"],
-  ["Unavailable", "--text-muted"],
-  ["Error", "--color-danger"],
+  ["Connected", "--color-success", Check],
+  ["Needs attention", "--color-warning", CircleAlert],
+  ["Unavailable", "--text-muted", CircleMinus],
+  ["Error", "--color-danger", TriangleAlert],
 ] as const;
 
 export default function StylePage() {
@@ -113,6 +123,19 @@ export default function StylePage() {
                 <Button disabled>Unavailable</Button>
               </div>
               <Input placeholder="Input text" aria-label="Input example" />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Select defaultValue="week">
+                  <SelectTrigger aria-label="View example">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="day">Day</SelectItem>
+                    <SelectItem value="week">Week</SelectItem>
+                    <SelectItem value="month">Month</SelectItem>
+                  </SelectContent>
+                </Select>
+                <StyleDatePickerPreview />
+              </div>
               <div className="flex min-h-11 items-center justify-between border-y border-[var(--border-subtle)]">
                 <span className="text-[14px]">Shade non-working hours</span>
                 <Switch aria-label="Switch example" defaultChecked />
@@ -151,13 +174,13 @@ export default function StylePage() {
             description="Every integration uses the same four neutral status patterns."
           />
           <div className="mt-5 flex flex-wrap gap-2">
-            {statuses.map(([label, token]) => (
+            {statuses.map(([label, token, Icon]) => (
               <span
                 key={label}
                 className="inline-flex h-7 items-center gap-2 rounded-full bg-[var(--surface-control)] px-3 text-[12px]"
                 style={{ color: `var(${token})` }}
               >
-                <Check className="h-3.5 w-3.5" />
+                <Icon className="h-3.5 w-3.5" />
                 {label}
               </span>
             ))}

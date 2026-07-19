@@ -78,7 +78,8 @@ export function DatePicker({
       type="button"
       aria-label={ariaLabel}
       className={cn(
-        "group flex min-h-7 min-w-0 items-center gap-1.5 rounded-md px-1.5 text-left text-[13px] transition-colors duration-150 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]",
+        "group flex min-w-0 items-center gap-1.5 rounded-md text-left transition-colors duration-150 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]",
+        isMobile ? "min-h-11 px-3 text-[16px]" : "min-h-7 px-1.5 text-[13px]",
         accent ? "text-[var(--color-accent)]" : "text-[var(--text-primary)]",
         !value && "text-[var(--text-muted)]",
         className
@@ -92,27 +93,6 @@ export function DatePicker({
           ? format(value, includeTime ? "EEE MMM d, h:mm a" : "EEE MMM d")
           : placeholder}
       </span>
-      {value && (
-        <span
-          role="button"
-          tabIndex={0}
-          aria-label="Clear date"
-          className="grid h-5 w-5 flex-none place-items-center rounded text-[var(--text-muted)] opacity-0 transition-opacity duration-150 hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)] group-hover:opacity-100 group-focus-within:opacity-100"
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onChange(null);
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-            event.preventDefault();
-            event.stopPropagation();
-            onChange(null);
-          }}
-        >
-          <X className="h-3 w-3" />
-        </span>
-      )}
     </button>
   );
 
@@ -193,7 +173,10 @@ function DatePickerPanel({
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="ml-auto grid h-7 w-7 place-items-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+              className={cn(
+                "ml-auto grid place-items-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]",
+                mobile ? "h-11 w-11" : "h-7 w-7"
+              )}
               aria-label="Clear date"
             >
               <X className="h-3.5 w-3.5" />
@@ -225,12 +208,18 @@ function DatePickerPanel({
                 next.setHours(hours, minutes, 0, 0);
                 onChange(next);
               }}
-              className="ml-auto h-8 rounded-md border border-[var(--control-border)] bg-[var(--surface-input)] px-2 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--text-muted)]"
+              className={cn(
+                "ml-auto rounded-md border border-[var(--control-border)] bg-[var(--surface-input)] px-2 text-[var(--text-primary)] outline-none focus:border-[var(--text-muted)]",
+                mobile ? "h-11 text-[16px]" : "h-8 text-[13px]"
+              )}
             />
             <button
               type="button"
               onClick={onDone}
-              className="h-8 rounded-md border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] px-3 text-[12px] font-medium text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)] hover:bg-[var(--button-primary-bg-hover)]"
+              className={cn(
+                "rounded-md border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] px-3 font-medium text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)] hover:bg-[var(--button-primary-bg-hover)]",
+                mobile ? "h-11 text-[14px]" : "h-8 text-[12px]"
+              )}
             >
               Done
             </button>
@@ -252,7 +241,10 @@ function DatePickerPanel({
               onChange(withExistingTime(shortcut.date, value));
               if (!includeTime) onDone();
             }}
-            className="flex min-h-10 items-center justify-between gap-3 rounded-md px-2.5 text-left text-[13px] transition-colors duration-150 hover:bg-[var(--surface-hover)]"
+            className={cn(
+              "flex items-center justify-between gap-3 rounded-md px-2.5 text-left text-[13px] transition-colors duration-150 hover:bg-[var(--surface-hover)]",
+              mobile ? "min-h-12 last:col-span-2" : "min-h-10"
+            )}
           >
             <span className="font-medium text-[var(--text-primary)]">
               {shortcut.label}

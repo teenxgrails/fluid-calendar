@@ -14,7 +14,7 @@ const EMPTY_EVENTS: CalendarEvent[] = [];
 // every event on each navigation.
 export default function CalendarPage() {
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0 max-lg:bottom-[calc(68px+env(safe-area-inset-bottom))] max-lg:top-14">
       <Calendar initialFeeds={EMPTY_FEEDS} initialEvents={EMPTY_EVENTS} />
     </div>
   );

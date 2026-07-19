@@ -36,8 +36,32 @@ test("Calendar, Today, and Space stay visually stable", async ({ page }) => {
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("calendar.png");
 
+  if ((page.viewportSize()?.width ?? 0) < 640) {
+    await page.getByRole("button", { name: "Create task or event" }).click();
+    await expect(page.getByRole("heading", { name: "Create" })).toBeVisible();
+    await settleVisualSurface(page);
+    await expect(page).toHaveScreenshot("calendar-create-sheet.png");
+    await page.keyboard.press("Escape");
+
+    await page.getByRole("button", { name: "More calendar actions" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Calendar options" })
+    ).toBeVisible();
+    await settleVisualSurface(page);
+    await expect(page).toHaveScreenshot("calendar-options-sheet.png");
+    await page.keyboard.press("Escape");
+  } else {
+    await page.getByTitle("Calendar options").click();
+    await expect(page.getByRole("heading", { name: "Calendar" })).toBeVisible();
+    await settleVisualSurface(page);
+    await expect(page).toHaveScreenshot("calendar-options.png");
+    await page.keyboard.press("Escape");
+  }
+
   await page.goto("/today", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "Thursday" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /Thu.*Jul 16/, level: 1 })
+  ).toBeVisible();
   await expect(
     page.getByRole("main").getByText("Plan the launch").first()
   ).toBeVisible();
@@ -48,4 +72,13 @@ test("Calendar, Today, and Space stay visually stable", async ({ page }) => {
   await expect(page.getByText("Schedule stays unchanged")).toBeVisible();
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("space.png");
+
+  await page.goto("/style", { waitUntil: "domcontentloaded" });
+  await expect(
+    page.getByRole("heading", { name: "Calm, dense, and deliberate." })
+  ).toBeVisible();
+  await settleVisualSurface(page);
+  await expect(page).toHaveScreenshot("style-system.png", {
+    fullPage: true,
+  });
 });

@@ -65,7 +65,9 @@ export function CalendarQuickCreate({
       return;
     }
 
-    const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 0);
+    const focusTimer = window.setTimeout(() => {
+      if (!isMobile) inputRef.current?.focus();
+    }, 0);
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
@@ -76,7 +78,7 @@ export function CalendarQuickCreate({
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selection, close]);
+  }, [selection, close, isMobile]);
 
   const create = async () => {
     if (!selection || !title.trim() || isCreating) return;
@@ -115,11 +117,28 @@ export function CalendarQuickCreate({
 
   if (!selection) return null;
 
+  const dateLabel = new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(selection.start);
+  const timeLabel = selection.allDay
+    ? "All day"
+    : `${new Intl.DateTimeFormat(undefined, {
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(selection.start)}–${new Intl.DateTimeFormat(undefined, {
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(selection.end)}`;
+
   const editor = (
     <>
-      <div className="flex h-7 items-center gap-2 px-2 text-[12px] text-[var(--text-secondary)]">
+      <div className="flex min-h-8 items-center gap-2 px-2 text-[12px] text-[var(--text-secondary)]">
         <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.8} />
-        <span>{selection.allDay ? "All day" : "Selected time"}</span>
+        <span className="truncate">
+          {dateLabel} · {timeLabel}
+        </span>
       </div>
       <Input
         ref={inputRef}
@@ -133,7 +152,7 @@ export function CalendarQuickCreate({
           }
         }}
         placeholder="What needs to happen?"
-        className="h-10 px-3 text-[14px]"
+        className="h-11 px-3 text-[16px] sm:h-10 sm:text-[14px]"
       />
       <div className="mt-1.5 grid grid-cols-2 gap-1">
         <button
@@ -141,7 +160,7 @@ export function CalendarQuickCreate({
           onClick={() => void create()}
           disabled={!title.trim() || isCreating}
           className={cn(
-            "flex min-h-11 items-center gap-2 rounded-md border px-2.5 text-left text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]",
+            "flex min-h-11 touch-manipulation items-center gap-2 rounded-md border px-2.5 text-left text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]",
             title.trim()
               ? "border-[var(--control-border)] bg-[var(--control-bg)] text-[var(--text-primary)] hover:bg-[var(--control-bg-hover)]"
               : "cursor-not-allowed border-[var(--border-subtle)] bg-[var(--surface-hover)] text-[var(--text-muted)]"
@@ -156,7 +175,7 @@ export function CalendarQuickCreate({
             setTitle("");
             onOpenEventEditor();
           }}
-          className="flex min-h-11 items-center gap-2 rounded-md px-2.5 text-left text-[13px] text-[var(--text-primary)] transition-colors hover:bg-[var(--menu-item-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
+          className="flex min-h-11 touch-manipulation items-center gap-2 rounded-md px-2.5 text-left text-[13px] text-[var(--text-primary)] transition-colors hover:bg-[var(--menu-item-hover)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
         >
           <Clock3
             className="h-3.5 w-3.5 text-[var(--text-secondary)]"
@@ -171,7 +190,7 @@ export function CalendarQuickCreate({
           setTitle("");
           onOpenTaskEditor();
         }}
-        className="mt-1 flex min-h-11 w-full items-center justify-between rounded-md border-t border-[var(--border-subtle)] px-2.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
+        className="mt-1 flex min-h-11 w-full touch-manipulation items-center justify-between rounded-md border-t border-[var(--border-subtle)] px-2.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--menu-item-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)]"
       >
         <span>More task options</span>
         <CornerDownLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
@@ -182,12 +201,12 @@ export function CalendarQuickCreate({
   if (isMobile) {
     return (
       <BottomSheet open onOpenChange={(open) => !open && close()}>
-        <BottomSheetContent>
+        <BottomSheetContent className="px-4">
           <BottomSheetTitle className="text-[15px]">
             Create in calendar
           </BottomSheetTitle>
           <BottomSheetDescription className="mb-3 text-[12px]">
-            Add a quick task or open the full editor.
+            {dateLabel} · {timeLabel}
           </BottomSheetDescription>
           {editor}
         </BottomSheetContent>
