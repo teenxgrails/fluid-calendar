@@ -290,11 +290,11 @@ export default function SettingsPage() {
         </aside>
 
         <main className="settings-main min-h-screen min-w-0 flex-1 bg-[var(--surface-canvas)]">
-          <div className="settings-mobile-header sticky top-0 z-30 min-h-[57px] items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4">
+          <div className="settings-mobile-header sticky top-0 z-30 min-h-16 items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4">
             <a
               href="/calendar"
               aria-label="Back to Needt"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--control-radius)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--control-radius)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
             >
               <ChevronLeft className="h-4 w-4" />
             </a>
@@ -303,7 +303,7 @@ export default function SettingsPage() {
               onValueChange={(value) => selectTab(value as SettingsTab)}
             >
               <SelectTrigger
-                className="h-9 min-w-0 flex-1"
+                className="h-11 min-w-0 flex-1 text-[16px]"
                 aria-label="Settings page"
               >
                 <SelectValue />

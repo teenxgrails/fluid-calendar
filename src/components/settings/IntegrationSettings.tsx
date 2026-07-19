@@ -1,6 +1,14 @@
 "use client";
 
-import { CheckSquare2, Code2, Mail, Webhook } from "lucide-react";
+import {
+  CheckCircle2,
+  CheckSquare2,
+  Circle,
+  CircleMinus,
+  Code2,
+  Mail,
+  Webhook,
+} from "lucide-react";
 import { FaApple, FaMicrosoft } from "react-icons/fa";
 import { SiGooglecalendar } from "react-icons/si";
 import { toast } from "sonner";
@@ -91,7 +99,7 @@ export function IntegrationSettings() {
       name: "Email",
       description: "Turn an email into a task in your Needt inbox.",
       icon: <Mail className="h-8 w-8 text-[var(--text-secondary)]" />,
-      action: "See how",
+      action: "Unavailable",
       status: "Unavailable",
       disabled: true,
       onClick: () => undefined,
@@ -127,12 +135,19 @@ export function IntegrationSettings() {
             {integration.icon}
             <span
               className={cn(
-                "rounded-full bg-[var(--surface-control)] px-2 py-0.5 text-[11px]",
+                "inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-control)] px-2 py-0.5 text-[11px]",
                 integration.status === "Connected"
                   ? "text-[var(--color-success)]"
                   : "text-[var(--text-muted)]"
               )}
             >
+              {integration.status === "Connected" ? (
+                <CheckCircle2 className="h-3 w-3" />
+              ) : integration.status === "Unavailable" ? (
+                <CircleMinus className="h-3 w-3" />
+              ) : (
+                <Circle className="h-3 w-3" />
+              )}
               {integration.status}
             </span>
           </div>
