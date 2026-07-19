@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import dynamic from "next/dynamic";
+
 import {
   Bell,
-  Bold,
   BookOpen,
   BookTemplate,
   Box,
@@ -11,26 +12,15 @@ import {
   CheckSquare2,
   ChevronDown,
   Circle,
-  Code2,
   Copy,
   Ellipsis,
   Flag,
   Folder,
-  Heading1,
-  Heading2,
-  Image,
-  Italic,
   Layers3,
-  Link2,
-  List,
-  ListChecks,
-  ListOrdered,
   Paperclip,
   Plus,
   Repeat2,
-  Strikethrough,
   Tag as TagIcon,
-  Underline,
   UserRound,
 } from "lucide-react";
 import { RRule } from "rrule";
@@ -62,15 +52,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 
 import { format, formatToLocalISOString, newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 import { readTaskDefaults, resolveTaskDefaultDate } from "@/lib/task-defaults";
-import {
-  type TaskDescriptionFormat,
-  formatTaskDescription,
-} from "@/lib/task-description-format";
+import { taskDescriptionToPlainText } from "@/lib/task-description-format";
 import { cn } from "@/lib/utils";
 
 import { useProjectStore } from "@/store/project";
@@ -151,28 +137,21 @@ const TASK_TEMPLATES: TaskTemplate[] = [
 
 const LOG_SOURCE = "TaskModal";
 const SAVED_TASK_TEMPLATES_KEY = "needt-task-templates";
-const DESCRIPTION_ACTIONS: Array<{
-  icon: typeof Bold;
-  label: string;
-  format: TaskDescriptionFormat;
-}> = [
-  { icon: Bold, label: "Bold", format: "bold" },
-  { icon: Italic, label: "Italic", format: "italic" },
-  { icon: Underline, label: "Underline", format: "underline" },
+const TaskDescriptionEditor = dynamic(
+  () =>
+    import("@/components/tasks/TaskDescriptionEditor").then(
+      (module) => module.TaskDescriptionEditor
+    ),
   {
-    icon: Strikethrough,
-    label: "Strikethrough",
-    format: "strikethrough",
-  },
-  { icon: Heading1, label: "Heading 1", format: "heading1" },
-  { icon: Heading2, label: "Heading 2", format: "heading2" },
-  { icon: List, label: "Bulleted list", format: "bulletList" },
-  { icon: ListOrdered, label: "Numbered list", format: "numberedList" },
-  { icon: ListChecks, label: "Checklist", format: "checklist" },
-  { icon: Image, label: "Image link", format: "image" },
-  { icon: Code2, label: "Inline code", format: "code" },
-  { icon: Link2, label: "Link", format: "link" },
-];
+    ssr: false,
+    loading: () => (
+      <div
+        className="min-h-[260px] flex-1 text-[14px] text-[var(--text-muted)]"
+        aria-hidden="true"
+      />
+    ),
+  }
+);
 
 export function TaskModal({
   isOpen,
@@ -234,7 +213,6 @@ export function TaskModal({
   const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
   const [savedTemplates, setSavedTemplates] = useState<TaskTemplate[]>([]);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
 
   const resetForm = useCallback(() => {
     const defaults = readTaskDefaults();
@@ -523,33 +501,12 @@ export function TaskModal({
     setIsTemplateMenuOpen(false);
   };
 
-  const applyDescriptionFormat = (formatType: TaskDescriptionFormat) => {
-    const input = descriptionInputRef.current;
-    const selectionStart = input?.selectionStart ?? description.length;
-    const selectionEnd = input?.selectionEnd ?? selectionStart;
-    const formatted = formatTaskDescription(
-      description,
-      selectionStart,
-      selectionEnd,
-      formatType
-    );
-
-    setDescription(formatted.value);
-    requestAnimationFrame(() => {
-      const nextInput = descriptionInputRef.current;
-      if (!nextInput) return;
-      nextInput.focus();
-      nextInput.setSelectionRange(
-        formatted.selectionStart,
-        formatted.selectionEnd
-      );
-    });
-  };
-
   const copyTask = async () => {
     try {
       await navigator.clipboard.writeText(
-        [title, description].filter(Boolean).join("\n\n")
+        [title, taskDescriptionToPlainText(description)]
+          .filter(Boolean)
+          .join("\n\n")
       );
       toast.success("Task copied");
     } catch (error) {
@@ -700,30 +657,9 @@ export function TaskModal({
           </DialogHeader>
 
           <main className="flex min-h-0 flex-col px-6 pb-3 lg:[grid-area:main] lg:px-10 lg:pb-6">
-            <div
-              aria-label="Description toolbar"
-              className="flex h-[52px] flex-none items-start gap-0.5 overflow-x-auto pt-1 text-[var(--text-muted)]"
-            >
-              {DESCRIPTION_ACTIONS.map(({ icon: Icon, label, format }) => (
-                <button
-                  key={format}
-                  type="button"
-                  title={label}
-                  aria-label={label}
-                  onClick={() => applyDescriptionFormat(format)}
-                  className="grid h-[30px] w-[30px] flex-none place-items-center rounded-md hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                >
-                  <Icon className="h-4 w-4" />
-                </button>
-              ))}
-            </div>
-            <Textarea
-              id="description"
-              ref={descriptionInputRef}
+            <TaskDescriptionEditor
               value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Description"
-              className="min-h-[260px] flex-1 resize-none border-0 bg-transparent px-0 py-0 text-[14px] leading-6 text-[var(--text-primary)] shadow-none placeholder:text-[var(--text-secondary)] focus-visible:border-0 focus-visible:ring-0"
+              onChange={setDescription}
             />
             <div className="flex h-[50px] flex-none items-center justify-between text-[13px]">
               <span className="flex items-center gap-2 font-semibold text-[var(--text-primary)]">

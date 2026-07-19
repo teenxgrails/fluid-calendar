@@ -13,6 +13,7 @@ import {
   deleteTaskBlockEvent,
   schedulePushTaskBlock,
 } from "@/lib/task-block-push";
+import { sanitizeTaskDescriptionForStorage } from "@/lib/task-description-format";
 import {
   ChangeType,
   TaskChangeTracker,
@@ -101,6 +102,10 @@ export async function PUT(
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { tagIds, project, projectId, userId: _, ...updates } = json;
+    if ("description" in updates) {
+      updates.description =
+        sanitizeTaskDescriptionForStorage(updates.description) ?? null;
+    }
 
     // Set completedAt when task is marked as completed
     if (

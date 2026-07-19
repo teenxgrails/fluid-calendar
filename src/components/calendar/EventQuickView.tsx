@@ -10,6 +10,7 @@ import {
   IoTimeOutline,
 } from "react-icons/io5";
 
+import { TaskDescription } from "@/components/tasks/TaskDescription";
 import {
   Popover,
   PopoverAnchor,
@@ -361,9 +362,11 @@ export function EventQuickView({
               )}
 
               {taskItem.description && (
-                <div className="task-description mt-2 line-clamp-2 text-xs text-muted-foreground">
-                  {taskItem.description}
-                </div>
+                <TaskDescription
+                  value={taskItem.description}
+                  compact
+                  className="task-description mt-2 text-xs text-muted-foreground"
+                />
               )}
             </div>
           )}

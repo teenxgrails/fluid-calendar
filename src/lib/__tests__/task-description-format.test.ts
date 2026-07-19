@@ -1,25 +1,47 @@
-import { formatTaskDescription } from "@/lib/task-description-format";
+import {
+  RICH_TEXT_DESCRIPTION_PREFIX,
+  sanitizeTaskDescriptionForStorage,
+  serializeTaskDescription,
+  taskDescriptionToHtml,
+  taskDescriptionToPlainText,
+} from "@/lib/task-description-format";
 
-describe("formatTaskDescription", () => {
-  it("wraps a selected range and keeps it selected", () => {
-    expect(formatTaskDescription("Plan launch", 5, 11, "bold")).toEqual({
-      value: "Plan **launch**",
-      selectionStart: 7,
-      selectionEnd: 13,
-    });
-  });
-
-  it("inserts a useful placeholder when there is no selection", () => {
-    expect(formatTaskDescription("", 0, 0, "link")).toEqual({
-      value: "[link text](https://)",
-      selectionStart: 1,
-      selectionEnd: 10,
-    });
-  });
-
-  it("formats every selected line as a checklist", () => {
+describe("task description rich text", () => {
+  it("renders the legacy Markdown subset without exposing syntax", () => {
     expect(
-      formatTaskDescription("First\nSecond", 0, 12, "checklist").value
-    ).toBe("- [ ] First\n- [ ] Second");
+      taskDescriptionToHtml(
+        "# Plan\nUse **focus** and [Needt](https://needt.app)"
+      )
+    ).toBe(
+      '<h1>Plan</h1><p>Use <strong>focus</strong> and <a href="https://needt.app">Needt</a></p>'
+    );
+  });
+
+  it("sanitizes rich HTML before storage", () => {
+    const result = serializeTaskDescription(
+      "<p>Hello <strong>world</strong></p><script>alert(1)</script>"
+    );
+
+    expect(result).toBe(
+      `${RICH_TEXT_DESCRIPTION_PREFIX}<p>Hello <strong>world</strong></p>`
+    );
+  });
+
+  it("keeps unformatted descriptions backward compatible", () => {
+    expect(sanitizeTaskDescriptionForStorage("Plain task notes")).toBe(
+      "Plain task notes"
+    );
+  });
+
+  it("returns useful plain text for cards, search, and copy", () => {
+    expect(
+      taskDescriptionToPlainText(
+        `${RICH_TEXT_DESCRIPTION_PREFIX}<h2>Launch</h2><ul><li>Review</li><li>Ship</li></ul>`
+      )
+    ).toBe("Launch\nReview\nShip");
+  });
+
+  it("treats an empty editor document as no description", () => {
+    expect(serializeTaskDescription("<p><br></p>")).toBe("");
   });
 });

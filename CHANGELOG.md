@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added deterministic Playwright visual-regression coverage for Calendar, Today, and Space at 1440px desktop, 768px tablet, and 375px mobile viewports, including isolated test data, fixed time/timezone, and portable baseline names.
 - Replaced the inherited placeholder/Stripe billing path with Creem merchant-of-record checkout for Needt Pro ($6 monthly or $60 yearly) and Lifetime ($79), a signed idempotent webhook mapper, customer portal access, subscription lifecycle fields, and a complete house-format Billing settings page. Added server-side Free/Pro/Lifetime entitlements for calendars, auto-scheduling, Boards, Mail, AI, and Focus analytics, with neutral behavior when Creem is not configured.
 - Expanded the existing AI chat into a user-scoped planner copilot with one Zod-validated tool catalog for Tasks, Boards, Focus, read-only Mail, Settings, and durable non-sensitive memory. Added ranked, token-budgeted prompt assembly with today's schedule, hosted DeepSeek-compatible fallback and monthly action metering, daily briefing and overload entry points, Settings memory controls, and deterministic reschedule previews with explicit Apply/Cancel plus one-step Undo.
 - Added a local-first, read-only unified Mail inbox for Gmail, Outlook, and IMAP with encrypted IMAP credentials, provider cursor sync in the existing BullMQ worker, lazy sanitized message bodies, remote-image blocking, unread/archive actions, and task creation from email.
@@ -41,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replaced the task description Markdown textarea with a rendered Tiptap editor supporting headings, bold/italic/underline/strike, lists, checklists, code, links, images, undo, and redo. Rich descriptions are sanitized before storage and render consistently in task quick views, Boards, and Focus while legacy plain-text and Markdown descriptions remain readable.
 - Refined Calendar, Today, Create Task, and Space as one coherent Needt UI pass: 12-hour grid labels now use `1 PM` spacing, the current-time dot is smaller, working hours use the plain canvas while non-working hours receive the optional quiet tint, Today uses a centered day/date hierarchy with time-of-day task groups, and the full task editor consumes shared theme tokens with a functional description-formatting toolbar.
 - Made Space a purely exploratory environment: its darker animated star canvas and compact controls remain draggable and zoomable, but moving task nodes no longer rewrites or freezes their scheduling fields.
 - Finished the remaining Settings tabs with the shared Motion-style row, card, picker, switch, loading, and advanced-section patterns; Theme, Timezone, Notifications, API, Privacy, AI Assistant, Schedules, Desktop, and Account now share the same responsive user-facing layout.
