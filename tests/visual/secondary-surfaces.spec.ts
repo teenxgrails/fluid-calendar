@@ -98,6 +98,13 @@ test("Boards, Focus, Mail, and AI share the responsive Needt system", async ({
     await expect(page).toHaveScreenshot(`mail-message-${theme}.png`);
 
     await page.goto("/chat", { waitUntil: "networkidle" });
+    if (testInfo.project.name === "desktop") {
+      const seededConversation = page.getByRole("button", {
+        name: "Today’s priorities",
+      });
+      await expect(seededConversation).toBeVisible();
+      await seededConversation.click();
+    }
     await expect(page.getByText("What should I focus on first?")).toBeVisible();
     await settleSurface(page);
     await expect(page).toHaveScreenshot(`ai-chat-${theme}.png`);

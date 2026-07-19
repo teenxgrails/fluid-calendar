@@ -35,7 +35,7 @@ export function MobileTopBar() {
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-[var(--line-strong)] bg-[var(--app-bg)] px-4 lg:hidden">
+    <header className="needt-panel-depth fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-[var(--line-strong)] px-4 lg:hidden">
       <div className="flex min-w-0 flex-col">
         <span className="text-sm font-semibold text-[var(--text-hi)]">
           {APP_NAME}

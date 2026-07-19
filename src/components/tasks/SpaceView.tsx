@@ -464,7 +464,7 @@ export function SpaceView({
   // well on a small touch screen; show a placeholder and point to desktop.
   if (isMobile) {
     return (
-      <section className="flex h-full min-h-[540px] flex-col items-center justify-center gap-3 bg-[var(--surface-canvas)] px-6 text-center">
+      <section className="needt-page-depth flex h-full min-h-[540px] flex-col items-center justify-center gap-3 px-6 text-center">
         <Orbit className="h-10 w-10 text-[var(--text-muted)]" />
         <h2 className="text-base font-semibold text-[var(--text-primary)]">
           Space is best on desktop

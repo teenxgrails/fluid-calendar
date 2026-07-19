@@ -8,7 +8,7 @@ const LOG_SOURCE = "customization-api";
 
 const DEFAULT_CUSTOMIZATION = {
   accentColor: "#6366F1",
-  backgroundTint: "#1B1D1E",
+  backgroundTint: "#0E0E10",
   density: "comfortable",
   sidebarWidth: 244,
   radius: 8,

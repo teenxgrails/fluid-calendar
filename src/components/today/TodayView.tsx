@@ -295,7 +295,7 @@ export function TodayView() {
   }
 
   return (
-    <div className="relative h-full overflow-y-auto bg-[var(--surface-canvas)] pb-24">
+    <div className="needt-page-depth relative h-full overflow-y-auto pb-24">
       <div className="mx-auto grid min-h-full w-full max-w-[1120px] grid-cols-1 xl:grid-cols-[minmax(0,780px)_280px]">
         <main className="min-w-0 px-5 py-8 sm:px-10 sm:py-12 xl:px-12">
           <nav
@@ -492,7 +492,7 @@ function DaySection({
 }) {
   return (
     <section>
-      <div className="mb-3 flex items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-2 sm:mb-2 sm:rounded-none sm:border-x-0 sm:border-t-0 sm:bg-transparent sm:px-0 sm:pb-2 sm:pt-0">
+      <div className="needt-raised-depth mb-3 flex items-center gap-2 rounded-full border border-[var(--border-subtle)] px-3 py-2 sm:mb-2 sm:rounded-none sm:border-x-0 sm:border-t-0 sm:bg-none sm:px-0 sm:pb-2 sm:pt-0">
         <span className="flex items-center gap-2 text-[13px] font-semibold text-[var(--text-primary)]">
           <Icon className="h-3.5 w-3.5" style={{ color: tone }} />
           {label}
@@ -537,7 +537,7 @@ function TaskRow({
   onComplete?: () => void;
 }) {
   return (
-    <div className="group flex min-h-11 items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-3 transition-colors duration-150 hover:bg-[var(--surface-hover)] sm:rounded-none sm:border-x-0 sm:border-t-0 sm:bg-transparent sm:px-1 sm:py-2">
+    <div className="needt-panel-depth group flex min-h-11 items-center gap-3 rounded-xl border border-[var(--border-subtle)] px-3 py-3 transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:bg-none sm:rounded-none sm:border-x-0 sm:border-t-0 sm:bg-none sm:px-1 sm:py-2">
       <span
         className="h-2 w-2 flex-none rounded-full"
         style={{ backgroundColor: completed ? "var(--text-muted)" : color }}

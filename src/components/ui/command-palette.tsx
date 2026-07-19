@@ -148,7 +148,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               initial={prefersReducedMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={prefersReducedMotion ? { duration: 0 } : quickEase}
-              className="fixed inset-0 z-50 bg-black/55"
+              className="needt-scrim fixed inset-0 z-50"
             />
           </Dialog.Overlay>
           <Dialog.Content className="fixed left-1/2 top-[20%] z-50 w-full max-w-[640px] -translate-x-1/2">
@@ -169,7 +169,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               <Command
                 shouldFilter={false}
                 className={cn(
-                  "overflow-hidden rounded-lg border border-[var(--line-strong)] bg-[var(--raised)] text-[var(--text-hi)] shadow-lg"
+                  "needt-overlay-depth overflow-hidden rounded-lg border border-[var(--line-strong)] text-[var(--text-hi)] shadow-lg"
                 )}
               >
                 <div className="flex items-center border-b border-[var(--line-strong)] px-3">

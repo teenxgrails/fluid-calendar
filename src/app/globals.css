@@ -38,7 +38,7 @@
     --primitive-neutral-850: #202425;
     --primitive-neutral-865: #1e2021;
     --primitive-neutral-875: #1d1f20;
-    --primitive-neutral-900: #1b1d1e;
+    --primitive-neutral-900: #0e0e10;
     --primitive-neutral-950: #151718;
     --primitive-indigo-500: #6366f1;
     --primitive-blue-500: #4a7bff;
@@ -73,6 +73,30 @@
     --color-danger: var(--primitive-red-500);
     --color-success: var(--primitive-green-500);
     --color-warning: var(--primitive-gold-400);
+
+    /* Top-lit depth backgrounds. Keep the semantic surfaces above as solid
+       colors so borders, color-mix(), and native controls can consume them. */
+    --page-background: radial-gradient(
+      140% 95% at 50% 0%,
+      #ffffff 0%,
+      var(--surface-canvas) 58%
+    );
+    --panel-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #ffffff 0%,
+      var(--surface-panel) 64%
+    );
+    --overlay-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #ffffff 0%,
+      #f9fafc 64%
+    );
+    --raised-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #ffffff 0%,
+      var(--surface-raised) 68%
+    );
+    --scrim: linear-gradient(180deg, rgb(17 19 28 / 12%), rgb(17 19 28 / 58%));
 
     /* Component layer: shared geometry and chrome. */
     --control-height: 36px;
@@ -282,28 +306,49 @@
   .dark {
     color-scheme: dark;
     /* Semantic layer: the finished Calendar is the dark-theme reference. */
-    --surface-canvas: var(
-      --custom-background-tint,
-      var(--primitive-neutral-900)
-    );
-    --surface-panel: var(--primitive-neutral-850);
-    --surface-raised: var(--primitive-neutral-800);
-    --surface-control: var(--primitive-neutral-700);
-    --surface-control-hover: var(--primitive-neutral-650);
-    --surface-input: var(--primitive-neutral-950);
-    --surface-hover: var(--primitive-neutral-750);
+    --surface-canvas: var(--custom-background-tint, #0e0e10);
+    --surface-panel: #151517;
+    --surface-raised: #212126;
+    --surface-control: #212126;
+    --surface-control-hover: #29292f;
+    --surface-input: #151517;
+    --surface-hover: #242429;
     --surface-selected: var(--primitive-neutral-100);
     --surface-inverse: var(--primitive-neutral-100);
-    --border-subtle: var(--primitive-neutral-750);
-    --border-control: var(--primitive-neutral-600);
-    --text-primary: var(--primitive-neutral-050);
-    --text-secondary: var(--primitive-neutral-400);
-    --text-muted: var(--primitive-neutral-500);
-    --text-inverse: var(--primitive-neutral-900);
+    --border-subtle: #26262a;
+    --border-control: #303036;
+    --text-primary: #ececee;
+    --text-secondary: #9c9ca2;
+    --text-muted: #6e6e75;
+    --text-inverse: #0e0e10;
     --color-accent: var(--primitive-indigo-500);
     --color-accent-contrast: var(--primitive-white);
     --color-danger: var(--primitive-red-500);
     --color-success: var(--primitive-green-500);
+    --menu-bg: #1a1a1e;
+    --popover-bg: #1a1a1e;
+    --dialog-bg: #1a1a1e;
+    --page-background: radial-gradient(
+      140% 95% at 50% 0%,
+      #17171a 0%,
+      var(--surface-canvas) 58%
+    );
+    --panel-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #222227 0%,
+      var(--surface-panel) 64%
+    );
+    --overlay-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #27272c 0%,
+      var(--dialog-bg) 64%
+    );
+    --raised-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #2c2c32 0%,
+      var(--surface-raised) 68%
+    );
+    --scrim: linear-gradient(180deg, rgb(0 0 0 / 26%), rgb(0 0 0 / 82%));
     --calendar-working-hours-bg: var(--surface-canvas);
     --calendar-non-working-hours-bg: color-mix(
       in srgb,
@@ -362,7 +407,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    background: var(--app-bg);
+    background-color: var(--app-bg);
+    background-image: var(--page-background);
     color: var(--text-hi);
     font-size: 14px;
     font-family:
@@ -376,12 +422,12 @@
   }
 
   html:not(.dark) body {
-    background: var(--app-bg);
+    background-color: var(--app-bg);
+    background-image: var(--page-background);
     color: var(--text-hi);
   }
 
-  html:not(.dark) .motion-sidebar,
-  html:not(.dark) .bg-\[\#1B1D1E\] {
+  html:not(.dark) .motion-sidebar {
     background-color: var(--app-bg) !important;
     color: var(--text-hi);
   }
@@ -423,7 +469,8 @@
     overflow: hidden;
     border: 1px solid var(--line-strong);
     border-radius: 8px;
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--raised-surface-background);
     box-shadow: none;
   }
 
@@ -442,12 +489,14 @@
 
   .glass--strong {
     border-color: var(--line-strong);
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--raised-surface-background);
   }
 
   .glass--subtle {
     border-radius: 6px;
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--raised-surface-background);
   }
 
   .glow-blue {
@@ -523,13 +572,15 @@
 
   .motion-shell {
     border-color: var(--line-strong);
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--panel-background);
     box-shadow: none;
   }
 
   .motion-panel {
     border-color: var(--line-strong);
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--panel-background);
     box-shadow: none;
   }
 
@@ -555,6 +606,32 @@
   table tbody tr:hover {
     background: var(--active);
     box-shadow: none;
+  }
+}
+
+@layer components {
+  .needt-page-depth {
+    background-color: var(--surface-canvas);
+    background-image: var(--page-background);
+  }
+
+  .needt-panel-depth {
+    background-color: var(--surface-panel);
+    background-image: var(--panel-background);
+  }
+
+  .needt-overlay-depth {
+    background-color: var(--dialog-bg);
+    background-image: var(--overlay-surface-background);
+  }
+
+  .needt-raised-depth {
+    background-color: var(--surface-raised);
+    background-image: var(--raised-surface-background);
+  }
+
+  .needt-scrim {
+    background: var(--scrim);
   }
 }
 
@@ -1396,7 +1473,8 @@ html[data-animations="off"] *::after {
   width: 100%;
   border-radius: 8px;
   border: 1px solid var(--menu-border);
-  background: var(--menu-bg);
+  background-color: var(--menu-bg);
+  background-image: var(--overlay-surface-background);
   box-shadow:
     0 10px 15px -3px rgb(0 0 0 / 10%),
     0 4px 6px -4px rgb(0 0 0 / 10%);

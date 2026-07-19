@@ -309,19 +309,19 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
   }
 
   return (
-    <div className="relative flex h-full min-h-0 bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+    <div className="needt-page-depth relative flex h-full min-h-0 text-[var(--text-primary)]">
       {historyOpen && isMobile && (
         <button
           type="button"
           aria-label="Close chat history"
-          className="absolute inset-0 z-10 bg-black/45"
+          className="needt-scrim absolute inset-0 z-10"
           onClick={() => setHistoryOpen(false)}
         />
       )}
       {historyOpen && (
         <aside
           className={cn(
-            "w-[260px] flex-none border-r border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-2",
+            "needt-panel-depth w-[260px] flex-none border-r border-[var(--border-subtle)] p-2",
             isMobile &&
               "absolute inset-y-0 left-0 z-20 w-[min(86vw,320px)] shadow-xl"
           )}
@@ -339,7 +339,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
               </button>
             </div>
           )}
-          <div className="mb-2 flex min-h-11 items-center gap-2 rounded-md border border-[var(--border-control)] bg-[var(--surface-panel)] px-2.5 py-2 text-[13px] text-[var(--text-secondary)] sm:min-h-9">
+          <div className="needt-raised-depth mb-2 flex min-h-11 items-center gap-2 rounded-md border border-[var(--border-control)] px-2.5 py-2 text-[13px] text-[var(--text-secondary)] sm:min-h-9">
             <Search className="h-4 w-4" strokeWidth={1.75} />
             Search chats...
           </div>
@@ -415,7 +415,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
                   <button
                     key={prompt}
                     onClick={() => setInput(prompt)}
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-4 py-3 text-left text-sm transition-colors duration-150 hover:bg-[var(--surface-hover)]"
+                    className="needt-panel-depth rounded-md border border-[var(--border-subtle)] px-4 py-3 text-left text-sm transition-colors duration-150 hover:bg-[var(--surface-hover)]"
                   >
                     {prompt}
                   </button>
@@ -458,7 +458,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
             </div>
           )}
           {!canChat && (
-            <div className="mx-auto mb-2 max-w-[760px] rounded-md border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2 text-sm text-[var(--text-secondary)]">
+            <div className="needt-panel-depth mx-auto mb-2 max-w-[760px] rounded-md border border-[var(--border-subtle)] px-3 py-2 text-sm text-[var(--text-secondary)]">
               {settings?.usage && !settings.usage.allowed
                 ? "Hosted AI limit reached. Add your own key for unlimited actions. "
                 : "Hosted AI is not configured. "}
@@ -533,7 +533,7 @@ export function AIChatSurface({ compact = false }: AIChatSurfaceProps) {
             </div>
           )}
           <form
-            className="mx-auto flex min-h-14 max-w-[760px] items-center gap-2 rounded-[10px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-2 transition-colors duration-150 focus-within:border-[var(--text-muted)] sm:min-h-12"
+            className="needt-panel-depth mx-auto flex min-h-14 max-w-[760px] items-center gap-2 rounded-[10px] border border-[var(--border-control)] p-2 transition-colors duration-150 focus-within:border-[var(--text-muted)] sm:min-h-12"
             onSubmit={(event) => {
               event.preventDefault();
               send();

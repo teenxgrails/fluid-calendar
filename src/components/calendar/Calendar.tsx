@@ -215,9 +215,9 @@ export function Calendar({
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-[var(--calendar-canvas-bg)] text-[var(--text-primary)]">
+    <div className="needt-page-depth flex h-full w-full overflow-hidden text-[var(--text-primary)]">
       {/* Main Content */}
-      <main className="flex min-w-0 flex-1 flex-col bg-[var(--calendar-canvas-bg)]">
+      <main className="needt-page-depth flex min-w-0 flex-1 flex-col">
         {/* Header */}
         <header className="flex h-14 flex-none items-center gap-1 border-b border-transparent px-1.5 sm:h-12 sm:gap-2 sm:px-2 max-lg:border-[var(--border-subtle)]">
           <div className="flex min-w-0 items-center gap-1 lg:hidden">

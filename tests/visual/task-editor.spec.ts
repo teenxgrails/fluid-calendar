@@ -26,6 +26,19 @@ async function settleTaskEditor(page: import("@playwright/test").Page) {
   await page.waitForTimeout(250);
 }
 
+async function useVisualTheme(
+  page: import("@playwright/test").Page,
+  theme: "dark" | "light"
+) {
+  const response = await page.request.patch("/api/user-settings", {
+    data: { theme },
+  });
+  expect(response.ok()).toBeTruthy();
+  await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
+  await page.goto("/settings#theme", { waitUntil: "networkidle" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+}
+
 test("task description formatting is rendered, not exposed as markup", async ({
   page,
 }, testInfo) => {
@@ -57,16 +70,29 @@ test("task description formatting is rendered, not exposed as markup", async ({
 
 test("task editor stays usable at every breakpoint", async ({ page }) => {
   await page.clock.setFixedTime(new Date(VISUAL_TEST_NOW));
-  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
   await signInVisualUser(page);
   const task = await findVisualTask(page);
 
-  await page.goto(`/tasks?task=${task.id}`, {
-    waitUntil: "domcontentloaded",
-  });
-  const modal = page.getByTestId("task-modal");
-  await expect(modal).toBeVisible();
-  await expect(modal.getByLabel("Task name")).toHaveValue("Morning deep work");
-  await settleTaskEditor(page);
-  await expect(page).toHaveScreenshot("task-editor.png");
+  for (const theme of ["dark", "light"] as const) {
+    await useVisualTheme(page, theme);
+    await page.goto(`/tasks?task=${task.id}`, {
+      waitUntil: "domcontentloaded",
+    });
+    const modal = page.getByTestId("task-modal");
+    await expect(modal).toBeVisible();
+    await expect(modal.getByLabel("Task name")).toHaveValue(
+      "Morning deep work"
+    );
+    await settleTaskEditor(page);
+    await expect(page).toHaveScreenshot(
+      theme === "dark" ? "task-editor.png" : "task-editor-light.png"
+    );
+
+    await modal.getByRole("button", { name: "Choose task deadline" }).click();
+    await expect(page.getByText("Choose a date").last()).toBeVisible();
+    await settleTaskEditor(page);
+    await expect(page).toHaveScreenshot(`task-date-picker-${theme}.png`);
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Escape");
+  }
 });

@@ -604,7 +604,7 @@ export function EventModal({
               </aside>
             </div>
 
-            <div className="flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] px-5 py-3">
+            <div className="needt-panel-depth flex items-center justify-between border-t border-[var(--border-subtle)] px-5 py-3">
               {event?.id ? (
                 <Button
                   type="button"
@@ -643,7 +643,7 @@ export function EventModal({
         }}
       >
         <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 z-[10001] bg-background/80" />
+          <AlertDialog.Overlay className="needt-scrim fixed inset-0 z-[10001]" />
           <AlertDialog.Content className="fixed left-1/2 top-1/2 z-[10002] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-background p-6 shadow-lg">
             <AlertDialog.Title className="mb-4 text-lg font-semibold">
               Edit Recurring Event

@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Rebased both appearance themes on shared top-lit depth tokens. Dark mode now uses a neutral `#0E0E10` canvas with closely stepped `#151517` / `#1A1A1E` / `#212126` surfaces, thin neutral borders, radial page and panel depth, and a stronger top-to-bottom modal scrim; light mode supplies matching inverted depth without blur or glow.
 - Completed the responsive Needt design pass for Boards, Focus, Mail, and AI Chat in both dark and light themes. Boards now separate card-open and drag handles, Focus uses a flat Opal-inspired timer hierarchy with an early-exit sheet, Mail follows the compact Inbox toolbar/row rhythm, and AI Chat shares the common composer, loading, history, and message surfaces.
 - Renamed Settings → Theme to Appearance, made the mobile Me tab point to account settings, and isolated custom dark background tinting from light-mode semantic tokens so switching themes never leaves a dark inline canvas behind.
 - Replaced the task description Markdown textarea with a rendered Tiptap editor supporting headings, bold/italic/underline/strike, lists, checklists, code, links, images, undo, and redo. Rich descriptions are sanitized before storage and render consistently in task quick views, Boards, and Focus while legacy plain-text and Markdown descriptions remain readable.
@@ -67,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Aligned the week header/time gutter with Motion and added a compact gridded all-day rail.
 - Refined calendar working and non-working hour shades while preserving the current-day hierarchy and consistent one-pixel grid lines.
 - Rebuilt the full Create task editor around Motion's measured 1016×767 desktop frame, with a 696px editing canvas, 320px scheduling sidebar, matching property groups, templates, recurrence, and collapsed advanced settings.
-- Recolored the calendar canvas and time gutter to #1B1D1E, with subtle stepped shades for non-current working and non-working hours while preserving every grid line.
+- Rebased the calendar canvas and time gutter on the shared canvas token, with subtle stepped shades for non-current working and non-working hours while preserving every grid line.
 - Rebuilt calendar task and event cards in Motion’s grid language: tasks are neutral, checkbox-led blocks with compact time metadata and a hover actions affordance; events retain a restrained color marker and their own event-specific layout.
 - Matched the Task and Event editors more closely to Motion’s actual layouts: Task now uses a wide, borderless editing canvas with property rows in the scheduling sidebar; Event uses Motion’s compact single-column creation flow with time controls, repeat controls, and Event details below.
 - Reorganized Settings into grouped Calendars, Scheduling, Tasks, Appearance, Notifications, AI, Integrations, Import / Export, and Account pages; legacy hashes now route to their consolidated home.
@@ -95,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Calendar tasks now open their full editor on click, while their checkbox completes them directly without opening the editor.
 - Made Refresh all tasks run the scheduler, reload the calendar, animate the updated layout, and report success or rollback errors clearly.
 - Fixed the current-time indicator gap, removed the extra time-gutter divider, and added matching open/close motion to the Create Task / Event menu.
-- Kept hourly grid rules visible above working-hours overlays, made every all-day cell `#1B1D1E` with four-sided dividers, and removed the redundant main-calendar date controls.
+- Kept hourly grid rules visible above working-hours overlays, made every all-day cell consume the shared canvas token with four-sided dividers, and removed the redundant main-calendar date controls.
 - Reset the calendar to the real current day after a new session, prevented week changes from remounting the whole view, and made mini-calendar arrows move exactly seven days.
 - Hid the empty Today tasks placeholder, included tasks scheduled for today, and based urgency color/order on the explicit deadline before the due-date fallback.
 - Matched the Calendar Options weekday picker to its panel background and replaced the oversized create dropdown with a compact two-action menu in the calendar palette.

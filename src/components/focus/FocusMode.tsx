@@ -47,7 +47,7 @@ export function FocusMode() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-[var(--surface-canvas)]">
+    <div className="needt-page-depth flex h-full flex-col">
       {isProcessing && actionType && (
         <ActionOverlay
           type={actionType}
@@ -100,7 +100,7 @@ export function FocusMode() {
             aria-hidden={sessionActive}
             animate={{ opacity: sessionActive ? 0.35 : 1 }}
             transition={prefersReducedMotion ? { duration: 0 } : springSoft}
-            className="border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] pb-[env(safe-area-inset-bottom)] xl:border-l xl:border-t-0"
+            className="needt-panel-depth border-t border-[var(--border-subtle)] pb-[env(safe-area-inset-bottom)] xl:border-l xl:border-t-0"
             style={{ pointerEvents: sessionActive ? "none" : "auto" }}
           >
             <div className="border-b border-[var(--border-subtle)]">

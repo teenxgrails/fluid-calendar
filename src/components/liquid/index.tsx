@@ -84,7 +84,7 @@ export function PrimaryButton({
   return (
     <button
       className={cn(
-        "liquid-press liquid-shimmer inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white px-5 text-sm font-semibold text-black shadow-[0_0_40px_-12px_var(--acc-violet)] disabled:pointer-events-none disabled:opacity-50",
+        "liquid-press liquid-shimmer inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white px-5 text-sm font-semibold text-black shadow-sm disabled:pointer-events-none disabled:opacity-50",
         className
       )}
       {...props}

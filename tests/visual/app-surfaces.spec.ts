@@ -35,6 +35,8 @@ test("Calendar, Today, and Space stay visually stable", async ({ page }) => {
   });
   await signInVisualUser(page);
   await useVisualTheme(page, "dark");
+  await settleVisualSurface(page);
+  await expect(page).toHaveScreenshot("settings-appearance.png");
   await page.goto("/calendar", { waitUntil: "domcontentloaded" });
 
   await expect(page.locator(".fc-timegrid")).toBeVisible();
@@ -45,6 +47,18 @@ test("Calendar, Today, and Space stay visually stable", async ({ page }) => {
   ).toBeVisible();
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("calendar.png");
+
+  await page.evaluate(() => {
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true })
+    );
+  });
+  await expect(
+    page.getByRole("dialog", { name: "Command Menu" })
+  ).toBeVisible();
+  await settleVisualSurface(page);
+  await expect(page).toHaveScreenshot("command-palette.png");
+  await page.keyboard.press("Escape");
 
   if ((page.viewportSize()?.width ?? 0) < 640) {
     await page.getByRole("button", { name: "Create task or event" }).click();
@@ -79,7 +93,11 @@ test("Calendar, Today, and Space stay visually stable", async ({ page }) => {
   await expect(page).toHaveScreenshot("today.png");
 
   await page.goto("/tasks", { waitUntil: "domcontentloaded" });
-  await expect(page.getByText("Schedule stays unchanged")).toBeVisible();
+  if ((page.viewportSize()?.width ?? 0) < 640) {
+    await expect(page.getByText("Space is best on desktop")).toBeVisible();
+  } else {
+    await expect(page.getByText("Schedule stays unchanged")).toBeVisible();
+  }
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("space.png");
 
@@ -101,11 +119,25 @@ test("primary app surfaces stay coherent in light mode", async ({ page }) => {
   });
   await signInVisualUser(page);
   await useVisualTheme(page, "light");
+  await settleVisualSurface(page);
+  await expect(page).toHaveScreenshot("settings-appearance-light.png");
 
   await page.goto("/calendar", { waitUntil: "networkidle" });
   await expect(page.locator(".fc-timegrid")).toBeVisible();
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("calendar-light.png");
+
+  await page.evaluate(() => {
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true })
+    );
+  });
+  await expect(
+    page.getByRole("dialog", { name: "Command Menu" })
+  ).toBeVisible();
+  await settleVisualSurface(page);
+  await expect(page).toHaveScreenshot("command-palette-light.png");
+  await page.keyboard.press("Escape");
 
   await page.goto("/today", { waitUntil: "networkidle" });
   await expect(
@@ -115,7 +147,11 @@ test("primary app surfaces stay coherent in light mode", async ({ page }) => {
   await expect(page).toHaveScreenshot("today-light.png");
 
   await page.goto("/tasks", { waitUntil: "networkidle" });
-  await expect(page.getByText("Schedule stays unchanged")).toBeVisible();
+  if ((page.viewportSize()?.width ?? 0) < 640) {
+    await expect(page.getByText("Space is best on desktop")).toBeVisible();
+  } else {
+    await expect(page.getByText("Schedule stays unchanged")).toBeVisible();
+  }
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("space-light.png");
 

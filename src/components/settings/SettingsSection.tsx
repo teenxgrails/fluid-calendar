@@ -80,7 +80,7 @@ export function SettingsCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[var(--control-radius)] border border-[var(--border-subtle)] bg-[var(--surface-raised)]",
+        "needt-raised-depth overflow-hidden rounded-[var(--control-radius)] border border-[var(--border-subtle)]",
         className
       )}
       {...props}

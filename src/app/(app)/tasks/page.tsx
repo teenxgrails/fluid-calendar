@@ -243,7 +243,7 @@ export default function TasksPage() {
     : null;
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+    <div className="needt-page-depth flex h-full min-h-0 flex-col overflow-hidden text-[var(--text-primary)]">
       <header className="flex h-12 flex-none items-center border-b border-[var(--border-subtle)] px-2">
         <div className="flex min-w-0 items-center gap-2">
           <Box className="h-4 w-4 text-[var(--text-secondary)]" />

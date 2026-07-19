@@ -30,18 +30,19 @@ tokens for layout. Primitive tokens are only for defining a theme.
 
 | Purpose                | Token                     | Current value |
 | ---------------------- | ------------------------- | ------------- |
-| App/calendar canvas    | `--surface-canvas`        | `#1B1D1E`     |
-| Panel/popover          | `--surface-panel`         | `#202425`     |
-| Raised surface         | `--surface-raised`        | `#26292B`     |
-| Hover/selected row     | `--surface-hover`         | `#2B2F31`     |
-| Control/button surface | `--surface-control`       | `#313538`     |
-| Control hover          | `--surface-control-hover` | `#383D40`     |
-| Inset input            | `--surface-input`         | `#151718`     |
-| Grid/subtle divider    | `--border-subtle`         | `#2B2F31`     |
-| Control border         | `--border-control`        | `#3A3F42`     |
-| Primary text           | `--text-primary`          | `#F2F2F2`     |
-| Secondary text/icons   | `--text-secondary`        | `#9BA1A6`     |
-| Muted text             | `--text-muted`            | `#737A80`     |
+| App/calendar canvas    | `--surface-canvas`        | `#0E0E10`     |
+| Panel/card surface     | `--surface-panel`         | `#151517`     |
+| Popover/dialog surface | `--dialog-bg`             | `#1A1A1E`     |
+| Raised surface         | `--surface-raised`        | `#212126`     |
+| Hover/selected row     | `--surface-hover`         | `#242429`     |
+| Control/button surface | `--surface-control`       | `#212126`     |
+| Control hover          | `--surface-control-hover` | `#29292F`     |
+| Inset input            | `--surface-input`         | `#151517`     |
+| Grid/subtle divider    | `--border-subtle`         | `#26262A`     |
+| Control border         | `--border-control`        | `#303036`     |
+| Primary text           | `--text-primary`          | `#ECECEE`     |
+| Secondary text/icons   | `--text-secondary`        | `#9C9CA2`     |
+| Muted text             | `--text-muted`            | `#6E6E75`     |
 | Configurable accent    | `--color-accent`          | `#6366F1`     |
 
 Status, priority, deadline, event, and calendar-account colors remain
@@ -56,6 +57,10 @@ meaningful colors. Do not flatten them to the accent or to gray.
 - Calendar options picker: `30px` high; options panel: `322px` wide.
 - Menus/popovers/dialogs use their `--menu-*`, `--popover-*`, and
   `--dialog-*` tokens, with no glow or backdrop blur.
+- Pages use `--page-background`; cards and panels use the reusable
+  `--panel-background`, `--raised-surface-background`, or
+  `--overlay-surface-background` top-lit depth tokens. Modal and sheet
+  overlays use the shared vertical `--scrim` token.
 - Inputs and pickers use the inset input surface and a neutral focus border.
 - Switches use `--switch-*`; buttons use `--button-*`.
 - Spatial animations stay at or below 250ms and must respect

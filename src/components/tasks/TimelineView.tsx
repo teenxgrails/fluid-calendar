@@ -84,7 +84,7 @@ export function TimelineView({ tasks }: TimelineViewProps) {
   }
 
   return (
-    <div className="h-full overflow-auto rounded-md border border-[var(--border-control)] bg-[var(--surface-canvas)]">
+    <div className="needt-page-depth h-full overflow-auto rounded-md border border-[var(--border-control)]">
       <div
         className="grid min-w-[760px]"
         style={{

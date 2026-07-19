@@ -191,7 +191,7 @@ export const AppNav = memo(function AppNav({
     <aside
       aria-label={`${APP_NAME} navigation`}
       className={cn(
-        "motion-sidebar z-40 flex h-screen w-[244px] flex-none flex-col border-r border-[var(--line-strong)] bg-[var(--app-bg)] p-2 text-[var(--text-hi)] max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:h-[calc(68px+env(safe-area-inset-bottom))] max-lg:w-full max-lg:flex-row max-lg:border-r-0 max-lg:border-t max-lg:px-1 max-lg:pb-[env(safe-area-inset-bottom)] max-lg:pt-1",
+        "needt-panel-depth motion-sidebar z-40 flex h-screen w-[244px] flex-none flex-col border-r border-[var(--line-strong)] p-2 text-[var(--text-hi)] max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:h-[calc(68px+env(safe-area-inset-bottom))] max-lg:w-full max-lg:flex-row max-lg:border-r-0 max-lg:border-t max-lg:px-1 max-lg:pb-[env(safe-area-inset-bottom)] max-lg:pt-1",
         isSettings && "lg:hidden",
         className
       )}

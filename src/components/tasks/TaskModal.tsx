@@ -555,7 +555,7 @@ export function TaskModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && requestClose()}>
       <DialogContent
         data-testid="task-modal"
-        className="!bottom-0 !left-0 !top-auto h-[92dvh] max-h-[92dvh] !w-full !max-w-none !translate-x-0 !translate-y-0 gap-0 overflow-hidden !rounded-b-none !rounded-t-2xl border-[var(--dialog-border)] bg-[var(--surface-canvas)] p-0 text-[var(--text-primary)] shadow-lg sm:!bottom-auto sm:!left-1/2 sm:!top-1/2 sm:h-[min(767px,calc(100dvh-3.875rem))] sm:max-h-[calc(100dvh-3.875rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1016px] sm:!-translate-x-1/2 sm:!-translate-y-1/2 sm:!rounded-[var(--dialog-radius)] lg:[&>button.absolute]:-right-8 lg:[&>button.absolute]:top-0"
+        className="needt-overlay-depth !bottom-0 !left-0 !top-auto h-[92dvh] max-h-[92dvh] !w-full !max-w-none !translate-x-0 !translate-y-0 gap-0 overflow-hidden !rounded-b-none !rounded-t-2xl border-[var(--dialog-border)] p-0 text-[var(--text-primary)] shadow-lg sm:!bottom-auto sm:!left-1/2 sm:!top-1/2 sm:h-[min(767px,calc(100dvh-3.875rem))] sm:max-h-[calc(100dvh-3.875rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1016px] sm:!-translate-x-1/2 sm:!-translate-y-1/2 sm:!rounded-[var(--dialog-radius)] lg:[&>button.absolute]:-right-8 lg:[&>button.absolute]:top-0"
       >
         {isSubmitting && <LoadingOverlay />}
         <div
@@ -715,7 +715,7 @@ export function TaskModal({
             </div>
           </main>
 
-          <aside className="flex-none border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] lg:min-h-0 lg:overflow-y-auto lg:[grid-area:aside] lg:border-l lg:border-t-0">
+          <aside className="needt-panel-depth flex-none border-t border-[var(--border-subtle)] lg:min-h-0 lg:overflow-y-auto lg:[grid-area:aside] lg:border-l lg:border-t-0">
             <div className="space-y-0.5 px-3 py-4 lg:px-5">
               <div
                 className="flex min-h-11 w-full items-center gap-2 px-1 text-left text-[14px] sm:h-[28px] sm:min-h-0"
@@ -1225,7 +1225,7 @@ export function TaskModal({
               </PopoverContent>
             </Popover>
           </footer>
-          <div className="sticky bottom-0 z-10 mt-auto flex min-h-[54px] flex-none items-center justify-end gap-2 border-t border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 lg:static lg:[grid-area:asideFooter] lg:border-l">
+          <div className="needt-panel-depth sticky bottom-0 z-10 mt-auto flex min-h-[54px] flex-none items-center justify-end gap-2 border-t border-[var(--border-subtle)] px-3 lg:static lg:[grid-area:asideFooter] lg:border-l">
             <span className="mr-auto text-[11px] text-[var(--text-muted)]">
               {saveState === "saving"
                 ? "Saving…"

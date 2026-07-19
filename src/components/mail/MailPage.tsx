@@ -291,10 +291,10 @@ export function MailPage() {
   }, [loadedImages, openMessage?.bodyHtml]);
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+    <div className="needt-page-depth flex h-full min-h-0 overflow-hidden text-[var(--text-primary)]">
       <aside
         className={cn(
-          "w-[220px] flex-none border-r border-[var(--border-subtle)] bg-[var(--surface-panel)] max-xl:w-full",
+          "needt-panel-depth w-[220px] flex-none border-r border-[var(--border-subtle)] max-xl:w-full",
           mobilePane !== "accounts" && "max-xl:hidden"
         )}
       >

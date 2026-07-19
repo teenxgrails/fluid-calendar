@@ -45,7 +45,7 @@ const statuses = [
 
 export default function StylePage() {
   return (
-    <main className="min-h-screen bg-[var(--surface-canvas)] px-5 py-10 text-[var(--text-primary)] sm:px-8">
+    <main className="needt-page-depth min-h-screen px-5 py-10 text-[var(--text-primary)] sm:px-8">
       <div className="mx-auto max-w-[1040px]">
         <header className="border-b border-[var(--border-subtle)] pb-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">

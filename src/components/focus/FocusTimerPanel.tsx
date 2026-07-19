@@ -269,8 +269,8 @@ export function FocusTimerPanel({
       </div>
 
       <div className="mx-auto mt-8 max-w-[520px] sm:mt-10">
-        <div className="overflow-hidden rounded-[24px] border border-[var(--border-control)] bg-[var(--surface-panel)] p-3">
-          <div className="relative grid min-h-[172px] place-items-center overflow-hidden rounded-[18px] border border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-5 text-center sm:min-h-[190px]">
+        <div className="needt-panel-depth overflow-hidden rounded-[24px] border border-[var(--border-control)] p-3">
+          <div className="needt-page-depth relative grid min-h-[172px] place-items-center overflow-hidden rounded-[18px] border border-[var(--border-subtle)] px-5 text-center sm:min-h-[190px]">
             <div
               aria-label={`${Math.round(progress * 100)}% focus progress`}
               className="absolute inset-x-0 bottom-0 h-1 bg-[var(--surface-control)]"

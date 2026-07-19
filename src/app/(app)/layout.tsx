@@ -53,7 +53,7 @@ export default function RootLayout({
   }, [setShortcutsOpen]);
 
   return (
-    <div className="relative flex min-h-screen bg-[var(--surface-canvas)]">
+    <div className="needt-page-depth relative flex min-h-screen">
       <PrivacyProvider>
         <DndProvider>
           <TooltipProvider delayDuration={400}>

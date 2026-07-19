@@ -81,7 +81,7 @@ export function ActionOverlay({
   }, [type, message, onComplete, autoHideDuration]);
 
   return (
-    <div className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+    <div className="needt-scrim fixed inset-0 z-[10000] flex flex-col items-center justify-center text-[var(--text-primary)]">
       {type === "loading" && (
         <div className="mb-4 h-12 w-12 animate-spin text-blue-600">
           <svg

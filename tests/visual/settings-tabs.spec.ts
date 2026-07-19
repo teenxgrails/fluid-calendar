@@ -23,10 +23,13 @@ const SETTINGS_TABS = [
 async function settleSettings(page: import("@playwright/test").Page) {
   await page.addStyleTag({
     content:
-      "nextjs-portal, .tsqd-parent-container { display: none !important; }",
+      'nextjs-portal, .tsqd-parent-container, aside[aria-label="Quick Tip"] { display: none !important; }',
   });
   await page.evaluate(async () => {
     await document.fonts.ready;
+  });
+  await expect(page.locator(".animate-pulse")).toHaveCount(0, {
+    timeout: 15_000,
   });
   await page.waitForTimeout(350);
 }
@@ -58,6 +61,14 @@ test("every Settings tab stays visually consistent", async ({ page }) => {
       await expect(
         page.getByRole("combobox", { name: "Settings page" })
       ).toContainText(label);
+    }
+
+    if (tab === "billing") {
+      await expect(
+        page
+          .getByText("Choose a plan", { exact: true })
+          .or(page.getByText("Billing details are temporarily unavailable"))
+      ).toBeVisible();
     }
 
     await settleSettings(page);

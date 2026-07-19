@@ -263,9 +263,9 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+    <div className="needt-page-depth min-h-screen text-[var(--text-primary)]">
       <div className="flex min-h-screen">
-        <aside className="settings-desktop-sidebar fixed inset-y-0 left-0 z-20 w-[230px] overflow-y-auto border-r border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-2">
+        <aside className="needt-panel-depth settings-desktop-sidebar fixed inset-y-0 left-0 z-20 w-[230px] overflow-y-auto border-r border-[var(--border-subtle)] p-2">
           <a
             href="/calendar"
             className="mb-3 flex h-[25px] items-center gap-1 rounded-[4px] px-1.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
@@ -289,8 +289,8 @@ export default function SettingsPage() {
           </div>
         </aside>
 
-        <main className="settings-main min-h-screen min-w-0 flex-1 bg-[var(--surface-canvas)]">
-          <div className="settings-mobile-header sticky top-0 z-30 min-h-16 items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4">
+        <main className="needt-page-depth settings-main min-h-screen min-w-0 flex-1">
+          <div className="needt-panel-depth settings-mobile-header sticky top-0 z-30 min-h-16 items-center gap-3 border-b border-[var(--border-subtle)] px-4">
             <a
               href="/calendar"
               aria-label="Back to Needt"
@@ -317,7 +317,7 @@ export default function SettingsPage() {
               </SelectContent>
             </Select>
           </div>
-          <header className="settings-desktop-header sticky top-0 z-10 h-[57px] items-center border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-12">
+          <header className="needt-panel-depth settings-desktop-header sticky top-0 z-10 h-[57px] items-center border-b border-[var(--border-subtle)] px-12">
             <h1 className="text-[18px] font-semibold leading-7">
               {activeLabel}
             </h1>
