@@ -3,6 +3,7 @@
 import { HiClock, HiLockClosed, HiPencil, HiTrash } from "react-icons/hi";
 
 import { useDraggableTask } from "@/components/dnd/useDragAndDrop";
+import { TaskDescription } from "@/components/tasks/TaskDescription";
 
 import {
   format,
@@ -109,9 +110,11 @@ export function BoardTask({ task, onEdit, onDelete }: BoardTaskProps) {
           </div>
 
           {task.description && (
-            <p className="task-description line-clamp-2 text-[11px] text-[var(--text-secondary)]">
-              {task.description}
-            </p>
+            <TaskDescription
+              value={task.description}
+              compact
+              className="task-description text-[11px] text-[var(--text-secondary)]"
+            />
           )}
 
           {task.tags.length > 0 && (

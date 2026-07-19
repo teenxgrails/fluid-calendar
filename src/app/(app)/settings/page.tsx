@@ -81,7 +81,7 @@ const GENERAL_TABS: SettingsNavItem[] = [
     icon: SlidersHorizontal,
   },
   { id: "task-defaults", label: "Task defaults", icon: CheckCircle2 },
-  { id: "theme", label: "Theme", icon: Palette },
+  { id: "theme", label: "Appearance", icon: Palette },
   { id: "timezone", label: "Timezone", icon: Clock3 },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "schedules", label: "Schedules", icon: CalendarRange },
@@ -263,9 +263,9 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+    <div className="needt-page-depth min-h-screen text-[var(--text-primary)]">
       <div className="flex min-h-screen">
-        <aside className="settings-desktop-sidebar fixed inset-y-0 left-0 z-20 w-[230px] overflow-y-auto border-r border-[var(--border-subtle)] bg-[var(--surface-canvas)] p-2">
+        <aside className="needt-panel-depth settings-desktop-sidebar fixed inset-y-0 left-0 z-20 w-[230px] overflow-y-auto border-r border-[var(--border-subtle)] p-2">
           <a
             href="/calendar"
             className="mb-3 flex h-[25px] items-center gap-1 rounded-[4px] px-1.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
@@ -289,12 +289,12 @@ export default function SettingsPage() {
           </div>
         </aside>
 
-        <main className="settings-main min-h-screen min-w-0 flex-1 bg-[var(--surface-canvas)]">
-          <div className="settings-mobile-header sticky top-0 z-30 min-h-[57px] items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-4">
+        <main className="needt-page-depth settings-main min-h-screen min-w-0 flex-1">
+          <div className="needt-panel-depth settings-mobile-header sticky top-0 z-30 min-h-16 items-center gap-3 border-b border-[var(--border-subtle)] px-4">
             <a
               href="/calendar"
               aria-label="Back to Needt"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--control-radius)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--control-radius)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
             >
               <ChevronLeft className="h-4 w-4" />
             </a>
@@ -303,7 +303,7 @@ export default function SettingsPage() {
               onValueChange={(value) => selectTab(value as SettingsTab)}
             >
               <SelectTrigger
-                className="h-9 min-w-0 flex-1"
+                className="h-11 min-w-0 flex-1 text-[16px]"
                 aria-label="Settings page"
               >
                 <SelectValue />
@@ -317,7 +317,7 @@ export default function SettingsPage() {
               </SelectContent>
             </Select>
           </div>
-          <header className="settings-desktop-header sticky top-0 z-10 h-[57px] items-center border-b border-[var(--border-subtle)] bg-[var(--surface-canvas)] px-12">
+          <header className="needt-panel-depth settings-desktop-header sticky top-0 z-10 h-[57px] items-center border-b border-[var(--border-subtle)] px-12">
             <h1 className="text-[18px] font-semibold leading-7">
               {activeLabel}
             </h1>

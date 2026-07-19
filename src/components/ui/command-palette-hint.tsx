@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import { CalendarDays, Command, Focus, X } from "lucide-react";
+import {
+  Bot,
+  CalendarDays,
+  CheckSquare2,
+  Command,
+  Focus,
+  Mail,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -11,7 +19,13 @@ const TIP_INTERVAL_MS = 3 * 24 * 60 * 60 * 1_000;
 const LAST_SHOWN_KEY = "mina:quick-tip:last-shown-at";
 const NEXT_TIP_KEY = "mina:quick-tip:next-index";
 
-type TipAction = "command" | "calendar" | "focus";
+type TipAction =
+  | "command"
+  | "calendar"
+  | "workspace"
+  | "focus"
+  | "mail"
+  | "chat";
 
 interface QuickTip {
   id: string;
@@ -43,6 +57,18 @@ const QUICK_TIPS: QuickTip[] = [
     ),
   },
   {
+    id: "workspace-shortcut",
+    title: "Quick Tip",
+    actionLabel: "Open Workspace",
+    action: "workspace",
+    body: (
+      <>
+        Press <TipKey>G</TipKey> then <TipKey>T</TipKey> to review every task
+        without leaving the keyboard.
+      </>
+    ),
+  },
+  {
     id: "calendar-shortcut",
     title: "Quick Tip",
     actionLabel: "Open calendar",
@@ -51,6 +77,29 @@ const QUICK_TIPS: QuickTip[] = [
       <>
         Use <TipKey>G</TipKey> then <TipKey>C</TipKey> to jump back to your
         calendar without reaching for the mouse.
+      </>
+    ),
+  },
+  {
+    id: "mail-shortcut",
+    title: "Quick Tip",
+    actionLabel: "Open Mail",
+    action: "mail",
+    body: (
+      <>
+        Press <TipKey>G</TipKey> then <TipKey>M</TipKey> to jump to your inbox.
+      </>
+    ),
+  },
+  {
+    id: "ai-shortcut",
+    title: "Quick Tip",
+    actionLabel: "Open AI Chat",
+    action: "chat",
+    body: (
+      <>
+        Press <TipKey>G</TipKey> then <TipKey>A</TipKey> when you want help
+        reviewing or reshaping the plan.
       </>
     ),
   },
@@ -123,24 +172,34 @@ export function CommandPaletteHint() {
       return;
     }
 
-    window.location.assign(tip.action === "calendar" ? "/calendar" : "/focus");
+    const routes: Record<Exclude<TipAction, "command">, string> = {
+      calendar: "/calendar",
+      workspace: "/tasks",
+      focus: "/focus",
+      mail: "/mail",
+      chat: "/chat",
+    };
+    window.location.assign(routes[tip.action]);
   };
 
   if (!isVisible) return null;
 
   const tip = QUICK_TIPS[tipIndex];
-  const Icon =
-    tip.action === "command"
-      ? Command
-      : tip.action === "calendar"
-        ? CalendarDays
-        : Focus;
+  const icons: Record<TipAction, typeof Command> = {
+    command: Command,
+    calendar: CalendarDays,
+    workspace: CheckSquare2,
+    focus: Focus,
+    mail: Mail,
+    chat: Bot,
+  };
+  const Icon = icons[tip.action];
 
   return (
     <aside
       aria-live="polite"
       aria-label={tip.title}
-      className="fixed bottom-16 right-4 z-50 w-[min(22rem,calc(100vw-2rem))] animate-in fade-in slide-in-from-bottom-2 duration-200 motion-reduce:animate-none md:bottom-5 md:right-5"
+      className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 z-50 w-[min(22rem,calc(100vw-2rem))] animate-in fade-in slide-in-from-bottom-2 duration-200 motion-reduce:animate-none lg:bottom-5 lg:right-5"
     >
       <div className="overflow-hidden rounded-lg border border-[var(--line-strong)] bg-[var(--raised)] text-[var(--text-hi)] shadow-lg">
         <div className="h-0.5 bg-[var(--accent)]" />

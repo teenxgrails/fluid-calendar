@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { CheckCircle2 } from "lucide-react";
 import { HiClock, HiPencil, HiTrash } from "react-icons/hi";
 
 import { TaskModal } from "@/components/tasks/TaskModal";
@@ -66,7 +67,9 @@ export function QuickActions() {
 
   return (
     <div className="flex flex-col space-y-4 p-4">
-      <h2 className="text-lg font-semibold">Quick Actions</h2>
+      <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
+        Task actions
+      </h2>
 
       {!currentTask && (
         <p className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-raised)] px-3 py-2 text-xs text-[var(--text-secondary)]">
@@ -75,16 +78,16 @@ export function QuickActions() {
         </p>
       )}
 
-      <div className="glass--subtle flex flex-col space-y-2 p-3">
+      <div className="flex flex-col space-y-2">
         {/* Complete Task */}
         <Button
           variant="outline"
           onClick={() => completeCurrentTask()}
-          className="justify-start"
+          className="h-11 justify-start sm:h-9"
           disabled={!currentTask}
         >
           <span className="flex items-center">
-            <span className="mr-2">✅</span>
+            <CheckCircle2 className="mr-2 h-4 w-4" />
             Complete Task
           </span>
         </Button>
@@ -93,7 +96,7 @@ export function QuickActions() {
         <Button
           variant="outline"
           onClick={() => setIsEditModalOpen(true)}
-          className="justify-start"
+          className="h-11 justify-start sm:h-9"
           disabled={!currentTask}
         >
           <span className="flex items-center">
@@ -106,7 +109,7 @@ export function QuickActions() {
         <Button
           variant="outline"
           onClick={handleDeleteTask}
-          className="justify-start text-destructive hover:text-destructive"
+          className="h-11 justify-start text-destructive hover:text-destructive sm:h-9"
           disabled={!currentTask}
         >
           <span className="flex items-center">
@@ -115,7 +118,7 @@ export function QuickActions() {
           </span>
         </Button>
 
-        <div className="my-2 h-px bg-white/10" />
+        <div className="my-2 h-px bg-[var(--border-subtle)]" />
         <h3 className="text-sm font-medium">Postpone Task</h3>
 
         {/* Postpone Actions */}
@@ -124,7 +127,7 @@ export function QuickActions() {
             variant="outline"
             size="sm"
             onClick={() => postponeTask("1h")}
-            className="flex items-center"
+            className="h-10 flex items-center sm:h-8"
             disabled={!currentTask}
           >
             <HiClock className="mr-1 h-3 w-3" /> 1 hour
@@ -133,7 +136,7 @@ export function QuickActions() {
             variant="outline"
             size="sm"
             onClick={() => postponeTask("3h")}
-            className="flex items-center"
+            className="h-10 flex items-center sm:h-8"
             disabled={!currentTask}
           >
             <HiClock className="mr-1 h-3 w-3" /> 3 hours
@@ -142,7 +145,7 @@ export function QuickActions() {
             variant="outline"
             size="sm"
             onClick={() => postponeTask("1d")}
-            className="flex items-center"
+            className="h-10 flex items-center sm:h-8"
             disabled={!currentTask}
           >
             <HiClock className="mr-1 h-3 w-3" /> 1 day
@@ -151,7 +154,7 @@ export function QuickActions() {
             variant="outline"
             size="sm"
             onClick={() => postponeTask("1w")}
-            className="flex items-center"
+            className="h-10 flex items-center sm:h-8"
             disabled={!currentTask}
           >
             <HiClock className="mr-1 h-3 w-3" /> 1 week

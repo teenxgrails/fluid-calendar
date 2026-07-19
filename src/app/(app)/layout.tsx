@@ -53,7 +53,7 @@ export default function RootLayout({
   }, [setShortcutsOpen]);
 
   return (
-    <div className="relative flex min-h-screen bg-[#1A1D1E]">
+    <div className="needt-page-depth relative flex min-h-screen">
       <PrivacyProvider>
         <DndProvider>
           <TooltipProvider delayDuration={400}>
@@ -70,7 +70,7 @@ export default function RootLayout({
             />
             <MobileTopBar />
             <AppNav onOpenChatOverlay={() => setChatOverlayOpen(true)} />
-            <main className="needt-route-content relative min-w-0 flex-1 max-md:pb-16 max-md:pt-14">
+            <main className="needt-route-content relative min-w-0 flex-1 max-lg:pb-[calc(68px+env(safe-area-inset-bottom))] max-lg:pt-14">
               <NotificationProvider>{children}</NotificationProvider>
             </main>
             <AIChatOverlay

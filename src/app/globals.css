@@ -16,6 +16,7 @@
 
     /* Primitive palette: raw values are defined in this layer only. */
     --primitive-white: #ffffff;
+    --primitive-black: #000000;
     --primitive-neutral-025: #f6f7fb;
     --primitive-neutral-050: #f2f2f2;
     --primitive-neutral-100: #ecedee;
@@ -37,10 +38,13 @@
     --primitive-neutral-850: #202425;
     --primitive-neutral-865: #1e2021;
     --primitive-neutral-875: #1d1f20;
-    --primitive-neutral-900: #1b1d1e;
+    --primitive-neutral-900: #0e0e10;
     --primitive-neutral-950: #151718;
     --primitive-indigo-500: #6366f1;
     --primitive-blue-500: #4a7bff;
+    --primitive-blue-550: #3e63dd;
+    --primitive-blue-450: #5373e7;
+    --primitive-blue-400: #6683ee;
     --primitive-violet-500: #8b5cf6;
     --primitive-magenta-500: #e64bd0;
     --primitive-teal-400: #2dd4bf;
@@ -68,6 +72,31 @@
     --color-accent-contrast: var(--primitive-white);
     --color-danger: var(--primitive-red-500);
     --color-success: var(--primitive-green-500);
+    --color-warning: var(--primitive-gold-400);
+
+    /* Top-lit depth backgrounds. Keep the semantic surfaces above as solid
+       colors so borders, color-mix(), and native controls can consume them. */
+    --page-background: radial-gradient(
+      140% 95% at 50% 0%,
+      #ffffff 0%,
+      var(--surface-canvas) 58%
+    );
+    --panel-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #ffffff 0%,
+      var(--surface-panel) 64%
+    );
+    --overlay-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #ffffff 0%,
+      #f9fafc 64%
+    );
+    --raised-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #ffffff 0%,
+      var(--surface-raised) 68%
+    );
+    --scrim: linear-gradient(180deg, rgb(17 19 28 / 12%), rgb(17 19 28 / 58%));
 
     /* Component layer: shared geometry and chrome. */
     --control-height: 36px;
@@ -81,9 +110,13 @@
     --input-bg: var(--surface-input);
     --input-border: var(--border-control);
     --input-border-focus: var(--border-control);
-    --button-primary-bg: var(--color-accent);
-    --button-primary-border: var(--color-accent);
+    --button-primary-bg: var(--primitive-blue-550);
+    --button-primary-bg-hover: var(--primitive-blue-450);
+    --button-primary-border: var(--primitive-blue-450);
     --button-primary-fg: var(--color-accent-contrast);
+    --button-primary-shadow:
+      0 1px 4px color-mix(in srgb, var(--primitive-black) 20%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--primitive-white) 18%, transparent);
     --button-secondary-bg: var(--control-bg);
     --button-secondary-bg-hover: var(--control-bg-hover);
     --button-secondary-border: var(--control-border);
@@ -125,35 +158,35 @@
     --calendar-toolbar-font-size: 13px;
     --calendar-options-width: 322px;
     --calendar-options-control-height: 30px;
-    --calendar-working-hours-bg: color-mix(
-      in srgb,
-      var(--surface-canvas) 96%,
-      var(--text-primary)
-    );
+    --calendar-working-hours-bg: var(--surface-canvas);
     --calendar-non-working-hours-bg: color-mix(
       in srgb,
-      var(--surface-canvas) 92%,
+      var(--surface-canvas) 98%,
       var(--text-primary)
     );
-    --calendar-today-non-working-hours-bg: color-mix(
-      in srgb,
-      var(--surface-canvas) 94%,
-      var(--text-primary)
-    );
+    --calendar-today-non-working-hours-bg: var(--calendar-non-working-hours-bg);
     --calendar-task-bg: var(--surface-control);
     --calendar-task-border: var(--border-control);
     --calendar-now-indicator: var(--text-primary);
-    --calendar-now-dot-size: 16px;
+    --calendar-now-dot-size: 8px;
     --calendar-now-line-end-inset: 8px;
     --calendar-week-slot-label-offset: -16px;
     --calendar-day-slot-label-offset: -17.5px;
     --calendar-hover-guide: var(--primitive-neutral-525);
     --calendar-hover-guide-label: var(--primitive-neutral-250);
+    --motion-duration-fast: 150ms;
+    --motion-duration-base: 200ms;
+    --motion-duration-slow: 250ms;
+    --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
     /* Space canvas: intentionally dark in every app theme. Keeping its
        palette semantic makes future custom themes a token swap instead of a
        component rewrite. */
-    --space-canvas: var(--primitive-neutral-950);
+    --space-canvas: color-mix(
+      in srgb,
+      var(--primitive-neutral-950) 86%,
+      var(--primitive-black)
+    );
     --space-panel: color-mix(
       in srgb,
       var(--primitive-neutral-900) 94%,
@@ -273,28 +306,56 @@
   .dark {
     color-scheme: dark;
     /* Semantic layer: the finished Calendar is the dark-theme reference. */
-    --surface-canvas: var(--primitive-neutral-900);
-    --surface-panel: var(--primitive-neutral-850);
-    --surface-raised: var(--primitive-neutral-800);
-    --surface-control: var(--primitive-neutral-700);
-    --surface-control-hover: var(--primitive-neutral-650);
-    --surface-input: var(--primitive-neutral-950);
-    --surface-hover: var(--primitive-neutral-750);
+    --surface-canvas: var(--custom-background-tint, #0e0e10);
+    --surface-panel: #151517;
+    --surface-raised: #212126;
+    --surface-control: #212126;
+    --surface-control-hover: #29292f;
+    --surface-input: #151517;
+    --surface-hover: #242429;
     --surface-selected: var(--primitive-neutral-100);
     --surface-inverse: var(--primitive-neutral-100);
-    --border-subtle: var(--primitive-neutral-750);
-    --border-control: var(--primitive-neutral-600);
-    --text-primary: var(--primitive-neutral-050);
-    --text-secondary: var(--primitive-neutral-400);
-    --text-muted: var(--primitive-neutral-500);
-    --text-inverse: var(--primitive-neutral-900);
+    --border-subtle: #26262a;
+    --border-control: #303036;
+    --text-primary: #ececee;
+    --text-secondary: #9c9ca2;
+    --text-muted: #6e6e75;
+    --text-inverse: #0e0e10;
     --color-accent: var(--primitive-indigo-500);
     --color-accent-contrast: var(--primitive-white);
     --color-danger: var(--primitive-red-500);
     --color-success: var(--primitive-green-500);
-    --calendar-working-hours-bg: var(--primitive-neutral-875);
-    --calendar-non-working-hours-bg: var(--primitive-neutral-825);
-    --calendar-today-non-working-hours-bg: var(--primitive-neutral-865);
+    --menu-bg: #1a1a1e;
+    --popover-bg: #1a1a1e;
+    --dialog-bg: #1a1a1e;
+    --page-background: radial-gradient(
+      140% 95% at 50% 0%,
+      #17171a 0%,
+      var(--surface-canvas) 58%
+    );
+    --panel-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #222227 0%,
+      var(--surface-panel) 64%
+    );
+    --overlay-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #27272c 0%,
+      var(--dialog-bg) 64%
+    );
+    --raised-surface-background: radial-gradient(
+      120% 90% at 50% 0%,
+      #2c2c32 0%,
+      var(--surface-raised) 68%
+    );
+    --scrim: linear-gradient(180deg, rgb(0 0 0 / 26%), rgb(0 0 0 / 82%));
+    --calendar-working-hours-bg: var(--surface-canvas);
+    --calendar-non-working-hours-bg: color-mix(
+      in srgb,
+      var(--surface-canvas) 98%,
+      var(--text-primary)
+    );
+    --calendar-today-non-working-hours-bg: var(--calendar-non-working-hours-bg);
     --calendar-task-bg: var(--primitive-neutral-705);
     --calendar-task-border: var(--primitive-neutral-590);
     --calendar-now-indicator: var(--text-primary);
@@ -342,26 +403,31 @@
 
 @layer base {
   * {
-    @apply border-border transition-colors duration-200;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-    background: var(--app-bg);
+    background-color: var(--app-bg);
+    background-image: var(--page-background);
     color: var(--text-hi);
     font-size: 14px;
     font-family:
       -apple-system, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     letter-spacing: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   html:not(.dark) body {
-    background: var(--app-bg);
+    background-color: var(--app-bg);
+    background-image: var(--page-background);
     color: var(--text-hi);
   }
 
-  html:not(.dark) .motion-sidebar,
-  html:not(.dark) .bg-\[\#1B1D1E\] {
+  html:not(.dark) .motion-sidebar {
     background-color: var(--app-bg) !important;
     color: var(--text-hi);
   }
@@ -403,7 +469,8 @@
     overflow: hidden;
     border: 1px solid var(--line-strong);
     border-radius: 8px;
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--raised-surface-background);
     box-shadow: none;
   }
 
@@ -422,12 +489,14 @@
 
   .glass--strong {
     border-color: var(--line-strong);
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--raised-surface-background);
   }
 
   .glass--subtle {
     border-radius: 6px;
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--raised-surface-background);
   }
 
   .glow-blue {
@@ -503,13 +572,15 @@
 
   .motion-shell {
     border-color: var(--line-strong);
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--panel-background);
     box-shadow: none;
   }
 
   .motion-panel {
     border-color: var(--line-strong);
-    background: var(--raised);
+    background-color: var(--raised);
+    background-image: var(--panel-background);
     box-shadow: none;
   }
 
@@ -535,6 +606,32 @@
   table tbody tr:hover {
     background: var(--active);
     box-shadow: none;
+  }
+}
+
+@layer components {
+  .needt-page-depth {
+    background-color: var(--surface-canvas);
+    background-image: var(--page-background);
+  }
+
+  .needt-panel-depth {
+    background-color: var(--surface-panel);
+    background-image: var(--panel-background);
+  }
+
+  .needt-overlay-depth {
+    background-color: var(--dialog-bg);
+    background-image: var(--overlay-surface-background);
+  }
+
+  .needt-raised-depth {
+    background-color: var(--surface-raised);
+    background-image: var(--raised-surface-background);
+  }
+
+  .needt-scrim {
+    background: var(--scrim);
   }
 }
 
@@ -984,9 +1081,8 @@ html[data-animations="off"] *::after {
   display: none;
 }
 
-/* Calendar color hierarchy stays intentionally close to the app canvas
-   (#1B1D1E): today is flat, while working and non-working hours are subtly
-   stepped without turning the calendar into grey blocks. */
+/* Working hours use the unmodified app canvas. When enabled, non-working
+   hours receive one quiet tint. Today never gets a separate column wash. */
 .fc .fc-timegrid-col-frame {
   background: var(--calendar-working-hours-bg);
 }
@@ -1000,7 +1096,7 @@ html[data-animations="off"] *::after {
 }
 
 .fc .fc-day-today .fc-timegrid-col-frame {
-  background: var(--calendar-canvas-bg);
+  background: var(--calendar-working-hours-bg);
 }
 
 .fc .fc-day-today .fc-timegrid-col-bg .fc-non-business {
@@ -1331,13 +1427,54 @@ html[data-animations="off"] *::after {
   color: var(--text-primary);
 }
 
+@media (max-width: 639px) {
+  .fc-tz-corner .fc-timegrid-axis,
+  .fc-tz-corner .fc-timegrid-slot-label,
+  .fc .fc-timegrid-axis,
+  .fc .fc-timegrid-slot-label {
+    width: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .fc-tz-corner .fc-timegrid-slot-label-cushion {
+    width: 44px;
+    padding-right: 6px;
+    font-size: 11px;
+  }
+
+  .fc-tz-corner .fc-scrollgrid-section-header .fc-timegrid-axis::after {
+    left: 5px;
+    max-width: 38px;
+    overflow: hidden;
+    font-size: 10px;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    padding-inline: 3px !important;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 68px;
+  }
+
+  .fc .fc-daygrid-event {
+    margin-inline: 1px;
+  }
+
+  .fc .fc-daygrid-day-number {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}
+
 /* Command Palette Styles */
 [cmdk-root] {
   max-width: 640px;
   width: 100%;
   border-radius: 8px;
   border: 1px solid var(--menu-border);
-  background: var(--menu-bg);
+  background-color: var(--menu-bg);
+  background-image: var(--overlay-surface-background);
   box-shadow:
     0 10px 15px -3px rgb(0 0 0 / 10%),
     0 4px 6px -4px rgb(0 0 0 / 10%);
@@ -1454,6 +1591,131 @@ html[data-animations="off"] *::after {
   opacity: 1 !important;
 }
 
+/* Task descriptions use one rendering contract in the editor, Focus, Boards,
+   and quick views. Rich text stays compact and inherits Needt tokens. */
+.task-rich-text {
+  color: inherit;
+  font-size: inherit;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.task-rich-text > * + * {
+  margin-top: 0.55em;
+}
+
+.task-rich-text h1 {
+  font-size: 1.35em;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.task-rich-text h2 {
+  font-size: 1.15em;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.task-rich-text ul:not([data-type="taskList"]),
+.task-rich-text ol {
+  padding-left: 1.35rem;
+}
+
+.task-rich-text ul:not([data-type="taskList"]) {
+  list-style: disc;
+}
+
+.task-rich-text ol {
+  list-style: decimal;
+}
+
+.task-rich-text li + li {
+  margin-top: 0.2em;
+}
+
+.task-rich-text code {
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.3rem;
+  background: var(--surface-raised);
+  padding: 0.08em 0.3em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.task-rich-text a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--color-accent) 55%,
+    transparent
+  );
+  text-underline-offset: 0.16em;
+}
+
+.task-rich-text img {
+  max-height: 240px;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  object-fit: contain;
+}
+
+.task-rich-text ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.task-rich-text ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.task-rich-text ul[data-type="taskList"] li > label {
+  display: inline-flex;
+  padding-top: 0.2em;
+}
+
+.task-rich-text ul[data-type="taskList"] li > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.task-rich-text ul[data-type="taskList"] input[type="checkbox"] {
+  height: 0.9rem;
+  width: 0.9rem;
+  border-color: var(--border-control);
+  border-radius: 0.25rem;
+  background: var(--surface-input);
+  color: var(--color-accent);
+}
+
+.task-rich-text:not(.task-rich-text-editor)
+  ul[data-type="taskList"]
+  input[type="checkbox"] {
+  pointer-events: none;
+}
+
+.task-rich-text-editor {
+  color: var(--text-primary);
+  caret-color: var(--text-primary);
+  font-size: 14px;
+}
+
+.task-rich-text-editor p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: var(--text-secondary);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.task-rich-text-compact {
+  max-height: 3.1em;
+  overflow: hidden;
+}
+
 .settings-desktop-sidebar,
 .settings-desktop-header {
   display: none;
@@ -1467,7 +1729,7 @@ html[data-animations="off"] *::after {
   margin-left: 0;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .settings-desktop-sidebar {
     display: block;
   }

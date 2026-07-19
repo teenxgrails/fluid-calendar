@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   closestCorners,
@@ -18,11 +20,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus } from "lucide-react";
+import { CalendarClock, Clock3, GripVertical, Plus } from "lucide-react";
 
+import { TaskModal } from "@/components/tasks/TaskModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskModal } from "@/components/tasks/TaskModal";
 
 import { cn } from "@/lib/utils";
 
@@ -45,6 +47,7 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
   const { updateTask } = useTaskMutations();
   const { tags, createTag } = useTaskStore();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -71,6 +74,7 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveTaskId(null);
     if (!over || !board) return;
 
     const taskId = String(active.id);
@@ -101,6 +105,14 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
     void moveCard(taskId, targetColumnId, targetIndex);
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveTaskId(String(event.active.id));
+  };
+
+  const activeTask = activeTaskId
+    ? board?.tasks.find((task) => task.id === activeTaskId)
+    : null;
+
   if (loading) {
     return (
       <div className="grid h-full place-items-center text-sm text-[var(--text-secondary)]">
@@ -118,8 +130,8 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
   }
 
   return (
-    <div className="flex h-full flex-col bg-[var(--surface-canvas)]">
-      <header className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-4 py-3">
+    <div className="needt-page-depth flex h-full flex-col">
+      <header className="flex min-h-14 items-center gap-2 border-b border-[var(--border-subtle)] px-4 py-3 sm:min-h-12 sm:py-2">
         {board.icon && <span className="text-lg">{board.icon}</span>}
         <h1 className="text-base font-semibold text-[var(--text-primary)]">
           {board.name}
@@ -131,9 +143,23 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveTaskId(null)}
       >
-        <div className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto p-3 md:snap-none">
+        <div className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:snap-none">
+          {board.columns.length === 0 && (
+            <div className="needt-raised-depth grid w-[calc(100vw-1.5rem)] max-w-md flex-none snap-start place-items-center rounded-lg border border-dashed border-[var(--border-control)] px-8 py-16 text-center sm:w-80">
+              <div>
+                <div className="text-sm font-medium text-[var(--text-primary)]">
+                  Start with one clear stage
+                </div>
+                <p className="mt-1 text-xs leading-5 text-[var(--text-muted)]">
+                  Add a column for the next step, then place tasks inside it.
+                </p>
+              </div>
+            </div>
+          )}
           {board.columns.map((column) => {
             const cards = cardsByColumn.get(column.id) ?? [];
             return (
@@ -152,12 +178,19 @@ export function BoardCanvas({ boardId }: BoardCanvasProps) {
           <button
             type="button"
             onClick={() => addColumn(board.id, "New column").then(refresh)}
-            className="flex h-10 w-64 flex-none items-center gap-2 rounded-lg border border-dashed border-[var(--border-control)] px-3 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+            className="flex h-11 w-[calc(100vw-1.5rem)] max-w-64 flex-none snap-start items-center gap-2 rounded-lg border border-dashed border-[var(--border-control)] px-3 text-sm text-[var(--text-secondary)] transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] sm:h-10 sm:w-64"
           >
             <Plus className="h-4 w-4" />
             Add column
           </button>
         </div>
+        <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
+          {activeTask ? (
+            <div className="needt-panel-depth w-64 rotate-1 rounded-md border border-[var(--color-accent)] px-3 py-2 text-left text-[13px] text-[var(--text-primary)] shadow-lg">
+              {activeTask.title}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
       <TaskModal
@@ -203,8 +236,8 @@ function BoardColumnView({
   };
 
   return (
-    <section className="flex w-64 flex-none snap-start flex-col rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
-      <header className="flex items-center gap-2 border-b border-[var(--border-subtle)] px-3 py-2">
+    <section className="needt-raised-depth flex w-[calc(100vw-1.5rem)] flex-none snap-start flex-col rounded-lg border border-[var(--border-subtle)] sm:w-[272px]">
+      <header className="flex min-h-11 items-center gap-2 border-b border-[var(--border-subtle)] px-3 py-2 sm:min-h-9">
         {color && (
           <span
             className="h-2.5 w-2.5 flex-none rounded-full"
@@ -225,6 +258,11 @@ function BoardColumnView({
           strategy={verticalListSortingStrategy}
         >
           <div className="flex min-h-[24px] flex-col gap-2 p-2">
+            {cards.length === 0 && (
+              <div className="grid min-h-24 place-items-center rounded-md border border-dashed border-[var(--border-control)] px-4 text-center text-[12px] leading-5 text-[var(--text-muted)]">
+                Drop a task here or create the first card.
+              </div>
+            )}
             {cards.map((task) => (
               <SortableCard key={task.id} task={task} onOpen={onOpenCard} />
             ))}
@@ -263,7 +301,7 @@ function BoardColumnView({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            className="flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-[var(--text-secondary)] transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] sm:min-h-8"
           >
             <Plus className="h-4 w-4" />
             New
@@ -281,9 +319,15 @@ function ColumnDroppable({
   columnId: string;
   children: React.ReactNode;
 }) {
-  const { setNodeRef } = useSortable({ id: `col:${columnId}` });
+  const { setNodeRef, isOver } = useSortable({ id: `col:${columnId}` });
   return (
-    <div ref={setNodeRef} className="flex-1">
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "flex-1 rounded-b-lg transition-colors duration-150",
+        isOver && "bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)]"
+      )}
+    >
       {children}
     </div>
   );
@@ -296,23 +340,59 @@ function SortableCard({
   task: Task;
   onOpen: (task: Task) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: task.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
 
   return (
-    <button
-      type="button"
+    <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      onClick={() => onOpen(task)}
       className={cn(
-        "cursor-grab rounded-md border border-[var(--border-subtle)] bg-[var(--surface-panel)] px-3 py-2 text-left text-[13px] text-[var(--text-primary)] shadow-sm active:cursor-grabbing",
-        isDragging && "opacity-50"
+        "needt-panel-depth group relative min-h-11 rounded-md border border-[var(--border-subtle)] text-left text-[13px] text-[var(--text-primary)] transition-[border-color,background-color,opacity] duration-150 hover:border-[var(--border-control)] hover:bg-[var(--surface-control)] hover:bg-none",
+        isDragging && "opacity-25"
       )}
-      {...attributes}
-      {...listeners}
     >
-      <span className="line-clamp-3">{task.title}</span>
-    </button>
+      <button
+        type="button"
+        onClick={() => onOpen(task)}
+        className="block min-h-11 w-full px-3 py-2 pr-10 text-left"
+      >
+        <span className="line-clamp-3 font-medium">{task.title}</span>
+        {(task.dueDate || task.duration) && (
+          <span className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-[var(--text-muted)]">
+            {task.dueDate && (
+              <span className="inline-flex items-center gap-1">
+                <CalendarClock className="h-3 w-3" />
+                {new Intl.DateTimeFormat(undefined, {
+                  month: "short",
+                  day: "numeric",
+                }).format(new Date(task.dueDate))}
+              </span>
+            )}
+            {task.duration && (
+              <span className="inline-flex items-center gap-1">
+                <Clock3 className="h-3 w-3" />
+                {task.duration}m
+              </span>
+            )}
+          </span>
+        )}
+      </button>
+      <button
+        type="button"
+        aria-label={`Drag ${task.title}`}
+        className="absolute right-0 top-0 grid h-11 w-10 cursor-grab place-items-center rounded-r-md text-[var(--text-muted)] opacity-70 transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] active:cursor-grabbing sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+    </div>
   );
 }

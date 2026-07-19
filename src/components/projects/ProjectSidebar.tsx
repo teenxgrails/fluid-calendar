@@ -312,7 +312,7 @@ function ProjectItem({
       className={cn(
         "group flex w-full cursor-pointer items-center space-x-2 rounded-xl px-3 py-2 transition-all",
         isActive
-          ? "bg-white/10 text-secondary-foreground shadow-[0_0_24px_-18px_var(--acc-violet)]"
+          ? "bg-white/10 text-secondary-foreground"
           : "hover:bg-white/[0.06]",
         isOver && "ring-2 ring-ring"
       )}

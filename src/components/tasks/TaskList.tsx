@@ -112,8 +112,8 @@ function isOverdue(task: Task) {
   const deadline = taskDeadline(task);
   return Boolean(
     deadline &&
-    task.status !== TaskStatus.COMPLETED &&
-    newDate(deadline).getTime() < newDate().getTime()
+      task.status !== TaskStatus.COMPLETED &&
+      newDate(deadline).getTime() < newDate().getTime()
   );
 }
 
@@ -325,7 +325,7 @@ export function TaskList({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-[var(--surface-canvas)]">
+    <div className="needt-page-depth flex h-full min-h-0 flex-col">
       {!compact && (
         <div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--border-subtle)] px-3 py-2">
           <DropdownMenu>

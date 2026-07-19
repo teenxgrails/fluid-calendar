@@ -47,7 +47,7 @@ export function FocusMode() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-[#1A1D1E] max-md:pb-16">
+    <div className="needt-page-depth flex h-full flex-col">
       {isProcessing && actionType && (
         <ActionOverlay
           type={actionType}
@@ -56,27 +56,23 @@ export function FocusMode() {
         />
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar with queued tasks */}
-        <motion.aside
-          aria-hidden={sessionActive}
-          animate={{
-            opacity: sessionActive ? 0.18 : 1,
-            scale: sessionActive && !prefersReducedMotion ? 0.985 : 1,
-          }}
-          transition={prefersReducedMotion ? { duration: 0 } : springSoft}
-          className="hidden h-full w-[244px] origin-left border-r border-[#2B2F31] bg-[#1B1D1E] lg:block"
-          style={{ pointerEvents: sessionActive ? "none" : "auto" }}
-        >
-          <TaskQueue />
-        </motion.aside>
+      <header className="flex min-h-16 flex-none items-center border-b border-[var(--border-subtle)] px-5 sm:min-h-14 sm:px-8">
+        <div>
+          <h1 className="text-[18px] font-semibold text-[var(--text-primary)]">
+            Focus
+          </h1>
+          <p className="text-[12px] text-[var(--text-muted)]">
+            One task, one timer, less noise.
+          </p>
+        </div>
+      </header>
 
-        {/* Main content area */}
-        <main className="relative min-w-0 flex-1 overflow-y-auto">
+      <main className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto grid min-h-full max-w-[1120px] grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px]">
           <motion.div
             layout={!prefersReducedMotion}
             transition={prefersReducedMotion ? { duration: 0 } : springSoft}
-            className="mx-auto flex min-h-full max-w-[860px] flex-col px-5 py-8 sm:px-10"
+            className="min-w-0 px-4 py-6 sm:px-10 sm:py-10"
           >
             <FocusTimerPanel
               task={currentTask}
@@ -87,15 +83,9 @@ export function FocusMode() {
               {!sessionActive && (
                 <motion.div
                   key="focus-details"
-                  initial={
-                    prefersReducedMotion ? false : { opacity: 0, scale: 0.99 }
-                  }
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={
-                    prefersReducedMotion
-                      ? { opacity: 0 }
-                      : { opacity: 0, scale: 0.985 }
-                  }
+                  initial={prefersReducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={
                     prefersReducedMotion ? { duration: 0 } : springSoft
                   }
@@ -105,22 +95,24 @@ export function FocusMode() {
               )}
             </AnimatePresence>
           </motion.div>
-        </main>
 
-        {/* Right sidebar with quick actions */}
-        <motion.aside
-          aria-hidden={sessionActive}
-          animate={{
-            opacity: sessionActive ? 0.18 : 1,
-            scale: sessionActive && !prefersReducedMotion ? 0.985 : 1,
-          }}
-          transition={prefersReducedMotion ? { duration: 0 } : springSoft}
-          className="hidden h-full w-[244px] origin-right border-l border-[#2B2F31] bg-[#1B1D1E] xl:block"
-          style={{ pointerEvents: sessionActive ? "none" : "auto" }}
-        >
-          <QuickActions />
-        </motion.aside>
-      </div>
+          <motion.aside
+            aria-hidden={sessionActive}
+            animate={{ opacity: sessionActive ? 0.35 : 1 }}
+            transition={prefersReducedMotion ? { duration: 0 } : springSoft}
+            className="needt-panel-depth border-t border-[var(--border-subtle)] pb-[env(safe-area-inset-bottom)] xl:border-l xl:border-t-0"
+            style={{ pointerEvents: sessionActive ? "none" : "auto" }}
+          >
+            <div className="border-b border-[var(--border-subtle)]">
+              <div className="px-4 pt-4 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                Next up
+              </div>
+              <TaskQueue />
+            </div>
+            <QuickActions />
+          </motion.aside>
+        </div>
+      </main>
     </div>
   );
 }

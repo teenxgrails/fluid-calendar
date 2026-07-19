@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Mobile bottom sheet — the house-format modal on small screens. Same Radix
- * dialog base and tokens as `@/components/ui/dialog` (overlay `bg-black/55`,
+ * dialog base and tokens as `@/components/ui/dialog` (shared gradient scrim,
  * no backdrop blur), but the panel is docked to the bottom edge and slides up.
  * Use for quick-create, action sheets, and any panel that is a centered dialog
  * on desktop but should be a sheet on mobile.
@@ -25,7 +25,10 @@ const BottomSheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn("dialog-overlay-anim fixed inset-0 z-50 bg-black/55", className)}
+    className={cn(
+      "needt-scrim dialog-overlay-anim fixed inset-0 z-50",
+      className
+    )}
     {...props}
   />
 ));
@@ -40,7 +43,7 @@ const BottomSheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "bottom-sheet-anim fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-[var(--dialog-border)] bg-[var(--dialog-bg)] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-[var(--text-primary)] shadow-lg",
+        "needt-overlay-depth bottom-sheet-anim fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-[var(--dialog-border)] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-[var(--text-primary)] shadow-lg",
         className
       )}
       {...props}

@@ -154,30 +154,6 @@ export default function TasksPage() {
     await fetchProjects();
   };
 
-  const handleSpaceReschedule = (task: Task, start: Date, end: Date) => {
-    void updateTask(task.id, {
-      startDate: start,
-      scheduledStart: start,
-      scheduledEnd: end,
-      isAutoScheduled: true,
-      autoScheduled: false,
-      scheduleLocked: true,
-      isFrozen: true,
-    }).catch((scheduleError: unknown) => {
-      void logger.error(
-        "Failed to reschedule task from Space",
-        {
-          taskId: task.id,
-          error:
-            scheduleError instanceof Error
-              ? scheduleError.message
-              : String(scheduleError),
-        },
-        LOG_SOURCE
-      );
-    });
-  };
-
   const handleCreateTag = async (name: string, color?: string) => {
     try {
       const newTag = await createTag({ name, color });
@@ -267,7 +243,7 @@ export default function TasksPage() {
     : null;
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--surface-canvas)] text-[var(--text-primary)]">
+    <div className="needt-page-depth flex h-full min-h-0 flex-col overflow-hidden text-[var(--text-primary)]">
       <header className="flex h-12 flex-none items-center border-b border-[var(--border-subtle)] px-2">
         <div className="flex min-w-0 items-center gap-2">
           <Box className="h-4 w-4 text-[var(--text-secondary)]" />
@@ -509,7 +485,6 @@ export default function TasksPage() {
                 projects={projects}
                 tasks={tasks}
                 onOpenTask={openTask}
-                onRescheduleTask={handleSpaceReschedule}
                 onStatusChange={handleStatusChange}
                 onCreateTask={openCreateTask}
               />

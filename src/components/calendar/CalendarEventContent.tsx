@@ -13,6 +13,7 @@ import { springSnappy, springSoft } from "@/lib/motion";
 import { isTaskOverdue } from "@/lib/task-utils";
 import { cn } from "@/lib/utils";
 
+import { useViewStore } from "@/store/calendar";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
 
@@ -21,7 +22,7 @@ import { Priority, TaskStatus } from "@/types/task";
 import { CalendarTaskActionsMenu } from "./CalendarTaskActionsMenu";
 import { resolveCalendarItemId } from "./calendar-item-id";
 
-const DEFAULT_EVENT_COLOR = "#6366F1";
+const DEFAULT_EVENT_COLOR = "var(--color-accent)";
 
 interface CalendarEventContentProps {
   eventInfo: EventContentArg;
@@ -30,10 +31,10 @@ interface CalendarEventContentProps {
 }
 
 const priorityColors = {
-  [Priority.HIGH]: "#f87171",
-  [Priority.MEDIUM]: "#f59e0b",
-  [Priority.LOW]: "#60a5fa",
-  [Priority.NONE]: "#323234",
+  [Priority.HIGH]: "var(--color-danger)",
+  [Priority.MEDIUM]: "var(--color-warning)",
+  [Priority.LOW]: "var(--primitive-blue-500)",
+  [Priority.NONE]: "var(--border-control)",
 };
 
 export const CalendarEventContent = memo(function CalendarEventContent({
@@ -46,18 +47,23 @@ export const CalendarEventContent = memo(function CalendarEventContent({
   const scheduleAnimationRevision = useTaskStore(
     (state) => state.scheduleAnimationRevision
   );
+  const selectedEventId = useViewStore((state) => state.selectedEventId);
+  const setSelectedEventId = useViewStore((state) => state.setSelectedEventId);
   const isTask = eventInfo.event.extendedProps.isTask;
   const isAutoScheduled = eventInfo.event.extendedProps.isAutoScheduled;
   const taskId = isTask
     ? resolveCalendarItemId(eventInfo.event.extendedProps, eventInfo.event.id)
     : undefined;
+  const calendarItemId = taskId ?? eventInfo.event.id;
+  const isSelected = selectedEventId === calendarItemId;
   const task = useTaskStore((state) =>
     taskId
       ? state.tasks.find((candidate) => candidate.id === taskId)
       : undefined
   );
   const chunkIndex = eventInfo.event.extendedProps.chunkIndex as
-    number | undefined;
+    | number
+    | undefined;
   const isRecurring = eventInfo.event.extendedProps.isRecurring;
   const status = eventInfo.event.extendedProps.status;
   const priority = eventInfo.event.extendedProps.priority;
@@ -122,21 +128,24 @@ export const CalendarEventContent = memo(function CalendarEventContent({
       whileHover={prefersReducedMotion ? undefined : { y: -1 }}
       data-testid={isTask ? "calendar-task" : "calendar-event"}
       data-task-id={taskId}
+      onPointerDown={() => setSelectedEventId(calendarItemId)}
       style={{
         backgroundColor: isTask
-          ? "#303335"
-          : `color-mix(in srgb, ${chipColor} 19%, #26292B)`,
+          ? "var(--calendar-task-bg)"
+          : `color-mix(in srgb, ${chipColor} 16%, var(--surface-panel))`,
         borderColor: isTask
-          ? "#44494C"
-          : `color-mix(in srgb, ${chipColor} 46%, #3A3F42)`,
+          ? "var(--calendar-task-border)"
+          : `color-mix(in srgb, ${chipColor} 42%, var(--border-control))`,
         borderLeftColor: isTask ? undefined : chipColor,
       }}
       className={cn(
-        "group relative flex h-full min-h-0 flex-col justify-start overflow-hidden rounded-[4px] border px-1.5 py-1 text-white",
+        "group relative flex h-full min-h-0 flex-col justify-start overflow-hidden rounded-[4px] border px-1.5 py-1 text-[var(--text-primary)] transition-[background-color,border-color,transform] duration-150",
         !isTask && "border-l-[3px]",
-        isTask && "hover:bg-[#393D40]",
-        isOverdue && "border-[#C76565] text-[#FFD0D0]",
-        status === TaskStatus.COMPLETED && "text-[#9AA0A6]"
+        isTask && "hover:bg-[var(--surface-control-hover)]",
+        isSelected &&
+          "z-[2] border-[var(--text-secondary)] ring-1 ring-[var(--text-secondary)]",
+        isOverdue && "border-[var(--color-danger)] text-[var(--color-danger)]",
+        status === TaskStatus.COMPLETED && "text-[var(--text-muted)]"
       )}
     >
       <div className="flex min-w-0 items-start gap-1.5">
@@ -157,7 +166,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
                 void onTaskComplete?.(taskId);
               }
             }}
-            className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full text-[#A9B0B5] transition-colors hover:text-white disabled:cursor-default disabled:text-[#9AA0A6]"
+            className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] disabled:cursor-default disabled:text-[var(--text-muted)]"
           >
             {status === TaskStatus.COMPLETED ? (
               <IoCheckmarkCircle className="h-4 w-4" />
@@ -188,7 +197,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
         <div className="min-w-0 flex-1">
           <div
             className={cn(
-              "calendar-event-title pr-4 text-[12px] font-medium leading-[15px] text-[#F4F5F6]",
+              "calendar-event-title pr-4 text-[12px] font-medium leading-[15px] text-[var(--text-primary)]",
               duration <= 1800000 ? "truncate" : "line-clamp-2 break-words",
               status === TaskStatus.COMPLETED && "line-through"
             )}
@@ -199,7 +208,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
             {title}
           </div>
           {displayTime && (
-            <div className="truncate pt-0.5 text-[10px] font-normal leading-[12px] tabular-nums text-[#A1A7AC]">
+            <div className="truncate pt-0.5 text-[10px] font-normal leading-[12px] tabular-nums text-[var(--text-secondary)]">
               {displayTime}
             </div>
           )}
@@ -209,7 +218,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
         )}
       </div>
       {location && !isTask && duration > 1800000 && (
-        <div className="event-location truncate pl-5 text-[10px] leading-snug text-[#A1A7AC]">
+        <div className="event-location truncate pl-5 text-[10px] leading-snug text-[var(--text-secondary)]">
           {location}
         </div>
       )}

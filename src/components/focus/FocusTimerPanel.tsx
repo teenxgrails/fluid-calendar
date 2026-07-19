@@ -3,10 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 
 import NumberFlow from "@number-flow/react";
-import { Pause, Play, Square } from "lucide-react";
+import { Minus, Pause, Play, Plus, Square } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { toast } from "sonner";
 
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetDescription,
+  BottomSheetTitle,
+} from "@/components/ui/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,9 +75,6 @@ const modeLabels: Record<FocusMode, string> = {
   DEEP_FOCUS: "Deep Focus",
 };
 
-const RING_RADIUS = 92;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-
 export function FocusTimerPanel({
   task,
   immersive = false,
@@ -82,6 +85,7 @@ export function FocusTimerPanel({
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [deepMinutes, setDeepMinutes] = useState(50);
   const [report, setReport] = useState<FocusPayload | null>(null);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
   const {
@@ -126,8 +130,6 @@ export function FocusTimerPanel({
       : isActive
         ? 1
         : 0;
-  const ringOffset = RING_CIRCUMFERENCE * (1 - progress);
-
   const displaySeconds = isActive
     ? session?.plannedMinutes == null
       ? elapsedSeconds
@@ -181,6 +183,11 @@ export function FocusTimerPanel({
     }
   }
 
+  async function confirmStop() {
+    setLeaveConfirmOpen(false);
+    await handleStop();
+  }
+
   async function finishCompletion(markTaskDone: boolean) {
     const hadTask = Boolean(pendingCompletion?.taskId);
     clearPendingCompletion();
@@ -207,6 +214,16 @@ export function FocusTimerPanel({
 
   const isDeepLocked = session?.mode === "DEEP_FOCUS" && isRunning;
   const running = isActive;
+  const editableMinutes =
+    mode === "DEEP_FOCUS" ? deepMinutes : mode === "FLOW" ? 0 : workMinutes;
+  const adjustFocusMinutes = (delta: number) => {
+    if (mode === "FLOW") return;
+    if (mode === "DEEP_FOCUS") {
+      setDeepMinutes((current) => Math.max(5, current + delta));
+      return;
+    }
+    setWorkMinutes((current) => Math.max(5, current + delta));
+  };
 
   return (
     <motion.section
@@ -217,12 +234,11 @@ export function FocusTimerPanel({
       }}
       transition={prefersReducedMotion ? { duration: 0 } : springSoft}
       className={cn(
-        "relative overflow-hidden border-b border-[var(--border-subtle)] pb-10",
-        immersive &&
-          "glass my-auto rounded-2xl border border-white/10 px-7 py-8 shadow-[0_24px_80px_-40px_rgba(111,116,255,0.7)]"
+        "relative border-b border-[var(--border-subtle)] pb-10",
+        immersive && "my-auto"
       )}
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-3">
         <div>
           <p className="text-[11px] font-medium uppercase text-[var(--text-muted)]">
             Focus session
@@ -241,7 +257,7 @@ export function FocusTimerPanel({
           onValueChange={(value) => setMode(value as FocusMode)}
           disabled={running}
         >
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="h-11 w-full sm:h-9 sm:w-36">
             <SelectValue>{modeLabels[session?.mode ?? mode]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -252,89 +268,81 @@ export function FocusTimerPanel({
         </Select>
       </div>
 
-      <div className="mt-8 flex flex-col items-center gap-8 lg:flex-row">
-        <div className="shrink-0">
-          <div className="relative grid h-52 w-52 place-items-center rounded-full">
-            <svg
+      <div className="mx-auto mt-8 max-w-[520px] sm:mt-10">
+        <div className="needt-panel-depth overflow-hidden rounded-[24px] border border-[var(--border-control)] p-3">
+          <div className="needt-page-depth relative grid min-h-[172px] place-items-center overflow-hidden rounded-[18px] border border-[var(--border-subtle)] px-5 text-center sm:min-h-[190px]">
+            <div
               aria-label={`${Math.round(progress * 100)}% focus progress`}
-              className="absolute inset-0 h-full w-full -rotate-90"
-              viewBox="0 0 208 208"
+              className="absolute inset-x-0 bottom-0 h-1 bg-[var(--surface-control)]"
             >
-              <circle
-                cx="104"
-                cy="104"
-                r={RING_RADIUS}
-                fill="none"
-                stroke="var(--border-control)"
-                strokeWidth="8"
-              />
-              <motion.circle
-                cx="104"
-                cy="104"
-                r={RING_RADIUS}
-                fill="none"
-                stroke="var(--accent)"
-                strokeLinecap="round"
-                strokeWidth="8"
-                strokeDasharray={RING_CIRCUMFERENCE}
+              <motion.div
+                className="h-full bg-[var(--color-accent)]"
                 initial={false}
-                animate={{ strokeDashoffset: ringOffset }}
+                animate={{ width: `${Math.round(progress * 100)}%` }}
                 transition={prefersReducedMotion ? { duration: 0 } : springSoft}
               />
-            </svg>
-            <div className="grid h-[184px] w-[184px] place-items-center rounded-full border border-[var(--border-control)] bg-[var(--surface-canvas)] text-center">
-              <div>
-                <div className="text-5xl font-semibold tabular-nums text-[var(--text-primary)]">
-                  {formatClock(displaySeconds)}
-                </div>
-                <div className="mt-1 text-[10px] uppercase tracking-normal text-[var(--text-muted)]">
-                  {isPaused ? "Paused" : modeLabels[session?.mode ?? mode]}
-                </div>
+            </div>
+            <div>
+              <div className="text-[52px] font-semibold leading-none tracking-[-0.055em] tabular-nums text-[var(--text-primary)] sm:text-[72px]">
+                {formatClock(displaySeconds)}
+              </div>
+              <div className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                {isPaused ? "Paused" : modeLabels[session?.mode ?? mode]}
               </div>
             </div>
           </div>
         </div>
-        <div className="flex-1 space-y-3">
+
+        <div className="mt-6 space-y-4">
           {!running && (
-            <div className="grid grid-cols-3 gap-2">
-              <label className="text-xs">
-                Work
-                <Input
-                  type="number"
-                  min="1"
-                  value={workMinutes}
-                  onChange={(event) =>
-                    setWorkMinutes(Math.max(1, Number(event.target.value)))
-                  }
-                />
-              </label>
-              <label className="text-xs">
-                Break
-                <Input
-                  type="number"
-                  min="1"
-                  value={breakMinutes}
-                  onChange={(event) =>
-                    setBreakMinutes(Math.max(1, Number(event.target.value)))
-                  }
-                />
-              </label>
-              <label className="text-xs">
-                Deep
-                <Input
-                  type="number"
-                  min="1"
-                  value={deepMinutes}
-                  onChange={(event) =>
-                    setDeepMinutes(Math.max(1, Number(event.target.value)))
-                  }
-                />
-              </label>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => adjustFocusMinutes(-5)}
+                disabled={mode === "FLOW"}
+                className="grid h-12 w-12 place-items-center rounded-full border border-[var(--control-border)] bg-[var(--surface-panel)] text-[var(--text-primary)] transition-colors duration-150 hover:bg-[var(--surface-control)] disabled:opacity-35"
+                aria-label="Reduce focus duration by five minutes"
+              >
+                <Minus className="h-5 w-5" />
+              </button>
+              <div className="flex h-14 min-w-[190px] items-center justify-center rounded-full border border-[var(--control-border)] bg-[var(--surface-panel)] px-6 text-[22px] font-semibold tabular-nums text-[var(--text-primary)]">
+                {mode === "FLOW" ? "Open timer" : `${editableMinutes} min`}
+              </div>
+              <button
+                type="button"
+                onClick={() => adjustFocusMinutes(5)}
+                disabled={mode === "FLOW"}
+                className="grid h-12 w-12 place-items-center rounded-full border border-[var(--control-border)] bg-[var(--surface-panel)] text-[var(--text-primary)] transition-colors duration-150 hover:bg-[var(--surface-control)] disabled:opacity-35"
+                aria-label="Increase focus duration by five minutes"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
             </div>
           )}
-          <div className="flex flex-wrap gap-2">
+
+          {!running && (
+            <label className="mx-auto flex w-fit items-center gap-2 text-[12px] text-[var(--text-muted)]">
+              Break
+              <Input
+                type="number"
+                min="1"
+                value={breakMinutes}
+                onChange={(event) =>
+                  setBreakMinutes(Math.max(1, Number(event.target.value)))
+                }
+                className="h-10 w-16 text-center text-base sm:h-8 sm:text-sm"
+              />
+              min
+            </label>
+          )}
+
+          <div className="flex flex-wrap justify-center gap-2">
             {!running ? (
-              <Button type="button" size="sm" onClick={handleStart}>
+              <Button
+                type="button"
+                onClick={handleStart}
+                className="h-12 w-full max-w-[420px] rounded-full text-[15px]"
+              >
                 <Play className="h-4 w-4" />
                 {boundTask ? "Start focus" : "Start free session"}
               </Button>
@@ -344,7 +352,7 @@ export function FocusTimerPanel({
                   (isPaused ? (
                     <Button
                       type="button"
-                      size="sm"
+                      className="h-11 min-w-32"
                       variant="secondary"
                       onClick={() => resume()}
                     >
@@ -354,7 +362,7 @@ export function FocusTimerPanel({
                   ) : (
                     <Button
                       type="button"
-                      size="sm"
+                      className="h-11 min-w-32"
                       variant="secondary"
                       onClick={() => pause()}
                     >
@@ -364,10 +372,10 @@ export function FocusTimerPanel({
                   ))}
                 <Button
                   type="button"
-                  size="sm"
+                  className="h-11 min-w-32"
                   variant="outline"
                   disabled={isDeepLocked}
-                  onClick={handleStop}
+                  onClick={() => setLeaveConfirmOpen(true)}
                 >
                   <Square className="h-4 w-4" />
                   {session?.mode === "FLOW" ? "Finish" : "Stop"}
@@ -493,6 +501,39 @@ export function FocusTimerPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <BottomSheet open={leaveConfirmOpen} onOpenChange={setLeaveConfirmOpen}>
+        <BottomSheetContent className="sm:left-1/2 sm:right-auto sm:w-[420px] sm:-translate-x-1/2 sm:rounded-2xl sm:border">
+          <div className="mx-auto grid h-11 w-11 place-items-center rounded-full border border-[var(--border-control)] bg-[var(--surface-raised)] text-[var(--text-secondary)]">
+            <Square className="h-4 w-4" />
+          </div>
+          <BottomSheetTitle className="mt-4 text-center">
+            Leave early?
+          </BottomSheetTitle>
+          <BottomSheetDescription className="mt-1 text-center leading-5">
+            The time you focused will still be logged. You can keep going if you
+            only needed a pause.
+          </BottomSheetDescription>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              onClick={() => setLeaveConfirmOpen(false)}
+            >
+              Never mind
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-11"
+              onClick={() => void confirmStop()}
+            >
+              End session
+            </Button>
+          </div>
+        </BottomSheetContent>
+      </BottomSheet>
     </motion.section>
   );
 }

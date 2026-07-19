@@ -53,7 +53,7 @@ export function FeedManager() {
   );
 
   return (
-    <div className="flex h-full flex-col rounded-md border border-[#323234] bg-[#1B1D1E] p-2 text-white">
+    <div className="needt-panel-depth flex h-full flex-col rounded-md border border-[var(--border-control)] p-2 text-[var(--text-primary)]">
       <div className="rounded-md border border-[#323234] bg-[#262627] py-2">
         <MiniCalendar currentDate={currentDate} onDateClick={setDate} />
       </div>

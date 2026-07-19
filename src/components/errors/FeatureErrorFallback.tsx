@@ -26,7 +26,7 @@ export function FeatureErrorFallback({
   }, [error, feature]);
 
   return (
-    <section className="grid min-h-[320px] place-items-center bg-[var(--surface-canvas)] p-6 text-center">
+    <section className="needt-page-depth grid min-h-[320px] place-items-center p-6 text-center">
       <div>
         <h1 className="text-base font-semibold text-[var(--text-primary)]">
           {feature} could not load

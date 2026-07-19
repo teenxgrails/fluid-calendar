@@ -53,6 +53,7 @@ export class SettingsPanelBoundary extends Component<
       <SettingsSection
         title="This section could not load"
         description="Your other settings are still available. Try again, or choose another section in the sidebar."
+        showDescription
       >
         <Button
           type="button"

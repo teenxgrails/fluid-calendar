@@ -7,6 +7,7 @@ import { newDate } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { schedulePushTaskBlock } from "@/lib/task-block-push";
+import { sanitizeTaskDescriptionForStorage } from "@/lib/task-description-format";
 import {
   ChangeType,
   TaskChangeTracker,
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
 
     const json = await request.json();
     const { tagIds, recurrenceRule, ...taskData } = json;
+    const description = sanitizeTaskDescriptionForStorage(taskData.description);
 
     // Normalize and validate recurrence rule if provided
     const standardizedRecurrenceRule = recurrenceRule
@@ -144,6 +146,7 @@ export async function POST(request: NextRequest) {
     const task = await prisma.task.create({
       data: {
         ...taskData,
+        description,
         // Associate the task with the current user
         userId,
         isRecurring: !!recurrenceRule,
