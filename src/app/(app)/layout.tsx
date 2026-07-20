@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { usePathname } from "next/navigation";
+
 import { AIActionCursor } from "@/components/ai/AIActionCursor";
 import { AIChatOverlay } from "@/components/ai/AIChatOverlay";
 import { DndProvider } from "@/components/dnd/DndProvider";
@@ -19,6 +21,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { usePageTitle } from "@/hooks/use-page-title";
 
+import { cn } from "@/lib/utils";
+
 import { useShortcutsStore } from "@/store/shortcuts";
 
 export default function RootLayout({
@@ -28,6 +32,7 @@ export default function RootLayout({
 }>) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [chatOverlayOpen, setChatOverlayOpen] = useState(false);
+  const pathname = usePathname();
   const { isOpen: shortcutsOpen, setOpen: setShortcutsOpen } =
     useShortcutsStore();
 
@@ -53,7 +58,7 @@ export default function RootLayout({
   }, [setShortcutsOpen]);
 
   return (
-    <div className="needt-page-depth relative flex min-h-screen">
+    <div className="needt-page-depth relative flex min-h-dvh">
       <PrivacyProvider>
         <DndProvider>
           <TooltipProvider delayDuration={400}>
@@ -70,8 +75,20 @@ export default function RootLayout({
             />
             <MobileTopBar />
             <AppNav onOpenChatOverlay={() => setChatOverlayOpen(true)} />
-            <main className="needt-route-content relative min-w-0 flex-1 max-lg:pb-[calc(68px+env(safe-area-inset-bottom))] max-lg:pt-14">
-              <NotificationProvider>{children}</NotificationProvider>
+            <main
+              className={cn(
+                "needt-route-content relative min-w-0 flex-1 max-lg:pb-[calc(68px+env(safe-area-inset-bottom))] max-lg:pt-[calc(56px+env(safe-area-inset-top))] max-sm:pb-[calc(92px+env(safe-area-inset-bottom))]",
+                pathname === "/today" && "max-sm:pt-0"
+              )}
+            >
+              <NotificationProvider>
+                <div
+                  key={pathname}
+                  className="needt-mobile-route-fallback min-h-full"
+                >
+                  {children}
+                </div>
+              </NotificationProvider>
             </main>
             <AIChatOverlay
               open={chatOverlayOpen}

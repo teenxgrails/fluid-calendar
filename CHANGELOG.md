@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Reworked the phone shell around a native-style four-tab floating dock (To-do, Today, Focus, Me), safe-area-aware chrome, smoother persistent route transitions, and a Tiimo-inspired Today header with centered serif day typography, progress, quick add, and horizontal day swipes. Installed PWA launches now open Today, refresh their service worker without stale RSC caching, and preserve offline mutation queues across upgrades.
 - Rebased both appearance themes on shared top-lit depth tokens. Dark mode now uses a neutral `#0E0E10` canvas with closely stepped `#151517` / `#1A1A1E` / `#212126` surfaces, thin neutral borders, radial page and panel depth, and a stronger top-to-bottom modal scrim; light mode supplies matching inverted depth without blur or glow.
 - Completed the responsive Needt design pass for Boards, Focus, Mail, and AI Chat in both dark and light themes. Boards now separate card-open and drag handles, Focus uses a flat Opal-inspired timer hierarchy with an early-exit sheet, Mail follows the compact Inbox toolbar/row rhythm, and AI Chat shares the common composer, loading, history, and message surfaces.
 - Renamed Settings → Theme to Appearance, made the mobile Me tab point to account settings, and isolated custom dark background tinting from light-mode semantic tokens so switching themes never leaves a dark inline canvas behind.

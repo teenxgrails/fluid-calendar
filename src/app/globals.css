@@ -419,6 +419,15 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    min-height: 100dvh;
+    overscroll-behavior-x: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
   }
 
   html:not(.dark) body {
@@ -1778,6 +1787,73 @@ html[data-animations="off"] *::after {
   view-transition-name: needt-active-nav-item;
 }
 
+.needt-day-display {
+  font-family: "New York", "Iowan Old Style", "Palatino Linotype", Georgia,
+    ui-serif, serif;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.needt-native-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
+@media (max-width: 639px) {
+  .needt-mobile-dock {
+    inset-inline: auto !important;
+    left: 50% !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    width: calc(100% - 24px) !important;
+    max-width: 420px;
+    height: 74px !important;
+    padding: 5px !important;
+    padding-bottom: 5px !important;
+    transform: translate3d(-50%, 0, 0);
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 28px;
+    background-color: var(--surface-panel);
+    background-image: var(--panel-background);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 16%);
+    backface-visibility: hidden;
+    contain: layout paint;
+  }
+
+  .needt-phone-tabs {
+    gap: 2px;
+  }
+
+  .needt-phone-tab {
+    min-height: 62px;
+    border-radius: 23px;
+    transition:
+      color 160ms var(--motion-ease-standard),
+      background-color 190ms var(--motion-ease-standard),
+      transform 150ms var(--motion-ease-standard);
+  }
+
+  .needt-phone-tab:active {
+    transform: scale(0.96);
+  }
+
+  .needt-phone-tab-active {
+    background: var(--surface-hover);
+  }
+
+  .needt-route-content {
+    min-height: 100dvh;
+    backface-visibility: hidden;
+  }
+}
+
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
@@ -1798,6 +1874,29 @@ html[data-animations="off"] *::after {
   }
 }
 
+@media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(needt-route-content) {
+    animation: needt-mobile-route-out 120ms ease-out both;
+  }
+
+  ::view-transition-new(needt-route-content) {
+    animation: needt-mobile-route-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  ::view-transition-group(needt-active-nav-item) {
+    animation-duration: 220ms;
+  }
+}
+
+@supports not (view-transition-name: none) {
+  @media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+    .needt-mobile-route-fallback {
+      animation: needt-mobile-route-in 220ms
+        cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+  }
+}
+
 @keyframes needt-route-out {
   to {
     opacity: 0;
@@ -1807,6 +1906,20 @@ html[data-animations="off"] *::after {
 @keyframes needt-route-in {
   from {
     opacity: 0;
+  }
+}
+
+@keyframes needt-mobile-route-out {
+  to {
+    opacity: 0;
+    transform: translate3d(-4px, 0, 0);
+  }
+}
+
+@keyframes needt-mobile-route-in {
+  from {
+    opacity: 0;
+    transform: translate3d(8px, 0, 0);
   }
 }
 
