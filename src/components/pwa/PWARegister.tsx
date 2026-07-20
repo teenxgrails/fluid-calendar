@@ -23,6 +23,15 @@ export function PWARegister() {
   const [returning, setReturning] = useState(false);
 
   useEffect(() => {
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      Boolean(
+        (window.navigator as Navigator & { standalone?: boolean }).standalone
+      );
+    document.documentElement.dataset.displayMode = standalone
+      ? "standalone"
+      : "browser";
+
     if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
       if (process.env.NODE_ENV === "development") {
         // A production service worker caching dev chunks leaves localhost on a
@@ -37,7 +46,10 @@ export function PWARegister() {
           )
           .catch(() => undefined);
       } else {
-        void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+        void navigator.serviceWorker
+          .register("/sw.js", { updateViaCache: "none" })
+          .then((registration) => registration.update())
+          .catch(() => undefined);
       }
     }
 

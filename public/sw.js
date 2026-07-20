@@ -1,10 +1,13 @@
-const CACHE_NAME = "flowday-shell-v3";
-const API_CACHE_NAME = "flowday-api-v1";
+const CACHE_NAME = "needt-shell-v4";
+const API_CACHE_NAME = "needt-api-v2";
+// Keep the existing IndexedDB name so queued offline mutations survive the
+// service-worker upgrade.
 const DB_NAME = "flowday-offline-v1";
 const STORE_QUEUE = "mutationQueue";
 const STORE_SNAPSHOTS = "snapshots";
 const SHELL_URLS = [
   "/",
+  "/today",
   "/calendar",
   "/focus",
   "/tasks",
@@ -23,7 +26,22 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter(
+                (key) => key !== CACHE_NAME && key !== API_CACHE_NAME
+              )
+              .map((key) => caches.delete(key))
+          )
+        ),
+    ])
+  );
 });
 
 self.addEventListener("fetch", (event) => {
@@ -53,8 +71,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (request.method === "GET") {
+  if (
+    request.method === "GET" &&
+    (url.pathname.startsWith("/_next/static/") ||
+      url.pathname === "/manifest.webmanifest" ||
+      url.pathname === "/logo.svg")
+  ) {
     event.respondWith(cacheFirst(request));
+    return;
   }
 });
 
@@ -97,8 +121,10 @@ async function cacheFirst(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  const cache = await caches.open(CACHE_NAME);
-  cache.put(request, response.clone());
+  if (response.ok) {
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+  }
   return response;
 }
 
@@ -106,10 +132,20 @@ async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetch(request);
-    cache.put(request, response.clone());
+    if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
-    return (await cache.match(request)) || (await cache.match("/calendar"));
+    const cached =
+      (await cache.match(request)) ||
+      (await cache.match("/today")) ||
+      (await cache.match("/calendar"));
+    return (
+      cached ||
+      new Response("Needt is offline. Reconnect and try again.", {
+        status: 503,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      })
+    );
   }
 }
 

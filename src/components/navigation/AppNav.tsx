@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarDays,
   CheckSquare,
+  CircleDashed,
   Download,
   Focus,
   Mail,
@@ -69,6 +70,7 @@ export const AppNav = memo(function AppNav({
   const [unreadMailCount, setUnreadMailCount] = useState(0);
   const [isOverloaded, setIsOverloaded] = useState(false);
   const [todayLabel, setTodayLabel] = useState<string | null>(null);
+  const [todayDay, setTodayDay] = useState<string | null>(null);
   const overdueCount = useTaskStore(
     (state) =>
       state.tasks.filter(
@@ -98,7 +100,6 @@ export const AppNav = memo(function AppNav({
   }, [router]);
 
   useEffect(() => {
-    if (pathname.startsWith("/auth") || pathname === "/setup") return;
     const refreshUnread = async () => {
       try {
         const response = await fetch("/api/mail/accounts");
@@ -124,10 +125,9 @@ export const AppNav = memo(function AppNav({
     window.addEventListener("mail-unread-changed", refreshUnread);
     return () =>
       window.removeEventListener("mail-unread-changed", refreshUnread);
-  }, [pathname]);
+  }, []);
 
   useEffect(() => {
-    if (pathname.startsWith("/auth") || pathname === "/setup") return;
     fetch("/api/ai/briefing-status")
       .then((response) => (response.ok ? response.json() : null))
       .then((status) => setIsOverloaded(Boolean(status?.overloaded)))
@@ -138,7 +138,7 @@ export const AppNav = memo(function AppNav({
           LOG_SOURCE
         );
       });
-  }, [pathname]);
+  }, []);
 
   useEffect(() => {
     setTodayLabel(
@@ -148,6 +148,7 @@ export const AppNav = memo(function AppNav({
         day: "numeric",
       }).format(newDate())
     );
+    setTodayDay(String(newDate().getDate()));
   }, []);
 
   // Motion swaps its product rail for the settings rail on settings pages.
@@ -174,11 +175,16 @@ export const AppNav = memo(function AppNav({
     { href: "/focus", label: "Focus", icon: Focus },
     { href: "/mail", label: "Mail", icon: Mail, badge: unreadMailCount },
   ];
-  const mobileLinks = [
+  const tabletLinks = [
     { href: "/calendar", label: "Calendar", icon: CalendarDays },
     { href: "/today", label: "Today", icon: Sun },
     { href: "/tasks", label: "Tasks", icon: CheckSquare },
     { href: "/focus", label: "Focus", icon: Focus },
+  ];
+  const phoneLinks = [
+    { href: "/tasks", label: "To-do", icon: CheckSquare },
+    { href: "/today", label: "Today", icon: CalendarDays },
+    { href: "/focus", label: "Focus", icon: CircleDashed },
   ];
   const profileInitials =
     session?.user?.name
@@ -192,7 +198,7 @@ export const AppNav = memo(function AppNav({
     <aside
       aria-label={`${APP_NAME} navigation`}
       className={cn(
-        "needt-panel-depth motion-sidebar z-40 flex h-screen w-[244px] flex-none flex-col border-r border-[var(--line-strong)] p-2 text-[var(--text-hi)] max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:h-[calc(68px+env(safe-area-inset-bottom))] max-lg:w-full max-lg:flex-row max-lg:border-r-0 max-lg:border-t max-lg:px-1 max-lg:pb-[env(safe-area-inset-bottom)] max-lg:pt-1",
+        "needt-panel-depth motion-sidebar needt-mobile-dock z-40 flex h-screen w-[244px] flex-none flex-col border-r border-[var(--line-strong)] p-2 text-[var(--text-hi)] max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:h-[calc(68px+env(safe-area-inset-bottom))] max-lg:w-full max-lg:flex-row max-lg:border-r-0 max-lg:border-t max-lg:px-1 max-lg:pb-[env(safe-area-inset-bottom)] max-lg:pt-1",
         isSettings && "lg:hidden",
         className
       )}
@@ -262,8 +268,8 @@ export const AppNav = memo(function AppNav({
         })}
       </nav>
 
-      <nav className="hidden flex-1 items-stretch justify-around text-[13px] max-lg:flex">
-        {mobileLinks.map((link) => {
+      <nav className="hidden flex-1 items-stretch justify-around text-[13px] sm:flex lg:hidden">
+        {tabletLinks.map((link) => {
           const Icon = link.icon;
           const isActive =
             pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -300,6 +306,53 @@ export const AppNav = memo(function AppNav({
             </AvatarFallback>
           </Avatar>
           <span className="text-[10px] leading-3">Me</span>
+        </Link>
+      </nav>
+
+      <nav className="needt-phone-tabs flex flex-1 items-stretch justify-around text-[13px] sm:hidden">
+        {phoneLinks.map((link) => {
+          const Icon = link.icon;
+          const isActive =
+            pathname === link.href || pathname.startsWith(`${link.href}/`);
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "needt-phone-tab flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center text-[var(--text-muted)]",
+                isActive &&
+                  "needt-active-nav-item needt-phone-tab-active text-[var(--text-primary)]"
+              )}
+            >
+              {link.href === "/today" ? (
+                <TodayTabIcon day={todayDay} />
+              ) : (
+                <Icon className="h-6 w-6" strokeWidth={1.85} />
+              )}
+              <span className="mt-0.5 text-[11px] font-medium leading-3">
+                {link.label}
+              </span>
+            </Link>
+          );
+        })}
+        <Link
+          href="/settings#account"
+          className={cn(
+            "needt-phone-tab flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center text-[var(--text-muted)]",
+            isSettings &&
+              "needt-active-nav-item needt-phone-tab-active text-[var(--text-primary)]"
+          )}
+        >
+          <Avatar className="h-6 w-6 border border-[var(--border-control)]">
+            <AvatarImage
+              src={session?.user?.image || ""}
+              alt={session?.user?.name || "Profile"}
+            />
+            <AvatarFallback className="text-[8px] font-semibold">
+              {profileInitials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="mt-0.5 text-[11px] font-medium leading-3">Me</span>
         </Link>
       </nav>
 
@@ -393,3 +446,17 @@ export const AppNav = memo(function AppNav({
     </aside>
   );
 });
+
+function TodayTabIcon({ day }: { day: string | null }) {
+  return (
+    <span
+      aria-hidden
+      className="relative block h-6 w-6 rounded-[5px] border-2 border-current"
+    >
+      <span className="absolute inset-x-0 top-[4px] border-t-2 border-current" />
+      <span className="absolute inset-x-0 bottom-[1px] text-center text-[10px] font-bold leading-[14px] tabular-nums">
+        {day ?? ""}
+      </span>
+    </span>
+  );
+}

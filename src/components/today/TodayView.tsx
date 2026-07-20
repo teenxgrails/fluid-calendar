@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Clock3,
   Moon,
+  PartyPopper,
   Plus,
   Sun,
   Sunrise,
@@ -64,6 +65,23 @@ function timeLabel(date: Date): string {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function longDateLabel(date: Date): string {
+  const day = date.getDate();
+  const mod100 = day % 100;
+  const suffix =
+    mod100 >= 11 && mod100 <= 13
+      ? "th"
+      : day % 10 === 1
+        ? "st"
+        : day % 10 === 2
+          ? "nd"
+          : day % 10 === 3
+            ? "rd"
+            : "th";
+  const month = date.toLocaleDateString([], { month: "long" });
+  return `${month} ${day}${suffix}, ${date.getFullYear()}`;
 }
 
 function groupDayItems(items: DayListItem[]): DayGroup[] {
@@ -133,21 +151,18 @@ export function TodayView() {
   const [addOpen, setAddOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
-  const [now, setNow] = useState<Date | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [now] = useState(() => newDate());
+  const [selectedDate, setSelectedDate] = useState(() => newDate());
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     void fetchTasks();
     void loadFromDatabase();
-    const current = newDate();
-    setNow(current);
-    setSelectedDate(current);
   }, [fetchTasks, loadFromDatabase]);
 
-  const effectiveDate = selectedDate ?? newDate(0);
-  const dayStart = startOfDay(effectiveDate);
-  const dayEnd = endOfDay(effectiveDate);
-  const viewingToday = Boolean(now && isSameDay(effectiveDate, now));
+  const dayStart = startOfDay(selectedDate);
+  const dayEnd = endOfDay(selectedDate);
+  const viewingToday = isSameDay(selectedDate, now);
 
   const dayItems = useMemo<DayListItem[]>(() => {
     // Reading the event count keeps this derivation in sync when calendar
@@ -248,6 +263,7 @@ export function TodayView() {
           newDate(left.dueDate!).getTime() - newDate(right.dueDate!).getTime()
       );
   }, [dayStart, tasks, viewingToday]);
+  const progressTotal = dayItems.length + completedTasks.length;
 
   const completeTask = async (taskId: string) => {
     try {
@@ -282,25 +298,82 @@ export function TodayView() {
     }
   };
 
-  if (!now || !selectedDate) {
-    return (
-      <div
-        className="mx-auto h-full w-full max-w-2xl animate-pulse px-4 py-8"
-        aria-label="Loading today"
-      >
-        <div className="mx-auto h-10 w-48 rounded bg-[var(--surface-raised)]" />
-        <div className="mx-auto mt-3 h-4 w-36 rounded bg-[var(--surface-raised)]" />
-      </div>
-    );
-  }
-
   return (
-    <div className="needt-page-depth relative h-full overflow-y-auto pb-24">
+    <div
+      className="needt-page-depth needt-native-scroll relative h-full overflow-y-auto pb-24"
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        swipeStart.current = { x: touch.clientX, y: touch.clientY };
+      }}
+      onTouchEnd={(event) => {
+        const start = swipeStart.current;
+        swipeStart.current = null;
+        if (!start) return;
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - start.x;
+        const deltaY = touch.clientY - start.y;
+        if (Math.abs(deltaX) < 64 || Math.abs(deltaX) < Math.abs(deltaY)) {
+          return;
+        }
+        setSelectedDate((date) => addDays(date, deltaX > 0 ? -1 : 1));
+      }}
+    >
       <div className="mx-auto grid min-h-full w-full max-w-[1120px] grid-cols-1 xl:grid-cols-[minmax(0,780px)_280px]">
-        <main className="min-w-0 px-5 py-8 sm:px-10 sm:py-12 xl:px-12">
+        <main className="min-w-0 px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] sm:px-10 sm:py-12 xl:px-12">
+          <div className="mb-12 flex items-center justify-between sm:hidden">
+            <div className="needt-raised-depth flex h-11 items-center gap-2 rounded-full border border-[var(--border-subtle)] px-4 text-[15px] font-semibold tabular-nums text-[var(--text-primary)]">
+              <PartyPopper className="h-4 w-4" strokeWidth={1.8} />
+              {completedTasks.length} / {progressTotal}
+            </div>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              aria-label="Quick add task"
+              className="needt-raised-depth grid h-11 w-11 touch-manipulation place-items-center rounded-full border border-[var(--border-subtle)] text-[var(--text-primary)] transition-transform duration-150 active:scale-95 motion-reduce:transition-none"
+            >
+              <Plus className="h-6 w-6" strokeWidth={1.8} />
+            </button>
+          </div>
+
+          <header className="relative mb-12 text-center sm:hidden">
+            <button
+              type="button"
+              onClick={() => setSelectedDate(addDays(selectedDate, -1))}
+              aria-label="Previous day"
+              className="absolute left-0 top-3 grid h-11 w-11 touch-manipulation place-items-center rounded-full text-[var(--text-muted)] transition-colors active:bg-[var(--surface-hover)]"
+            >
+              <ChevronLeft className="h-6 w-6" strokeWidth={1.7} />
+            </button>
+            <div aria-live="polite">
+              <h1 className="needt-day-display text-[44px] leading-[0.98] tracking-[-0.045em] text-[var(--text-primary)]">
+                {selectedDate.toLocaleDateString([], { weekday: "long" })}
+              </h1>
+              <p className="mt-3 text-[17px] tracking-[-0.015em] text-[var(--text-secondary)]">
+                {longDateLabel(selectedDate)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+              aria-label="Next day"
+              className="absolute right-0 top-3 grid h-11 w-11 touch-manipulation place-items-center rounded-full text-[var(--text-muted)] transition-colors active:bg-[var(--surface-hover)]"
+            >
+              <ChevronRight className="h-6 w-6" strokeWidth={1.7} />
+            </button>
+            {!viewingToday && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate(now)}
+                className="mt-4 rounded-full bg-[var(--surface-control)] px-4 py-2 text-[12px] font-medium text-[var(--text-secondary)]"
+              >
+                Back to today
+              </button>
+            )}
+          </header>
+
           <nav
             aria-label="Day navigation"
-            className="mb-8 flex items-center gap-1 text-[12px] text-[var(--text-secondary)]"
+            className="mb-8 hidden items-center gap-1 text-[12px] text-[var(--text-secondary)] sm:flex"
           >
             <button
               type="button"
@@ -327,7 +400,7 @@ export function TodayView() {
             </button>
           </nav>
 
-          <header className="mb-10">
+          <header className="mb-10 hidden sm:block">
             <div className="mb-4 grid h-8 w-8 place-items-center rounded-md bg-[var(--surface-raised)] text-[var(--text-secondary)]">
               <CalendarDays className="h-4 w-4" />
             </div>
@@ -435,7 +508,7 @@ export function TodayView() {
         type="button"
         onClick={() => setAddOpen(true)}
         aria-label="Quick add task"
-        className="fixed bottom-[calc(84px+env(safe-area-inset-bottom))] right-5 z-10 grid h-12 w-12 touch-manipulation place-items-center rounded-full border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)] transition-[transform,background-color] duration-150 active:scale-95 motion-reduce:transition-none lg:bottom-6"
+        className="fixed bottom-[calc(84px+env(safe-area-inset-bottom))] right-5 z-10 hidden h-12 w-12 touch-manipulation place-items-center rounded-full border border-[var(--button-primary-border)] bg-[var(--button-primary-bg)] text-[var(--button-primary-fg)] shadow-[var(--button-primary-shadow)] transition-[transform,background-color] duration-150 active:scale-95 motion-reduce:transition-none sm:grid lg:bottom-6"
       >
         <Plus className="h-5 w-5" />
       </button>

@@ -1,13 +1,19 @@
 {
   "name": "Needt",
   "short_name": "Needt",
+  "id": "/today",
   "description": "Installable local-first planner with schedule, task, and focus support.",
-  "start_url": "/calendar",
+  "start_url": "/today",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0E0E10",
   "theme_color": "#0E0E10",
   "orientation": "portrait-primary",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/logo.svg",
@@ -17,6 +23,11 @@
     }
   ],
   "shortcuts": [
+    {
+      "name": "Today",
+      "url": "/today",
+      "description": "Open today's plan"
+    },
     {
       "name": "Calendar",
       "url": "/calendar",

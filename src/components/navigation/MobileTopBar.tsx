@@ -9,6 +9,7 @@ import { Sparkles } from "lucide-react";
 
 import { APP_NAME } from "@/lib/app-config";
 import { newDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
 
 /**
  * Compact top bar for phone and tablet layouts (hidden at lg+, where the
@@ -35,7 +36,12 @@ export function MobileTopBar() {
   }
 
   return (
-    <header className="needt-panel-depth fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-[var(--line-strong)] px-4 lg:hidden">
+    <header
+      className={cn(
+        "needt-panel-depth fixed inset-x-0 top-0 z-30 flex h-[calc(56px+env(safe-area-inset-top))] items-center justify-between border-b border-[var(--line-strong)] px-4 pt-[env(safe-area-inset-top)] lg:hidden",
+        pathname === "/today" && "max-sm:hidden"
+      )}
+    >
       <div className="flex min-w-0 flex-col">
         <span className="text-sm font-semibold text-[var(--text-hi)]">
           {APP_NAME}

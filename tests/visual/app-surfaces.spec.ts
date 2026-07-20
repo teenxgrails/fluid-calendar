@@ -83,9 +83,16 @@ test("Calendar, Today, and Space stay visually stable", async ({ page }) => {
   }
 
   await page.goto("/today", { waitUntil: "domcontentloaded" });
-  await expect(
-    page.getByRole("heading", { name: /Thu.*Jul 16/, level: 1 })
-  ).toBeVisible();
+  if ((page.viewportSize()?.width ?? 0) < 640) {
+    await expect(
+      page.getByRole("heading", { name: "Thursday", level: 1 })
+    ).toBeVisible();
+    await expect(page.getByText("July 16th, 2026")).toBeVisible();
+  } else {
+    await expect(
+      page.getByRole("heading", { name: /Thu.*Jul 16/, level: 1 })
+    ).toBeVisible();
+  }
   await expect(
     page.getByRole("main").getByText("Plan the launch").first()
   ).toBeVisible();
@@ -140,9 +147,16 @@ test("primary app surfaces stay coherent in light mode", async ({ page }) => {
   await page.keyboard.press("Escape");
 
   await page.goto("/today", { waitUntil: "networkidle" });
-  await expect(
-    page.getByRole("heading", { name: /Thu.*Jul 16/, level: 1 })
-  ).toBeVisible();
+  if ((page.viewportSize()?.width ?? 0) < 640) {
+    await expect(
+      page.getByRole("heading", { name: "Thursday", level: 1 })
+    ).toBeVisible();
+    await expect(page.getByText("July 16th, 2026")).toBeVisible();
+  } else {
+    await expect(
+      page.getByRole("heading", { name: /Thu.*Jul 16/, level: 1 })
+    ).toBeVisible();
+  }
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("today-light.png");
 
