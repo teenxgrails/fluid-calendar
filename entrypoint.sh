@@ -7,19 +7,23 @@ PG_PORT=${PG_PORT:-5432}
 
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
-while ! nc -z $PG_HOST $PG_PORT; do
+while ! nc -z "$PG_HOST" "$PG_PORT"; do
   sleep 1
 done
 echo "Database is ready!"
 
-# Generate Prisma Client
-echo "Generating Prisma Client..."
-npx --yes prisma generate
+# The client is generated during the image build. At runtime, use only the
+# lockfile-pinned Prisma CLI shipped in the image; never let npx download a
+# different major version while the container is starting.
+PRISMA_BIN="/app/node_modules/.bin/prisma"
+if [ ! -x "$PRISMA_BIN" ]; then
+  echo "Bundled Prisma CLI is missing at $PRISMA_BIN" >&2
+  exit 1
+fi
 
-# Run database migrations
-echo "Running database migrations..."
-npx --yes prisma migrate deploy
+echo "Running database migrations with bundled Prisma CLI..."
+"$PRISMA_BIN" migrate deploy
 
 # Start the application
 echo "Starting the application..."
-exec "$@" 
+exec "$@"
