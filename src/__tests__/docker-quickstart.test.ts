@@ -120,12 +120,44 @@ describe("production migration tooling", () => {
     devDependencies?: Record<string, string>;
   };
   const dockerfile = read("docker/production/Dockerfile");
+  const rootDockerfile = read("Dockerfile");
   const entrypoint = read("entrypoint.sh");
 
   it("ships the pinned Prisma CLI in the production dependency layer", () => {
     expect(packageJson.dependencies?.prisma).toBe("^6.3.1");
     expect(packageJson.devDependencies?.prisma).toBeUndefined();
     expect(dockerfile).toContain("npm ci --only=production");
-    expect(entrypoint).toContain("prisma migrate deploy");
+    expect(entrypoint).toContain('"$PRISMA_BIN" migrate deploy');
+  });
+
+  it("bundles the lockfile-pinned Prisma CLI in every runtime image", () => {
+    expect(rootDockerfile).toContain("FROM base AS runtime-deps");
+    expect(rootDockerfile).toContain(
+      "npm ci --omit=dev --legacy-peer-deps --ignore-scripts"
+    );
+    expect(rootDockerfile.match(/COPY --from=runtime-deps/g)).toHaveLength(2);
+    expect(entrypoint).toContain('/app/node_modules/.bin/prisma');
+  });
+
+  it("never downloads a floating Prisma major during container startup", () => {
+    expect(entrypoint).not.toContain("npx --yes prisma");
+    expect(entrypoint).not.toContain("prisma generate");
+    expect(entrypoint).toContain('"$PRISMA_BIN" migrate deploy');
+  });
+});
+
+describe("production root redirect", () => {
+  const middleware = read("src/middleware.ts");
+  const homePage = read("src/app/page.tsx");
+
+  it("does not fetch the application from its own middleware", () => {
+    expect(middleware).not.toContain("getHomepageSetting");
+    expect(middleware).not.toContain("Error fetching homepage setting");
+    expect(middleware).not.toContain("X-Internal-Request");
+  });
+
+  it("leaves the auth-aware root redirect to the server page", () => {
+    expect(homePage).toContain('redirect(session ? "/calendar" : "/auth/signin")');
+    expect(middleware).toContain('if (pathname === "/")');
   });
 });

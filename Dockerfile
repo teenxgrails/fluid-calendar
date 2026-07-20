@@ -28,6 +28,14 @@ RUN npm run prisma:generate
 RUN npm run build:worker
 RUN npm run build
 
+# Runtime dependencies are installed from package-lock.json so the entrypoint
+# always uses the project's Prisma 6 CLI. Without this layer, `npx prisma`
+# downloads the latest major at container startup and can reject our schema.
+FROM base AS runtime-deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev --legacy-peer-deps --ignore-scripts
+
 # Worker stage - same image, runs the BullMQ worker instead of the web server.
 # Coolify: set this service's "Docker Build Stage Target" to `worker`.
 FROM base AS worker
@@ -35,6 +43,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+COPY --from=runtime-deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist/worker ./dist/worker
 COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
@@ -51,6 +60,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+COPY --from=runtime-deps /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
