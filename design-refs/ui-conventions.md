@@ -9,24 +9,30 @@ token and theme contract is in `design-refs/app-design-system.md`.
 Use semantic/component CSS variables from `globals.css`, which flip for
 light/dark:
 
-| Token               | Use                                  |
-| ------------------- | ------------------------------------ |
-| `--surface-canvas`  | page / sidebar / calendar background |
-| `--surface-panel`   | popovers, menus, and dialogs         |
-| `--surface-raised`  | raised cards and secondary surfaces  |
-| `--surface-control` | neutral buttons and control chrome   |
-| `--surface-input`   | inset inputs and picker triggers     |
-| `--surface-hover`   | hover / selected row highlight       |
-| `--border-subtle`   | grid lines and dividers              |
-| `--border-control`  | control and popup borders            |
-| `--text-primary`    | primary text                         |
-| `--text-secondary`  | secondary text and icons             |
-| `--text-muted`      | low-emphasis and placeholder text    |
-| `--color-accent`    | configurable accent                  |
+| Token               | Use                                      |
+| ------------------- | ---------------------------------------- |
+| `--surface-canvas`  | shared page / sidebar / surface base     |
+| `--surface-panel`   | popovers, menus, and dialogs (same base) |
+| `--surface-raised`  | cards and secondary surfaces (same base) |
+| `--surface-control` | neutral buttons and control chrome       |
+| `--surface-input`   | inset inputs and picker triggers         |
+| `--surface-hover`   | hover / selected row highlight           |
+| `--border-subtle`   | grid lines and dividers                  |
+| `--border-control`  | control and popup borders                |
+| `--text-primary`    | primary text                             |
+| `--text-secondary`  | secondary text and icons                 |
+| `--text-muted`      | low-emphasis and placeholder text        |
+| `--color-accent`    | configurable accent                      |
 
 **No glows.** Don't add `box-shadow` glows or bright accent focus borders
 rings to pickers/toggles. Focus is handled with `focus:outline-none` + a subtle
 border only.
+
+The app uses one continuous canvas color per theme. Page, sidebar, panel,
+popover, and dialog surface tokens resolve to that same base. Depth comes from
+the shared `--ambient-background`: a subtle vertical top light that settles
+into the base at 40% of the surface, plus hairline borders — never from separate
+surface colors or glow.
 
 ## Popup / options panel (e.g. Calendar options — screen 3/4)
 

@@ -555,7 +555,7 @@ export function TaskModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && requestClose()}>
       <DialogContent
         data-testid="task-modal"
-        className="needt-overlay-depth !bottom-0 !left-0 !top-auto h-[92dvh] max-h-[92dvh] !w-full !max-w-none !translate-x-0 !translate-y-0 gap-0 overflow-hidden !rounded-b-none !rounded-t-2xl border-[var(--dialog-border)] p-0 text-[var(--text-primary)] shadow-lg sm:!bottom-auto sm:!left-1/2 sm:!top-1/2 sm:h-[min(767px,calc(100dvh-3.875rem))] sm:max-h-[calc(100dvh-3.875rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1016px] sm:!-translate-x-1/2 sm:!-translate-y-1/2 sm:!rounded-[var(--dialog-radius)] lg:[&>button.absolute]:-right-8 lg:[&>button.absolute]:top-0"
+        className="needt-overlay-depth !bottom-0 !left-0 !top-auto h-[92dvh] max-h-[92dvh] !w-full !max-w-none !translate-x-0 !translate-y-0 gap-0 overflow-hidden !rounded-b-none !rounded-t-2xl border-[var(--dialog-border)] p-0 text-[var(--text-primary)] shadow-lg sm:!bottom-auto sm:!left-1/2 sm:!top-1/2 sm:h-[min(767px,calc(100dvh-3.875rem))] sm:max-h-[calc(100dvh-3.875rem)] sm:!w-[calc(100vw-3rem)] sm:!max-w-[1120px] sm:!-translate-x-1/2 sm:!-translate-y-1/2 sm:!rounded-[var(--dialog-radius)] lg:[&>button.absolute]:-right-8 lg:[&>button.absolute]:top-0"
       >
         {isSubmitting && <LoadingOverlay />}
         <div
@@ -565,7 +565,7 @@ export function TaskModal({
         <form
           onSubmit={handleSubmit}
           onChangeCapture={() => setIsDirty(true)}
-          className="flex h-full min-h-0 flex-col overflow-y-auto lg:grid lg:grid-cols-[minmax(0,696px)_320px] lg:grid-rows-[95px_minmax(0,1fr)_54px] lg:overflow-hidden lg:[grid-template-areas:'header_aside''main_aside''mainFooter_asideFooter']"
+          className="flex h-full min-h-0 flex-col overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(340px,380px)] lg:grid-rows-[95px_minmax(0,1fr)_54px] lg:overflow-hidden lg:[grid-template-areas:'header_aside''main_aside''mainFooter_asideFooter']"
         >
           <DialogHeader className="space-y-0 px-6 py-4 lg:[grid-area:header] lg:px-10 lg:pt-4">
             <DialogDescription className="sr-only">
@@ -978,7 +978,15 @@ export function TaskModal({
             </div>
 
             {isAdvancedOpen && (
-              <div className="space-y-3 border-t border-[var(--border-subtle)] px-5 py-4 text-[12px]">
+              <div className="space-y-4 border-t border-[var(--border-subtle)] px-5 py-4 text-[12px]">
+                <div>
+                  <p className="text-[13px] font-medium text-[var(--text-primary)]">
+                    Scheduling details
+                  </p>
+                  <p className="mt-0.5 leading-4 text-[var(--text-muted)]">
+                    Fine-tune how Needt estimates and places this task.
+                  </p>
+                </div>
                 {isMissedDeadline && (
                   <div className="rounded border border-[color-mix(in_srgb,var(--color-danger)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-danger)_10%,transparent)] px-2 py-1.5 text-[var(--color-danger)]">
                     Missed deadline
@@ -991,124 +999,187 @@ export function TaskModal({
                     likelyDelta={task.likelyDelta}
                   />
                 )}
-                <div className="grid grid-cols-2 gap-2">
+                <section className="space-y-3 rounded-lg border border-[var(--border-subtle)] p-3">
                   <div>
-                    <Label htmlFor="estimatedMinutes">Estimate</Label>
-                    <Input
-                      id="estimatedMinutes"
-                      type="number"
-                      min="0"
-                      value={estimatedMinutes}
-                      onChange={(event) =>
-                        setEstimatedMinutes(event.target.value)
-                      }
-                    />
+                    <h3 className="font-medium text-[var(--text-primary)]">
+                      Time estimate
+                    </h3>
+                    <p className="mt-0.5 leading-4 text-[var(--text-muted)]">
+                      Used by auto-scheduling and workload planning.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="estimatedMinutes">Planner estimate</Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="estimatedMinutes"
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={estimatedMinutes}
+                          onChange={(event) =>
+                            setEstimatedMinutes(event.target.value)
+                          }
+                          className="pr-10"
+                        />
+                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
+                          min
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="maxChunkMinutes">Longest session</Label>
+                      <div className="relative mt-1">
+                        <Input
+                          id="maxChunkMinutes"
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={maxChunkMinutes}
+                          onChange={(event) =>
+                            setMaxChunkMinutes(event.target.value)
+                          }
+                          className="pr-10"
+                        />
+                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
+                          min
+                        </span>
+                      </div>
+                    </div>
                   </div>
                   <div>
-                    <Label htmlFor="maxChunkMinutes">Max chunk</Label>
-                    <Input
-                      id="maxChunkMinutes"
-                      type="number"
-                      min="0"
-                      value={maxChunkMinutes}
-                      onChange={(event) =>
-                        setMaxChunkMinutes(event.target.value)
-                      }
-                    />
+                    <p className="mb-1.5 text-[var(--text-secondary)]">
+                      Estimate range
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <Label htmlFor="estOptimistic" className="text-[11px]">
+                          Best case
+                        </Label>
+                        <Input
+                          id="estOptimistic"
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={estOptimistic}
+                          onChange={(event) =>
+                            setEstOptimistic(event.target.value)
+                          }
+                          placeholder="min"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="estLikely" className="text-[11px]">
+                          Expected
+                        </Label>
+                        <Input
+                          id="estLikely"
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={estLikely}
+                          onChange={(event) => setEstLikely(event.target.value)}
+                          placeholder="min"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="estPessimistic" className="text-[11px]">
+                          Worst case
+                        </Label>
+                        <Input
+                          id="estPessimistic"
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={estPessimistic}
+                          onChange={(event) =>
+                            setEstPessimistic(event.target.value)
+                          }
+                          placeholder="min"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {contextFactor && suggestedLikely && (
+                    <button
+                      type="button"
+                      onClick={() => setEstLikely(String(suggestedLikely))}
+                      className="text-left text-[var(--accent)] hover:underline"
+                    >
+                      Use {suggestedLikely} min from similar tasks
+                    </button>
+                  )}
+                </section>
+
+                <section className="space-y-3 rounded-lg border border-[var(--border-subtle)] p-3">
+                  <div>
+                    <h3 className="font-medium text-[var(--text-primary)]">
+                      Placement preferences
+                    </h3>
+                    <p className="mt-0.5 leading-4 text-[var(--text-muted)]">
+                      Guides the planner when several tasks compete for time.
+                    </p>
                   </div>
                   <div>
-                    <Label htmlFor="estOptimistic">Optimistic</Label>
-                    <Input
-                      id="estOptimistic"
-                      type="number"
-                      min="0"
-                      value={estOptimistic}
-                      onChange={(event) => setEstOptimistic(event.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="estLikely">Likely</Label>
-                    <Input
-                      id="estLikely"
-                      type="number"
-                      min="0"
-                      value={estLikely}
-                      onChange={(event) => setEstLikely(event.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="estPessimistic">Pessimistic</Label>
-                    <Input
-                      id="estPessimistic"
-                      type="number"
-                      min="0"
-                      value={estPessimistic}
-                      onChange={(event) =>
-                        setEstPessimistic(event.target.value)
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="contextTag">Context</Label>
+                    <Label htmlFor="contextTag">Context or batch</Label>
                     <Input
                       id="contextTag"
                       value={contextTag}
                       onChange={(event) => setContextTag(event.target.value)}
+                      placeholder="e.g. deep work, admin, calls"
+                      className="mt-1"
                     />
                   </div>
-                </div>
-                {contextFactor && suggestedLikely && (
-                  <button
-                    type="button"
-                    onClick={() => setEstLikely(String(suggestedLikely))}
-                    className="text-left text-[var(--accent)]"
-                  >
-                    Suggest {suggestedLikely} min from your history
-                  </button>
-                )}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label>Planner priority</Label>
-                    <Select
-                      value={priorityLevel}
-                      onValueChange={(value) =>
-                        setPriorityLevel(value as SchedulingTaskPriority)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(SchedulingTaskPriority).map((value) => (
-                          <SelectItem key={value} value={value}>
-                            {formatEnumValue(value)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label>Scheduling priority</Label>
+                      <Select
+                        value={priorityLevel}
+                        onValueChange={(value) =>
+                          setPriorityLevel(value as SchedulingTaskPriority)
+                        }
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(SchedulingTaskPriority).map(
+                            (value) => (
+                              <SelectItem key={value} value={value}>
+                                {formatEnumValue(value)}
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Focus required</Label>
+                      <Select
+                        value={energyRequired}
+                        onValueChange={(value) =>
+                          setEnergyRequired(value as SchedulingEnergyLevel)
+                        }
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(SchedulingEnergyLevel).map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {formatEnumValue(value)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div>
-                    <Label>Focus required</Label>
-                    <Select
-                      value={energyRequired}
-                      onValueChange={(value) =>
-                        setEnergyRequired(value as SchedulingEnergyLevel)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(SchedulingEnergyLevel).map((value) => (
-                          <SelectItem key={value} value={value}>
-                            {formatEnumValue(value)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Energy level</Label>
+                    <Label>Best personal energy</Label>
                     <Select
                       value={energyLevel || "none"}
                       onValueChange={(value) =>
@@ -1117,11 +1188,11 @@ export function TaskModal({
                         )
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="none">Any energy window</SelectItem>
                         {Object.values(EnergyLevel).map((value) => (
                           <SelectItem key={value} value={value}>
                             {formatEnumValue(value)}
@@ -1130,17 +1201,32 @@ export function TaskModal({
                       </SelectContent>
                     </Select>
                   </div>
-                  <label className="flex items-end justify-between gap-2 pb-2">
-                    <span>Lock schedule</span>
+                  <label className="flex items-center justify-between gap-3 rounded-md bg-[var(--surface-control)] px-3 py-2.5">
+                    <span>
+                      <span className="block font-medium text-[var(--text-primary)]">
+                        Keep scheduled time
+                      </span>
+                      <span className="mt-0.5 block leading-4 text-[var(--text-muted)]">
+                        Auto-scheduling will not move this task.
+                      </span>
+                    </span>
                     <Switch
                       checked={scheduleLocked}
                       onCheckedChange={setScheduleLocked}
-                      className="h-4 w-[26px] [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-[12px]"
+                      aria-label="Keep scheduled time"
                     />
                   </label>
-                </div>
-                <div>
-                  <Label>Tags</Label>
+                </section>
+
+                <section className="space-y-2 rounded-lg border border-[var(--border-subtle)] p-3">
+                  <div>
+                    <h3 className="font-medium text-[var(--text-primary)]">
+                      Labels
+                    </h3>
+                    <p className="mt-0.5 leading-4 text-[var(--text-muted)]">
+                      Add labels for search and filtered views.
+                    </p>
+                  </div>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {tags.map((tag) => (
                       <label
@@ -1189,7 +1275,7 @@ export function TaskModal({
                       Add
                     </Button>
                   </div>
-                </div>
+                </section>
                 {isRecurring && (
                   <div className="rounded border border-[var(--border-subtle)] bg-[var(--surface-input)] p-2 text-[var(--text-secondary)]">
                     Repeats weekly. Recurrence details are saved with this task.
