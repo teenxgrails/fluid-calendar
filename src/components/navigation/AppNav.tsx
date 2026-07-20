@@ -375,22 +375,22 @@ export const AppNav = memo(function AppNav({
             onOpenChatOverlay();
           }}
           className={cn(
-            "mb-2 flex min-w-0 items-center gap-2 rounded-md border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_18%,var(--raised))] px-2.5 py-2 text-[13px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_24%,var(--raised))]",
-            pathname === "/chat" && "text-white"
+            "needt-ai-cta mb-2 flex min-h-11 min-w-0 items-center gap-2 rounded-xl border px-3 py-2 text-[13px] font-semibold",
+            pathname === "/chat" && "brightness-105"
           )}
         >
           <Sparkles
-            className="h-4 w-4 flex-none text-[var(--accent)]"
-            strokeWidth={1.75}
+            className="relative z-[1] h-[18px] w-[18px] flex-none text-white"
+            strokeWidth={2}
           />
-          <span className="truncate">AI Chat</span>
+          <span className="relative z-[1] truncate">AI Chat</span>
           {isOverloaded && (
             <span
-              className="h-2 w-2 flex-none rounded-full bg-[var(--color-warning)]"
+              className="relative z-[1] h-2 w-2 flex-none rounded-full bg-[var(--color-warning)]"
               aria-label="Today's workload exceeds your work hours"
             />
           )}
-          <kbd className="ml-auto rounded bg-[var(--app-bg)] px-1.5 py-0.5 text-[10px] text-[var(--text-lo)]">
+          <kbd className="relative z-[1] ml-auto rounded-md border border-white/15 bg-black/20 px-1.5 py-0.5 text-[10px] font-medium text-white/80">
             ⌘/
           </kbd>
         </Link>

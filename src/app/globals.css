@@ -54,11 +54,11 @@
 
     /* Semantic layer: light mode. */
     --surface-canvas: var(--primitive-neutral-025);
-    --surface-panel: var(--primitive-white);
-    --surface-raised: var(--primitive-white);
+    --surface-panel: var(--surface-canvas);
+    --surface-raised: var(--surface-canvas);
     --surface-control: #eef1f8;
     --surface-control-hover: #e4e8f1;
-    --surface-input: var(--primitive-white);
+    --surface-input: var(--surface-canvas);
     --surface-hover: #e9edf7;
     --surface-selected: var(--primitive-neutral-100);
     --surface-inverse: var(--primitive-neutral-900);
@@ -74,28 +74,24 @@
     --color-success: var(--primitive-green-500);
     --color-warning: var(--primitive-gold-400);
 
-    /* Top-lit depth backgrounds. Keep the semantic surfaces above as solid
-       colors so borders, color-mix(), and native controls can consume them. */
-    --page-background: radial-gradient(
-      140% 95% at 50% 0%,
-      #ffffff 0%,
-      var(--surface-canvas) 58%
+    /* One continuous canvas with a shared top-lit first 40%. Surfaces stay
+       solid tokens for controls and color-mix(), while every depth utility
+       paints the same restrained ambient gradient. */
+    --surface-ambient-top: color-mix(
+      in srgb,
+      var(--surface-canvas) 94%,
+      var(--primitive-white)
     );
-    --panel-background: radial-gradient(
-      120% 90% at 50% 0%,
-      #ffffff 0%,
-      var(--surface-panel) 64%
+    --ambient-background: linear-gradient(
+      180deg,
+      var(--surface-ambient-top) 0%,
+      var(--surface-canvas) 40%,
+      var(--surface-canvas) 100%
     );
-    --overlay-surface-background: radial-gradient(
-      120% 90% at 50% 0%,
-      #ffffff 0%,
-      #f9fafc 64%
-    );
-    --raised-surface-background: radial-gradient(
-      120% 90% at 50% 0%,
-      #ffffff 0%,
-      var(--surface-raised) 68%
-    );
+    --page-background: var(--ambient-background);
+    --panel-background: var(--ambient-background);
+    --overlay-surface-background: var(--ambient-background);
+    --raised-surface-background: var(--ambient-background);
     --scrim: linear-gradient(180deg, rgb(17 19 28 / 12%), rgb(17 19 28 / 58%));
 
     /* Component layer: shared geometry and chrome. */
@@ -120,6 +116,22 @@
     --button-secondary-bg: var(--control-bg);
     --button-secondary-bg-hover: var(--control-bg-hover);
     --button-secondary-border: var(--control-border);
+    --ai-cta-start: color-mix(
+      in srgb,
+      var(--primitive-violet-500) 72%,
+      var(--primitive-white)
+    );
+    --ai-cta-end: color-mix(
+      in srgb,
+      var(--primitive-indigo-500) 82%,
+      var(--primitive-violet-500)
+    );
+    --ai-cta-border: color-mix(
+      in srgb,
+      var(--primitive-white) 42%,
+      var(--primitive-violet-500)
+    );
+    --ai-cta-fg: var(--primitive-white);
     --button-danger-bg: color-mix(
       in srgb,
       var(--color-danger) 15%,
@@ -306,12 +318,12 @@
   .dark {
     color-scheme: dark;
     /* Semantic layer: the finished Calendar is the dark-theme reference. */
-    --surface-canvas: var(--custom-background-tint, #0e0e10);
-    --surface-panel: #151517;
-    --surface-raised: #212126;
+    --surface-canvas: var(--custom-background-tint, #151517);
+    --surface-panel: var(--surface-canvas);
+    --surface-raised: var(--surface-canvas);
     --surface-control: #212126;
     --surface-control-hover: #29292f;
-    --surface-input: #151517;
+    --surface-input: var(--surface-canvas);
     --surface-hover: #242429;
     --surface-selected: var(--primitive-neutral-100);
     --surface-inverse: var(--primitive-neutral-100);
@@ -325,29 +337,24 @@
     --color-accent-contrast: var(--primitive-white);
     --color-danger: var(--primitive-red-500);
     --color-success: var(--primitive-green-500);
-    --menu-bg: #1a1a1e;
-    --popover-bg: #1a1a1e;
-    --dialog-bg: #1a1a1e;
-    --page-background: radial-gradient(
-      140% 95% at 50% 0%,
-      #17171a 0%,
-      var(--surface-canvas) 58%
+    --menu-bg: var(--surface-canvas);
+    --popover-bg: var(--surface-canvas);
+    --dialog-bg: var(--surface-canvas);
+    --surface-ambient-top: color-mix(
+      in srgb,
+      var(--surface-canvas) 93%,
+      var(--primitive-white)
     );
-    --panel-background: radial-gradient(
-      120% 90% at 50% 0%,
-      #222227 0%,
-      var(--surface-panel) 64%
+    --ambient-background: linear-gradient(
+      180deg,
+      var(--surface-ambient-top) 0%,
+      var(--surface-canvas) 40%,
+      var(--surface-canvas) 100%
     );
-    --overlay-surface-background: radial-gradient(
-      120% 90% at 50% 0%,
-      #27272c 0%,
-      var(--dialog-bg) 64%
-    );
-    --raised-surface-background: radial-gradient(
-      120% 90% at 50% 0%,
-      #2c2c32 0%,
-      var(--surface-raised) 68%
-    );
+    --page-background: var(--ambient-background);
+    --panel-background: var(--ambient-background);
+    --overlay-surface-background: var(--ambient-background);
+    --raised-surface-background: var(--ambient-background);
     --scrim: linear-gradient(180deg, rgb(0 0 0 / 26%), rgb(0 0 0 / 82%));
     --calendar-working-hours-bg: var(--surface-canvas);
     --calendar-non-working-hours-bg: color-mix(
@@ -641,6 +648,65 @@
 
   .needt-scrim {
     background: var(--scrim);
+  }
+
+  .needt-ai-cta {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: var(--ai-cta-fg);
+    border-color: var(--ai-cta-border);
+    background: linear-gradient(
+      180deg,
+      var(--ai-cta-start) 0%,
+      var(--ai-cta-end) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--primitive-white) 38%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, var(--primitive-black) 20%, transparent),
+      0 5px 12px color-mix(in srgb, var(--primitive-black) 22%, transparent);
+    transition:
+      transform var(--motion-duration-fast) var(--motion-ease-standard),
+      filter var(--motion-duration-fast) var(--motion-ease-standard),
+      box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+
+  .needt-ai-cta::before {
+    position: absolute;
+    inset: 1px 1px 52%;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primitive-white) 26%, transparent),
+      transparent
+    );
+    content: "";
+    pointer-events: none;
+  }
+
+  .needt-ai-cta:hover {
+    filter: saturate(1.08) brightness(1.04);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--primitive-white) 42%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, var(--primitive-black) 20%, transparent),
+      0 7px 14px color-mix(in srgb, var(--primitive-black) 26%, transparent);
+  }
+
+  .needt-ai-cta:active {
+    filter: saturate(1.02);
+    transform: translateY(0) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .needt-ai-cta {
+    transition: none;
+  }
+
+  .needt-ai-cta:hover,
+  .needt-ai-cta:active {
+    transform: none;
   }
 }
 
