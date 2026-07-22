@@ -58,7 +58,7 @@ export function TaskRow({
         onEdit(task);
       }}
       className={cn(
-        "cursor-pointer transition-colors hover:bg-[var(--surface-hover)]",
+        "needt-motion-list-item cursor-pointer transition-colors hover:bg-[var(--surface-hover)]",
         isDragging ? "opacity-30" : "",
         isFutureTask ? "text-[var(--text-secondary)]" : ""
       )}
