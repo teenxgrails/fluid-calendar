@@ -323,7 +323,7 @@ export function TodayView() {
         setSelectedDate((date) => addDays(date, deltaX > 0 ? -1 : 1));
       }}
     >
-      <div className="grid min-h-full w-full grid-cols-1 xl:h-full xl:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)]">
+      <div className="grid min-h-full w-full grid-cols-1 xl:h-full xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <main className="min-w-0 overflow-y-auto px-5 pb-14 pt-[max(1rem,env(safe-area-inset-top))] sm:px-10 sm:py-10 xl:px-10 xl:py-9 2xl:px-14">
           <div className="mx-auto w-full max-w-[840px]">
             <div className="mb-12 flex items-center justify-between sm:hidden">
