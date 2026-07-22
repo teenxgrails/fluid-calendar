@@ -1,0 +1,4 @@
+interface:
+  display_name: "Organize Project"
+  short_description: "Create and maintain a reliable project command center"
+  default_prompt: "Use $organize-project to organize this repository and show the next highest-value work."

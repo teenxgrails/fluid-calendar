@@ -29,6 +29,7 @@ import { CalendarItemTypeSwitch } from "@/components/calendar/CalendarItemTypeSw
 import { TaskTimer } from "@/components/tasks/TaskTimer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ComboboxPicker } from "@/components/ui/combobox-picker";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
@@ -40,6 +41,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import { OptionPicker } from "@/components/ui/option-picker";
 import {
   Popover,
   PopoverContent,
@@ -753,26 +755,25 @@ export function TaskModal({
               </div>
               <div className="flex min-h-11 items-center gap-2 px-1 sm:h-[28px] sm:min-h-0">
                 <Box className="h-4 w-4 flex-none text-[var(--text-muted)]" />
-                <Select
+                <ComboboxPicker
+                  ariaLabel="Choose project"
+                  searchPlaceholder="Search"
                   value={projectId || "none"}
-                  onValueChange={(value) =>
+                  onChange={(value) =>
                     setProjectId(value === "none" ? null : value)
                   }
-                >
-                  <SelectTrigger className="h-11 min-w-0 flex-1 border-0 bg-transparent px-0 text-[14px] shadow-none focus:ring-0 sm:h-[28px]">
-                    <SelectValue placeholder="No project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No project</SelectItem>
-                    {projects
+                  showChevron={false}
+                  className="h-11 min-w-0 flex-1 border-0 bg-transparent px-0 text-[14px] shadow-none sm:h-[28px]"
+                  options={[
+                    { value: "none", label: "No project" },
+                    ...projects
                       .filter((project) => project.status === "active")
-                      .map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                      .map((project) => ({
+                        value: project.id,
+                        label: project.name,
+                      })),
+                  ]}
+                />
               </div>
             </div>
 
@@ -815,44 +816,36 @@ export function TaskModal({
                 <span className="w-[76px] text-[var(--text-secondary)]">
                   Status:
                 </span>
-                <Select
+                <ComboboxPicker
+                  ariaLabel="Choose status"
+                  searchPlaceholder="Search"
                   value={status}
-                  onValueChange={(value) => setStatus(value as TaskStatus)}
-                >
-                  <SelectTrigger className="h-11 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none sm:h-[28px]">
-                    <SelectValue>{formatEnumValue(status)}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(TaskStatus).map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {formatEnumValue(value)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(value) => setStatus(value as TaskStatus)}
+                  showChevron={false}
+                  className="h-11 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none sm:h-[28px]"
+                  options={Object.values(TaskStatus).map((value) => ({
+                    value,
+                    label: formatEnumValue(value),
+                  }))}
+                />
               </div>
               <div className="flex min-h-11 items-center gap-2 sm:h-[30px] sm:min-h-0">
                 <Flag className="h-4 w-4 text-[var(--color-warning)]" />
                 <span className="w-[76px] text-[var(--text-secondary)]">
                   Priority:
                 </span>
-                <Select
+                <ComboboxPicker
+                  ariaLabel="Choose priority"
+                  searchPlaceholder="Search"
                   value={priority || Priority.NONE}
-                  onValueChange={(value) => setPriority(value as Priority)}
-                >
-                  <SelectTrigger className="h-11 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none sm:h-[28px]">
-                    <SelectValue>
-                      {formatEnumValue(priority || Priority.NONE)}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(Priority).map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {formatEnumValue(value)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(value) => setPriority(value as Priority)}
+                  showChevron={false}
+                  className="h-11 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none sm:h-[28px]"
+                  options={Object.values(Priority).map((value) => ({
+                    value,
+                    label: formatEnumValue(value),
+                  }))}
+                />
               </div>
             </div>
 
@@ -942,30 +935,23 @@ export function TaskModal({
                 <span className="w-[76px] text-[var(--text-secondary)]">
                   Schedule:
                 </span>
-                <Select
+                <OptionPicker
+                  ariaLabel="Choose schedule"
                   value={preferredTime || "none"}
-                  onValueChange={(value) =>
+                  onChange={(value) =>
                     setPreferredTime(
                       value === "none" ? "" : (value as TimePreference)
                     )
                   }
-                >
-                  <SelectTrigger className="h-11 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none sm:h-[28px]">
-                    <SelectValue>
-                      {preferredTime
-                        ? formatEnumValue(preferredTime)
-                        : "Work hours"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Work hours</SelectItem>
-                    {Object.values(TimePreference).map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {formatEnumValue(value)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  className="h-11 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none sm:h-[28px]"
+                  options={[
+                    { value: "none", label: "Work hours" },
+                    ...Object.values(TimePreference).map((value) => ({
+                      value,
+                      label: formatEnumValue(value),
+                    })),
+                  ]}
+                />
               </div>
             </div>
 

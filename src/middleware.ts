@@ -13,6 +13,7 @@ const publicRoutes = [
   "/beta",
   "/terms",
   "/privacy",
+  "/style",
   "/subscription/lifetime/success",
   "/subscription/lifetime/setup-password",
 ];

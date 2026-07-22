@@ -48,7 +48,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      "needt-overlay-depth needt-motion-popover z-50 min-w-[8rem] overflow-hidden rounded-[var(--menu-radius)] border border-[var(--menu-border)] p-1 text-[var(--text-primary)] shadow-lg",
+      "needt-overlay-depth needt-overlay-shadow needt-motion-popover z-50 min-w-[8rem] overflow-hidden rounded-[var(--menu-radius)] border border-[var(--menu-border)] p-1 text-[var(--text-primary)]",
       className
     )}
     {...props}
@@ -66,7 +66,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "needt-overlay-depth needt-motion-popover z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-[var(--menu-radius)] border border-[var(--menu-border)] p-1 text-[var(--text-primary)] shadow-lg",
+        "needt-overlay-depth needt-overlay-shadow needt-motion-popover z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-[var(--menu-radius)] border border-[var(--menu-border)] p-1 text-[var(--text-primary)]",
         className
       )}
       {...props}

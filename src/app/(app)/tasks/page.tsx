@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
   Plus,
   RotateCw,
+  Search,
   Sparkles,
 } from "lucide-react";
 
@@ -88,6 +89,8 @@ export default function TasksPage() {
   } | null>(null);
   const [reflowUndoToken, setReflowUndoToken] = useState<string | null>(null);
   const [openedTaskParam, setOpenedTaskParam] = useState<string | null>(null);
+  const [timelineQuery, setTimelineQuery] = useState("");
+  const [timelineOptionsHidden, setTimelineOptionsHidden] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -462,6 +465,35 @@ export default function TasksPage() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {viewMode === "timeline" && (
+          <div className="ml-auto flex items-center gap-2">
+            <label className="relative hidden sm:block">
+              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                value={timelineQuery}
+                onChange={(event) => setTimelineQuery(event.target.value)}
+                placeholder="Search"
+                aria-label="Search Gantt tasks"
+                className="h-[25px] w-36 rounded-[6px] border border-transparent bg-transparent pl-7 pr-2 text-[13px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] hover:border-[var(--border-control)] focus:border-[var(--border-control)]"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setTimelineOptionsHidden((hidden) => !hidden)}
+              aria-expanded={!timelineOptionsHidden}
+              className="inline-flex h-[25px] items-center gap-1.5 rounded-[6px] px-2 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            >
+              {timelineOptionsHidden ? "Show options" : "Hide options"}
+              <ChevronDown
+                className={cn(
+                  "h-3.5 w-3.5 transition-transform duration-150",
+                  timelineOptionsHidden && "rotate-180"
+                )}
+              />
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -489,9 +521,12 @@ export default function TasksPage() {
                 onCreateTask={openCreateTask}
               />
             ) : viewMode === "timeline" ? (
-              <div className="h-full p-3">
-                <TimelineView tasks={tasks} />
-              </div>
+              <TimelineView
+                tasks={tasks}
+                onOpenTask={openTask}
+                query={timelineQuery}
+                optionsHidden={timelineOptionsHidden}
+              />
             ) : viewMode === "board" ? (
               <BoardView
                 tasks={tasks}

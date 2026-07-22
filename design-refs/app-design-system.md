@@ -13,6 +13,20 @@ tabs do not recreate styles locally.
 - `data-app-theme="needt"` on the root element selects the app theme. The
   existing `data-theme` attribute remains reserved for light/dark mode.
 
+## Live component laboratory
+
+`/style` renders the actual shared controls and composition patterns rather
+than screenshots or one-off imitations. Every preview group has a stable
+reference such as `Button / variants`, `Form / text-date`, or
+`Overlay / popover-dialog-sheet`; use that reference in design requests and
+visual-regression discussions.
+
+The Theme editor changes semantic tokens only for the lifetime of the `/style`
+route, including Radix portals. It can save a draft in local storage or copy a
+CSS selector for a future `data-app-theme` preset, but it never writes product
+settings. New themes must be finalized in `globals.css` and must continue to
+reuse the same shared components.
+
 ## Token architecture
 
 Tokens have three layers:
@@ -62,6 +76,15 @@ meaningful colors. Do not flatten them to the accent or to gray.
   `--overlay-surface-background` top-lit depth tokens. Modal and sheet
   overlays use the shared vertical `--scrim` token.
 - Inputs and pickers use the inset input surface and a neutral focus border.
+- Desktop selection menus use `8px` outer radii, `1px` borders, `32px` rows,
+  `14px/18px` labels, and `6px` item radii. The canonical date picker is
+  `443×317px` with `261px` calendar and `180px` shortcut columns.
+- Floating controls use the shared two-layer `--menu-shadow` for separation
+  from the canvas. This neutral depth shadow is required under opened pickers;
+  colored/accent glows remain forbidden.
+- Calendar tasks and events use the `Calendar / task-event` recipe in `/style`:
+  neutral fill, `4px` radius/color rail, solid task border, dashed external
+  event border, 15% hover wash, and no lift or shadow.
 - Switches use `--switch-*`; buttons use `--button-*`.
 - Spatial animations stay at or below 250ms and must respect
   `prefers-reduced-motion`.

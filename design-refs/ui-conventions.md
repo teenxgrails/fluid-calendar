@@ -61,6 +61,23 @@ that round-highlight with `--menu-item-hover` on hover (no checkmark).
 - Trigger: `<SelectTrigger className="h-8 w-[120px]">` (size as needed).
 - Do **not** build ad-hoc `<select>` elements or custom dropdowns — reuse this.
 
+Searchable fields use `@/components/ui/combobox-picker`; date fields use
+`@/components/ui/date-picker`. On desktop, compact picker menus use an `8px`
+panel radius, `1px` hairline border, `32px` option rows, `14px/18px` labels,
+and `6px` row radii. The date picker is a `443×317px` two-column panel
+(`261px` calendar + `180px` shortcuts) with a fixed six-week grid.
+
+Every floating menu, date picker, popover, dialog, and bottom sheet must apply
+the shared `needt-overlay-shadow`/`--menu-shadow`. This is a neutral two-layer
+drop shadow for visual separation, not a colored glow. Mobile variants become
+bottom sheets with at least `44px` touch targets.
+
+Calendar task/event cards share one compact recipe: `4px` radius, a calm
+neutral surface, `12px/16px` type, a solid `4px` calendar-color rail, and no
+card shadow or hover lift. External calendar events use a dashed hairline;
+tasks use a solid hairline. Hover adds only a 15% color wash and selection uses
+an inset neutral outline.
+
 ## Toggle (Switch)
 
 Shared `@/components/ui/switch`. Flat white thumb (`shadow-sm`, **no glow**),

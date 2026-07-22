@@ -30,6 +30,8 @@
     "test:e2e": "playwright test",
     "test:visual": "playwright test --config=playwright.visual.config.ts",
     "test:visual:update": "playwright test --config=playwright.visual.config.ts --update-snapshots",
+    "test:style": "playwright test --config=playwright.style.config.ts",
+    "test:style:update": "playwright test --config=playwright.style.config.ts --update-snapshots=all",
     "mcp:flowday": "node mcp/flowday-mcp-server.mjs",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",

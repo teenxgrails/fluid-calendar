@@ -16,6 +16,8 @@ completion. Route availability is not acceptance evidence.
   - Core technical foundations exist: canonical tasks, deterministic scheduler,
     Today agenda storage, Focus session APIs, Board models, Mail APIs/worker,
     settings persistence, responsive shell, PWA base, and design tokens.
+  - `/style` is a live, public-by-direct-link Design Lab for shared components,
+    interaction states, semantic theme drafts, and isolated visual regression.
   - Docker startup fix pins the Prisma 6 CLI instead of downloading Prisma 7.
 - Active:
   - Today implementation is functionally complete; its targeted automated visual

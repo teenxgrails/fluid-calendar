@@ -68,15 +68,21 @@ const SelectScrollDownButton = React.forwardRef<
 SelectScrollDownButton.displayName =
   SelectPrimitive.ScrollDownButton.displayName;
 
+interface SelectContentProps
+  extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> {
+  /** Optional sticky header row (e.g. a Motion-style "Choose …" label) rendered above the items. */
+  header?: React.ReactNode;
+}
+
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
+  SelectContentProps
+>(({ className, children, header, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "needt-overlay-depth needt-motion-popover relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[var(--menu-radius)] border border-[var(--menu-border)] text-[var(--text-primary)] shadow-lg",
+        "needt-overlay-depth needt-overlay-shadow needt-motion-popover relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[var(--menu-radius)] border border-[var(--menu-border)] text-[var(--text-primary)]",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -84,10 +90,11 @@ const SelectContent = React.forwardRef<
       position={position}
       {...props}
     >
+      {header}
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          "p-1",
+          "p-0",
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
@@ -114,20 +121,42 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
+    /** Optional leading icon rendered before the label (Motion menu-item pattern). */
+    icon?: React.ReactNode;
+  }
+>(({ className, children, icon, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "needt-motion-menu-item relative flex w-full cursor-pointer select-none items-center rounded-md px-2.5 py-2 text-sm text-[var(--text-primary)] outline-none transition-colors focus:bg-[var(--menu-item-hover)] data-[state=checked]:bg-[var(--menu-bg)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "needt-motion-menu-item relative flex h-8 w-full cursor-pointer select-none items-center gap-2 rounded-[6px] px-3 text-[14px] leading-[18px] text-[var(--text-primary)] outline-none transition-colors focus:bg-[var(--menu-item-hover)] data-[state=checked]:bg-[var(--menu-item-hover)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:h-4 [&>svg]:w-4 [&>svg]:flex-none",
       className
     )}
     {...props}
   >
+    {icon}
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;
+
+const SelectHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { icon?: React.ReactNode }
+>(({ className, children, icon, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "flex h-[29px] items-center gap-2 border-b border-[var(--menu-border)] px-2 text-[14px] leading-5 text-[var(--text-muted)]",
+      className
+    )}
+    {...props}
+  >
+    {icon}
+    <span className="truncate">{children}</span>
+  </div>
+));
+SelectHeader.displayName = "SelectHeader";
 
 const SelectSeparator = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Separator>,
@@ -149,6 +178,7 @@ export {
   SelectContent,
   SelectLabel,
   SelectItem,
+  SelectHeader,
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,

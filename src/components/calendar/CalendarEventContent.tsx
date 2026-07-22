@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, type CSSProperties } from "react";
 
 import type { EventContentArg } from "@fullcalendar/core";
 import { Check } from "lucide-react";
@@ -121,30 +121,37 @@ export const CalendarEventContent = memo(function CalendarEventContent({
           : `calendar-item-${taskId ?? eventInfo.event.id}-${chunkIndex ?? 0}`
       }
       transition={settleTransition}
-      whileHover={prefersReducedMotion ? undefined : { y: -1 }}
       data-testid={isTask ? "calendar-task" : "calendar-event"}
       data-task-id={taskId}
       onPointerDown={() => setSelectedEventId(calendarItemId)}
       style={{
-        backgroundColor: isTask
-          ? "var(--calendar-task-bg)"
-          : `color-mix(in srgb, ${chipColor} 16%, var(--surface-panel))`,
-        borderColor: isTask
-          ? "var(--calendar-task-border)"
-          : `color-mix(in srgb, ${chipColor} 42%, var(--border-control))`,
-        borderLeftColor: isTask ? undefined : chipColor,
+        backgroundColor: "var(--calendar-task-bg)",
+        borderColor: isOverdue
+          ? "var(--color-danger)"
+          : isSelected
+            ? "var(--text-secondary)"
+            : "var(--calendar-task-border)",
       }}
       className={cn(
-        "group relative flex h-full min-h-0 flex-col justify-start overflow-hidden rounded-[4px] border px-1.5 py-1 text-[var(--text-primary)] transition-[background-color,border-color,transform] duration-150",
-        !isTask && "border-l-[3px]",
-        isTask && "hover:bg-[var(--surface-control-hover)]",
+        "group relative flex h-full min-h-0 flex-col justify-start overflow-hidden rounded-[4px] border p-0 text-[var(--text-primary)] transition-[border-color] duration-150",
+        !isTask && "border-dashed",
         isSelected &&
-          "z-[2] border-[var(--text-secondary)] ring-1 ring-[var(--text-secondary)]",
+          "z-[2] border-[var(--text-secondary)] ring-1 ring-inset ring-[var(--text-secondary)]",
         isOverdue && "border-[var(--color-danger)] text-[var(--color-danger)]",
-        status === TaskStatus.COMPLETED && "text-[var(--text-muted)]"
+        status === TaskStatus.COMPLETED && "opacity-55"
       )}
     >
-      <div className="flex min-w-0 items-start gap-1.5">
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-px -left-px -top-px z-[1] w-1 rounded-l-[4px]"
+        style={{ backgroundColor: chipColor }}
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[var(--calendar-item-accent)] opacity-0 transition-opacity duration-150 group-hover:opacity-[0.15]"
+        style={{ "--calendar-item-accent": chipColor } as CSSProperties}
+      />
+      <div className="relative z-[2] grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-[3px] overflow-hidden py-px pl-[5px] pr-1 text-[12px] leading-4">
         {isTask ? (
           <button
             type="button"
@@ -162,11 +169,11 @@ export const CalendarEventContent = memo(function CalendarEventContent({
                 void onTaskComplete?.(taskId);
               }
             }}
-            className="group/check mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border border-[var(--text-secondary)] text-transparent transition-[background-color,border-color,color,opacity] duration-150 hover:border-[var(--color-success)] hover:bg-[var(--color-success)] hover:text-[var(--surface-canvas)] disabled:cursor-default disabled:border-[var(--color-success)] disabled:bg-transparent disabled:text-[var(--color-success)] disabled:opacity-55"
+            className="group/check mt-[2px] grid h-3 w-3 shrink-0 place-items-center rounded-full border border-[var(--text-secondary)] text-transparent transition-[background-color,border-color,color,opacity] duration-150 hover:border-[var(--color-success)] hover:bg-[var(--color-success)] hover:text-[var(--surface-canvas)] disabled:cursor-default disabled:border-[var(--color-success)] disabled:bg-transparent disabled:text-[var(--color-success)]"
           >
             <Check
               className={cn(
-                "h-3 w-3 transition-opacity duration-150",
+                "h-2.5 w-2.5 transition-opacity duration-150",
                 status === TaskStatus.COMPLETED
                   ? "opacity-100"
                   : "opacity-0 group-hover/check:opacity-100"
@@ -176,27 +183,27 @@ export const CalendarEventContent = memo(function CalendarEventContent({
         ) : showTimeChip || isRecurring ? (
           isRecurring ? (
             <IoRepeat
-              className="mt-0.5 h-3 w-3 shrink-0"
+              className="mt-[2px] h-3 w-3 shrink-0"
               style={{ color: eventColor }}
             />
           ) : (
             <span
               aria-hidden="true"
-              className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+              className="mt-1 h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: eventColor }}
             />
           )
         ) : (
           <span
             aria-hidden="true"
-            className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+            className="mt-1 h-2 w-2 shrink-0 rounded-full"
             style={{ backgroundColor: eventColor }}
           />
         )}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 overflow-hidden">
           <div
             className={cn(
-              "calendar-event-title pr-4 text-[12px] font-medium leading-[15px] text-[var(--text-primary)]",
+              "calendar-event-title text-[12px] font-normal leading-4 text-[var(--text-primary)]",
               duration <= 1800000 ? "truncate" : "line-clamp-2 break-words",
               status === TaskStatus.COMPLETED && "line-through"
             )}
@@ -207,7 +214,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
             {title}
           </div>
           {displayTime && (
-            <div className="truncate pt-0.5 text-[10px] font-normal leading-[12px] tabular-nums text-[var(--text-secondary)]">
+            <div className="truncate text-[12px] font-normal leading-4 tabular-nums text-[var(--text-secondary)]">
               {displayTime}
             </div>
           )}
@@ -217,7 +224,7 @@ export const CalendarEventContent = memo(function CalendarEventContent({
         )}
       </div>
       {location && !isTask && duration > 1800000 && (
-        <div className="event-location truncate pl-5 text-[10px] leading-snug text-[var(--text-secondary)]">
+        <div className="event-location relative z-[2] truncate pl-5 pr-1 text-[11px] leading-4 text-[var(--text-secondary)]">
           {location}
         </div>
       )}

@@ -1,0 +1,20 @@
+{
+  "name": "needt-local",
+  "interface": {
+    "displayName": "Needt Local"
+  },
+  "plugins": [
+    {
+      "name": "needt-project-pilot",
+      "source": {
+        "source": "local",
+        "path": "./plugins/needt-project-pilot"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

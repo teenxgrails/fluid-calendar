@@ -6,7 +6,7 @@ import { type VariantProps, cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "needt-motion-control inline-flex touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-[var(--control-radius)] text-sm font-medium transition-[color,background-color,border-color,transform,box-shadow] [transition-duration:var(--motion-duration-fast)] [transition-timing-function:var(--motion-ease-standard)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)] disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "needt-motion-control inline-flex touch-manipulation items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--control-radius)] font-medium transition-[color,background-color,border-color,transform,box-shadow] [transition-duration:var(--motion-duration-fast)] [transition-timing-function:var(--motion-ease-standard)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--control-border)] disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -23,10 +23,12 @@ const buttonVariants = cva(
         link: "text-[var(--color-accent)] underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-[var(--control-height)] px-4 py-2",
-        sm: "h-[var(--control-height-sm)] px-3 text-xs",
-        lg: "h-10 px-8",
-        icon: "h-[var(--control-height)] w-[var(--control-height)]",
+        // Motion sizes, measured 1:1: default = settings/modal action (Save task),
+        // sm = toolbar/inline action (New), lg = prominent CTA.
+        default: "h-[30px] px-[7px] text-[14px] leading-[18px]",
+        sm: "h-[25px] px-1.5 text-[13px] leading-[17px]",
+        lg: "h-9 px-3 text-[14px] leading-[18px]",
+        icon: "h-[30px] w-[30px] px-0",
       },
     },
     defaultVariants: {

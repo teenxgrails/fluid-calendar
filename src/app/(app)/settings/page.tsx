@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import {
   Bell,
@@ -24,6 +23,7 @@ import {
   SlidersHorizontal,
   UserRound,
 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { AIAssistantSettings } from "@/components/settings/AIAssistantSettings";
 import { AccountManager } from "@/components/settings/AccountManager";
@@ -44,8 +44,9 @@ import { SmartSchedulingSettings } from "@/components/settings/SmartSchedulingSe
 import { TaskDefaultsSettings } from "@/components/settings/TaskDefaultsSettings";
 import { TaskUrgencySettings } from "@/components/settings/TaskUrgencySettings";
 import { UserSettings } from "@/components/settings/UserSettings";
-import { cn } from "@/lib/utils";
+
 import { quickEase, springSnappy } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 import { useSettingsStore } from "@/store/settings";
 
@@ -373,7 +374,7 @@ export default function SettingsPage() {
           </header>
           <div
             className={cn(
-              "mx-auto w-full max-w-[1040px] px-4 py-5 pb-24 transition-opacity duration-150 sm:px-6 md:px-12 md:py-7 md:pb-16",
+              "w-full max-w-[1040px] px-4 py-5 pb-24 transition-opacity duration-150 sm:px-6 md:px-12 md:py-7 md:pb-16",
               mobileOverview && "hidden lg:block",
               !isHydrated && "opacity-0"
             )}
@@ -382,7 +383,9 @@ export default function SettingsPage() {
               <motion.div
                 key={activeTab}
                 initial={
-                  prefersReducedMotion ? false : { opacity: 0, y: 10, scale: 0.995 }
+                  prefersReducedMotion
+                    ? false
+                    : { opacity: 0, y: 10, scale: 0.995 }
                 }
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={

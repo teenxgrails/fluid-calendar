@@ -169,7 +169,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               <Command
                 shouldFilter={false}
                 className={cn(
-                  "needt-overlay-depth overflow-hidden rounded-lg border border-[var(--line-strong)] text-[var(--text-hi)] shadow-lg"
+                  "command-palette-root needt-overlay-depth overflow-hidden rounded-lg border border-[var(--line-strong)] text-[var(--text-hi)] shadow-lg"
                 )}
               >
                 <div className="flex items-center border-b border-[var(--line-strong)] px-3">

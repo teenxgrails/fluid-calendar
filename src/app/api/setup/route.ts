@@ -139,7 +139,7 @@ export async function POST(request: Request) {
       prisma.systemSettings.upsert({
         where: { id: "default" },
         update: {
-          publicSignup: false,
+          publicSignup: true,
           resendApiKey: process.env.RESEND_API_KEY || null,
         },
         create: {
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
             info: 7,
             debug: 3,
           },
-          publicSignup: false,
+          publicSignup: true,
           resendApiKey: process.env.RESEND_API_KEY || null,
         },
       }),

@@ -99,8 +99,8 @@
     --scrim: linear-gradient(180deg, rgb(17 19 28 / 12%), rgb(17 19 28 / 58%));
 
     /* Component layer: shared geometry and chrome. */
-    --control-height: 36px;
-    --control-height-sm: 32px;
+    --control-height: 30px;
+    --control-height-sm: 26px;
     --control-radius: var(--radius);
     --control-bg: var(--surface-control);
     --control-bg-hover: var(--surface-control-hover);
@@ -110,13 +110,20 @@
     --input-bg: var(--surface-input);
     --input-border: var(--border-control);
     --input-border-focus: var(--border-control);
-    --button-primary-bg: var(--primitive-blue-550);
-    --button-primary-bg-hover: var(--primitive-blue-450);
-    --button-primary-border: var(--primitive-blue-450);
+    --button-primary-bg: var(--color-accent);
+    --button-primary-bg-hover: color-mix(
+      in srgb,
+      var(--color-accent) 88%,
+      var(--primitive-white)
+    );
+    --button-primary-border: color-mix(
+      in srgb,
+      var(--color-accent) 80%,
+      var(--primitive-black)
+    );
     --button-primary-fg: var(--color-accent-contrast);
-    --button-primary-shadow:
-      0 1px 4px color-mix(in srgb, var(--primitive-black) 20%, transparent),
-      inset 0 1px 0 color-mix(in srgb, var(--primitive-white) 18%, transparent);
+    /* Motion buttons are dead-flat: no drop shadow, no top-inset gloss. */
+    --button-primary-shadow: none;
     --button-secondary-bg: var(--control-bg);
     --button-secondary-bg-hover: var(--control-bg-hover);
     --button-secondary-border: var(--control-border);
@@ -147,8 +154,13 @@
     --dialog-bg: var(--surface-panel);
     --dialog-border: var(--border-control);
     --dialog-radius: 8px;
+    /* Motion overlay depth: a hairline border plus Tailwind's two-layer
+       shadow-lg. Dark mode increases only the alpha, never the blur radius. */
+    --menu-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -4px rgba(0, 0, 0, 0.1);
     --switch-off-bg: color-mix(in srgb, var(--text-primary) 6%, transparent);
-    --switch-on-bg: var(--primitive-blue-500);
+    --switch-on-bg: var(--color-accent);
     --switch-thumb-bg: var(--primitive-white);
     --calendar-canvas-bg: var(--surface-canvas);
     --calendar-grid-line: var(--border-subtle);
@@ -318,7 +330,7 @@
     --input: 0 0% 89.8%;
     --ring: 239 84% 67%;
 
-    --radius: 0.5rem;
+    --radius: 0.375rem;
 
     --chart-1: 12 76% 61%;
 
@@ -334,19 +346,19 @@
   .dark {
     color-scheme: dark;
     /* Semantic layer: the finished Calendar is the dark-theme reference. */
-    --surface-canvas: var(--custom-background-tint, #151517);
+    --surface-canvas: var(--custom-background-tint, #1a1d1e);
     --surface-panel: var(--surface-canvas);
     --surface-raised: var(--surface-canvas);
-    --surface-control: #212126;
-    --surface-control-hover: #29292f;
+    --surface-control: #262627;
+    --surface-control-hover: #2b2f31;
     --surface-input: var(--surface-canvas);
-    --surface-hover: #242429;
+    --surface-hover: #2b2f31;
     --surface-selected: var(--primitive-neutral-100);
     --surface-inverse: var(--primitive-neutral-100);
-    --border-subtle: #26262a;
-    --border-control: #303036;
+    --border-subtle: #2a2a2c;
+    --border-control: #323234;
     --text-primary: #ececee;
-    --text-secondary: #9c9ca2;
+    --text-secondary: #9aa0a6;
     --text-muted: #6e6e75;
     --text-inverse: #0e0e10;
     --color-accent: var(--primitive-indigo-500);
@@ -356,6 +368,11 @@
     --menu-bg: var(--surface-canvas);
     --popover-bg: var(--surface-canvas);
     --dialog-bg: var(--surface-canvas);
+    /* Keep the same measured geometry while preserving visible separation
+       against Needt's dark canvas. */
+    --menu-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.48),
+      0 4px 6px -4px rgba(0, 0, 0, 0.38);
     --surface-ambient-top: color-mix(
       in srgb,
       var(--surface-canvas) 93%,
@@ -367,10 +384,11 @@
       var(--surface-canvas) 40%,
       var(--surface-canvas) 100%
     );
-    --page-background: var(--ambient-background);
-    --panel-background: var(--ambient-background);
-    --overlay-surface-background: var(--ambient-background);
-    --raised-surface-background: var(--ambient-background);
+    /* Motion is dead-flat: no top-lit ambient depth. Surfaces stay solid. */
+    --page-background: var(--surface-canvas);
+    --panel-background: var(--surface-canvas);
+    --overlay-surface-background: var(--surface-canvas);
+    --raised-surface-background: var(--surface-control);
     --scrim: linear-gradient(180deg, rgb(0 0 0 / 26%), rgb(0 0 0 / 82%));
     --calendar-working-hours-bg: var(--surface-canvas);
     --calendar-non-working-hours-bg: color-mix(
@@ -655,6 +673,10 @@
   .needt-overlay-depth {
     background-color: var(--dialog-bg);
     background-image: var(--overlay-surface-background);
+  }
+
+  .needt-overlay-shadow {
+    box-shadow: var(--menu-shadow);
   }
 
   .needt-raised-depth {
@@ -1311,11 +1333,11 @@ html[data-needt-motion="on"] .needt-motion-popover[data-side="top"] {
 }
 
 html[data-needt-motion="on"] .needt-motion-popover[data-state="open"] {
-  animation: needt-popover-in 260ms var(--motion-ease-spring) both;
+  animation: needt-popover-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 html[data-needt-motion="on"] .needt-motion-popover[data-state="closed"] {
-  animation: needt-popover-out var(--motion-duration-exit) ease-in both;
+  animation: needt-popover-out 130ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 html[data-needt-motion="on"] .needt-motion-menu-item {
@@ -1326,7 +1348,7 @@ html[data-needt-motion="on"] .needt-motion-menu-item {
 }
 
 html[data-needt-motion="on"] .needt-motion-menu-item:focus {
-  translate: 2px 0;
+  translate: 0 0;
 }
 
 html[data-needt-motion="on"] .needt-motion-tooltip[data-state="delayed-open"],
@@ -1429,10 +1451,12 @@ html[data-needt-motion="on"] .fc .fc-event {
   from {
     opacity: 0;
     translate: 0 var(--needt-popover-y, -5px);
-    scale: 0.94;
+    scale: 0.96;
   }
-  70% {
-    scale: 1.012;
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
   }
 }
 
@@ -1457,33 +1481,6 @@ html[data-needt-motion="on"] .fc .fc-event {
     opacity: 0;
     translate: 0 -8px;
     scale: 0.985;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html[data-needt-motion="on"] *,
-  html[data-needt-motion="on"] *::before,
-  html[data-needt-motion="on"] *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.001ms !important;
-  }
-
-  html[data-needt-motion="on"]
-    :where(
-      .needt-motion-control,
-      .needt-motion-field,
-      .needt-motion-surface,
-      .needt-motion-list-item,
-      .needt-motion-tab,
-      .needt-motion-slider-thumb,
-      button,
-      [role="button"]
-    ) {
-    scale: 1 !important;
-    translate: none !important;
-    rotate: 0deg !important;
   }
 }
 
@@ -1544,38 +1541,36 @@ html[data-needt-motion="on"] .fc .fc-event {
 }
 
 .dialog-overlay-anim[data-state="open"] {
-  animation: dialog-overlay-in 200ms ease-out;
+  animation: dialog-overlay-in 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dialog-overlay-anim[data-state="closed"] {
-  animation: dialog-overlay-out 150ms ease-in;
+  animation: dialog-overlay-out 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+/* Motion modal: 150ms cubic-bezier(0.4,0,0.2,1), scale in/out, no overshoot
+   (measured 1:1 from Motion's Create Task window). */
 .dialog-content-anim[data-state="open"] {
-  animation: dialog-content-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: needt-dialog-content-in 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 .dialog-content-anim[data-state="closed"] {
-  animation: dialog-content-out 150ms cubic-bezier(0.3, 0, 0.8, 0.15);
+  animation: needt-dialog-content-out 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 html[data-needt-motion="on"] .dialog-overlay-anim[data-state="open"] {
-  animation-duration: 240ms;
+  animation-duration: 150ms;
 }
 
 html[data-needt-motion="on"] .dialog-content-anim[data-state="open"] {
-  animation: needt-dialog-content-in 320ms var(--motion-ease-spring) both;
+  animation: needt-dialog-content-in 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
-  animation: needt-dialog-content-out var(--motion-duration-exit) ease-in both;
+  animation: needt-dialog-content-out 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes needt-dialog-content-in {
   0% {
     opacity: 0;
-    transform: translate(-50%, -47%) scale(0.94);
-  }
-  72% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.012);
+    transform: translate(-50%, -50%) scale(0.96);
   }
   100% {
     opacity: 1;
@@ -1584,9 +1579,13 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
 }
 
 @keyframes needt-dialog-content-out {
-  to {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
     opacity: 0;
-    transform: translate(-50%, -48.5%) scale(0.975);
+    transform: translate(-50%, -50%) scale(0.96);
   }
 }
 
@@ -1622,13 +1621,6 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .dialog-overlay-anim[data-state],
-  .dialog-content-anim[data-state] {
-    animation-duration: 0.01ms;
-  }
-}
-
 /* Mobile bottom sheet: slide up from the bottom edge (house-format modal on
    small screens), never a zoom. */
 @keyframes bottom-sheet-in {
@@ -1654,8 +1646,29 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
   animation: bottom-sheet-out 180ms cubic-bezier(0.3, 0, 0.8, 0.15);
 }
 @media (prefers-reduced-motion: reduce) {
-  .bottom-sheet-anim[data-state] {
-    animation-duration: 0.01ms;
+  html[data-needt-motion] *,
+  html[data-needt-motion] *::before,
+  html[data-needt-motion] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html[data-needt-motion]
+    :where(
+      .needt-motion-control,
+      .needt-motion-field,
+      .needt-motion-surface,
+      .needt-motion-list-item,
+      .needt-motion-tab,
+      .needt-motion-slider-thumb,
+      button,
+      [role="button"]
+    ) {
+    scale: 1 !important;
+    translate: none !important;
+    rotate: 0deg !important;
   }
 }
 
@@ -1761,8 +1774,10 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
 }
 
 .fc .fc-event {
-  @apply cursor-pointer border shadow-sm;
+  @apply cursor-pointer;
   border-radius: 4px !important;
+  border: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
   overflow: hidden;
 }
@@ -1771,8 +1786,7 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
    the card inside it. Keep task blocks calm and neutral at both layers so the
    generated task color can never flash as a bright calendar event. */
 .fc .fc-event.calendar-task {
-  background: var(--calendar-task-bg) !important;
-  border-color: var(--calendar-task-border) !important;
+  background: transparent !important;
 }
 
 .fc .fc-event.calendar-task .fc-event-main {
@@ -2239,8 +2253,8 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
   }
 }
 
-/* Command Palette Styles */
-[cmdk-root] {
+/* Command palette only. Searchable pickers use cmdk too, but own their denser geometry. */
+.command-palette-root[cmdk-root] {
   max-width: 640px;
   width: 100%;
   border-radius: 8px;
@@ -2252,7 +2266,7 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
     0 4px 6px -4px rgb(0 0 0 / 10%);
 }
 
-[cmdk-input] {
+.command-palette-root [cmdk-input] {
   border: none;
   width: 100%;
   font-size: 14px;
@@ -2265,16 +2279,16 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
   border-radius: 0;
 }
 
-[cmdk-input]:focus {
+.command-palette-root [cmdk-input]:focus {
   outline: none;
   box-shadow: none;
 }
 
-[cmdk-input]::placeholder {
+.command-palette-root [cmdk-input]::placeholder {
   color: hsl(var(--muted-foreground));
 }
 
-[cmdk-item] {
+.command-palette-root [cmdk-item] {
   content-visibility: auto;
   cursor: pointer;
   height: 36px;
@@ -2292,17 +2306,17 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
     color 150ms ease-out;
 }
 
-[cmdk-item][aria-selected="true"] {
+.command-palette-root [cmdk-item][aria-selected="true"] {
   background: var(--menu-item-hover);
   color: hsl(var(--foreground));
 }
 
-[cmdk-item][aria-disabled="true"] {
+.command-palette-root [cmdk-item][aria-disabled="true"] {
   color: hsl(var(--muted-foreground));
   cursor: not-allowed;
 }
 
-[cmdk-group-heading] {
+.command-palette-root [cmdk-group-heading] {
   user-select: none;
   font-size: 12px;
   color: hsl(var(--muted-foreground));

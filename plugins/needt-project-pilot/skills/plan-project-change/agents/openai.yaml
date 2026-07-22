@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Project Change"
+  short_description: "Plan product, AI, design, architecture, and code"
+  default_prompt: "Use $plan-project-change to turn this idea into an implementation-ready cross-functional plan."

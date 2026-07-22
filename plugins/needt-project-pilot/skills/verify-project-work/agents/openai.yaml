@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify Project Work"
+  short_description: "Audit plans and shipped work against evidence"
+  default_prompt: "Use $verify-project-work to audit this change and identify any remaining delivery gaps."

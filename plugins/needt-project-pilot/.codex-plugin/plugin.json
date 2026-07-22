@@ -1,0 +1,25 @@
+{
+  "name": "needt-project-pilot",
+  "version": "0.1.0+codex.20260722041705",
+  "description": "Project command center for product, AI, design, architecture, implementation, and verification planning.",
+  "author": {
+    "name": "teenx",
+    "email": "tox222tox@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": ["planning", "product", "design", "engineering", "ai", "roadmap"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Needt Project Pilot",
+    "shortDescription": "Plan and steer product, design, AI, and code work.",
+    "longDescription": "A repo-aware project command center that turns goals into evidence-backed requirements, design and engineering contracts, dependency-aware execution waves, persistent state, and verification gates.",
+    "developerName": "teenx",
+    "category": "Productivity",
+    "capabilities": ["Planning", "Read", "Write", "Verification"],
+    "defaultPrompt": [
+      "Organize this project and show me the next best work.",
+      "Turn this idea into a product, design, AI, and code plan.",
+      "Audit this milestone and identify remaining delivery gaps."
+    ]
+  }
+}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
@@ -18,25 +19,42 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { APP_NAME } from "@/lib/app-config";
+import { isPublicSignupEnabledClient } from "@/lib/auth/client-public-signup";
 import { logger } from "@/lib/logger";
 
 const LOG_SOURCE = "SignInForm";
 
+type AuthMode = "signin" | "signup";
+
 export function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
+  const [mode, setMode] = useState<AuthMode>("signin");
   const [isLoading, setIsLoading] = useState(false);
+  const [publicSignupEnabled, setPublicSignupEnabled] = useState(false);
   const router = useRouter();
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    void isPublicSignupEnabledClient().then(setPublicSignupEnabled);
+  }, []);
+
+  const finishSignIn = () => {
+    toast.success("Signed in successfully");
+    window.location.href = "/calendar";
+  };
+
+  const handleEmailSignIn = async (event: React.FormEvent) => {
+    event.preventDefault();
     setIsLoading(true);
 
     try {
       const result = await signIn("credentials", {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       });
@@ -46,14 +64,7 @@ export function SignInForm() {
           description: "Please check your email and password and try again.",
         });
       } else {
-        toast.success("Signed in successfully");
-
-        // The token is set in the background, so we'll redirect after a minimal delay
-        // to ensure the token is available for the next request
-        setTimeout(() => {
-          // Force a hard navigation to ensure the middleware re-evaluates with the new token
-          window.location.href = "/calendar";
-        }, 100);
+        finishSignIn();
       }
     } catch (error) {
       logger.error(
@@ -61,8 +72,62 @@ export function SignInForm() {
         { error: error instanceof Error ? error.message : "Unknown error" },
         LOG_SOURCE
       );
-      toast.error("An error occurred", {
-        description: "Please try again later.",
+      toast.error("Sign in failed", { description: "Please try again." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+          name: name.trim() || undefined,
+        }),
+      });
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        toast.error("Registration failed", {
+          description: data.error || "Please try again.",
+        });
+        return;
+      }
+
+      const result = await signIn("credentials", {
+        email: email.trim().toLowerCase(),
+        password,
+        redirect: false,
+      });
+      if (result?.error) {
+        toast.success("Account created", {
+          description: "Sign in with your new credentials.",
+        });
+        setMode("signin");
+        return;
+      }
+
+      toast.success("Account created successfully");
+      finishSignIn();
+    } catch (error) {
+      logger.error(
+        "Error signing up",
+        { error: error instanceof Error ? error.message : "Unknown error" },
+        LOG_SOURCE
+      );
+      toast.error("Registration failed", {
+        description: "Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -75,49 +140,144 @@ export function SignInForm() {
         <CardTitle className="text-2xl font-bold">
           Welcome to {APP_NAME}
         </CardTitle>
-        <CardDescription>Sign in to your planner to continue</CardDescription>
+        <CardDescription>
+          Sign in or create an account to start planning
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleEmailSignIn} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <div className="text-right">
-              <Button
-                variant="link"
-                className="h-auto p-0 text-sm text-muted-foreground"
-                onClick={() => router.push("/auth/reset-password")}
-                type="button"
-              >
-                Forgot password?
+        <Tabs
+          value={mode}
+          onValueChange={(value) => setMode(value as AuthMode)}
+        >
+          <TabsList
+            className={
+              publicSignupEnabled
+                ? "mb-6 grid w-full grid-cols-2"
+                : "mb-6 grid w-full grid-cols-1"
+            }
+          >
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            {publicSignupEnabled && (
+              <TabsTrigger value="signup">Create Account</TabsTrigger>
+            )}
+          </TabsList>
+
+          <TabsContent value="signin">
+            <form onSubmit={handleEmailSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="signin-email">Email</Label>
+                <Input
+                  id="signin-email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signin-password">Password</Label>
+                <Input
+                  id="signin-password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+                <div className="text-right">
+                  <Button
+                    variant="link"
+                    className="h-auto p-0 text-sm text-muted-foreground"
+                    onClick={() => router.push("/auth/reset-password")}
+                    type="button"
+                  >
+                    Forgot password?
+                  </Button>
+                </div>
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
-            </div>
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
+            </form>
+          </TabsContent>
+
+          {publicSignupEnabled && (
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Name</Label>
+                  <Input
+                    id="signup-name"
+                    autoComplete="name"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    maxLength={100}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="At least 8 characters"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    minLength={8}
+                    maxLength={128}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password-confirm">
+                    Confirm password
+                  </Label>
+                  <Input
+                    id="signup-password-confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Repeat your password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    minLength={8}
+                    maxLength={128}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creating account..." : "Create Account"}
+                </Button>
+              </form>
+            </TabsContent>
+          )}
+        </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-center text-sm text-muted-foreground">
-        Single-user local planner. No public signup or team access.
+      <CardFooter className="flex justify-center gap-1 text-center text-xs text-muted-foreground">
+        By continuing, you agree to the
+        <Link href="/terms" className="hover:text-foreground">
+          Terms
+        </Link>
+        and
+        <Link href="/privacy" className="hover:text-foreground">
+          Privacy Policy
+        </Link>
+        .
       </CardFooter>
     </Card>
   );

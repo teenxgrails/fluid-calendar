@@ -108,14 +108,26 @@ test("Calendar, Today, and Space stay visually stable", async ({ page }) => {
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("space.png");
 
-  await page.goto("/style", { waitUntil: "domcontentloaded" });
-  await expect(
-    page.getByRole("heading", { name: "Calm, dense, and deliberate." })
-  ).toBeVisible();
-  await settleVisualSurface(page);
-  await expect(page).toHaveScreenshot("style-system.png", {
-    fullPage: true,
-  });
+  if ((page.viewportSize()?.width ?? 0) >= 640) {
+    await page.getByRole("button", { name: "Timeline" }).click();
+    const ganttViewport = page.getByTestId("gantt-scroll-viewport");
+    const ganttGrid = page.getByTestId("gantt-grid-background");
+    await expect(ganttViewport).toBeVisible();
+    await expect(ganttGrid).toBeVisible();
+
+    const bottomGap = await page.evaluate(() => {
+      const viewport = document
+        .querySelector('[data-testid="gantt-scroll-viewport"]')
+        ?.getBoundingClientRect();
+      const grid = document
+        .querySelector('[data-testid="gantt-grid-background"]')
+        ?.getBoundingClientRect();
+      if (!viewport || !grid) return Number.POSITIVE_INFINITY;
+      return Math.abs(viewport.bottom - grid.bottom);
+    });
+    expect(bottomGap).toBeLessThanOrEqual(1);
+    await expect(ganttViewport.getByText("Jun 2026")).toHaveCount(0);
+  }
 });
 
 test("primary app surfaces stay coherent in light mode", async ({ page }) => {
@@ -168,13 +180,4 @@ test("primary app surfaces stay coherent in light mode", async ({ page }) => {
   }
   await settleVisualSurface(page);
   await expect(page).toHaveScreenshot("space-light.png");
-
-  await page.goto("/style", { waitUntil: "networkidle" });
-  await expect(
-    page.getByRole("heading", { name: "Calm, dense, and deliberate." })
-  ).toBeVisible();
-  await settleVisualSurface(page);
-  await expect(page).toHaveScreenshot("style-system-light.png", {
-    fullPage: true,
-  });
 });

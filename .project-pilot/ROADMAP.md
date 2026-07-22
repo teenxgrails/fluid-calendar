@@ -52,6 +52,9 @@
 - [ ] **P7 — Whole-app GUI and interaction pass** (`L`, depends on P1-P6)
   - Enforce Calendar as the house style, repair spacing/alignment/typography, both
     themes, dialogs/pickers/toggles, mobile/PWA safe areas, transitions, and jank.
+  - Foundation delivered: `/style` now exposes stable component references,
+    interactive states, a semantic-token theme sandbox, and its own dark/light
+    desktop/tablet/mobile visual matrix.
   - Evidence: visual matrix for Calendar/Today/Workspace/Focus/Boards/Mail/Settings
     on desktop and phone with zero known high/medium design defects.
 - [ ] **RC1 — Real release gate** (`M`, depends on P1-P7)
