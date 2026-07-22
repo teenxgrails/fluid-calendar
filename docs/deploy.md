@@ -1,31 +1,38 @@
-# Deploy Needt to Vercel + Neon
+# Deploy Needt with Coolify + Neon
 
-Needt is prepared for a single-user serverless deployment on Vercel with Neon Postgres. The previous VPS is not used.
+Needt production runs on the existing VPS through Coolify. Neon provides
+PostgreSQL, Redis backs realtime updates and BullMQ, and the same Docker image is
+deployed as a web service and a background worker. Coolify is the production
+source of truth for v0.1; Vercel is not part of the release path.
 
 ## 1. Create Neon
 
 1. Create a Neon project.
 2. Copy the pooled connection string into `DATABASE_URL`.
 3. Copy the direct connection string into `DIRECT_URL`.
-4. Keep both values in Vercel Project -> Settings -> Environment Variables.
+4. Keep both values in the shared Coolify environment for the web and worker.
 
 `DATABASE_URL` is used by the app at runtime. `DIRECT_URL` is used by Prisma migrations.
 
-## 2. Create Vercel Project
+## 2. Create the Coolify services
 
-1. Import the GitHub repository in Vercel.
-2. Set Framework Preset to Next.js.
-3. Set Build Command to:
-
-```bash
-pnpm vercel-build
-```
-
-4. Set Install Command to:
+1. Connect the GitHub repository and deploy `main` with
+   `docker/production/Dockerfile` as the web service.
+2. Keep the image default command for web startup.
+3. Create a Redis resource and set its internal URL as `REDIS_URL` on both
+   services.
+4. Create a second service from the same repository, branch, Dockerfile, and
+   environment. Override only its command:
 
 ```bash
-pnpm install --frozen-lockfile
+node dist/worker/index.js
 ```
+
+5. Do not expose the worker publicly. Deploy web first, then worker, and keep both
+   on the same Git commit.
+6. The web entrypoint applies lockfile-pinned Prisma migrations before starting
+   Next.js. A failed migration must fail the deployment instead of starting a
+   mismatched application.
 
 ## 3. Environment Variables
 
@@ -39,6 +46,8 @@ NEXT_PUBLIC_APP_URL="https://use.needt.app"
 NEXT_PUBLIC_SITE_URL="https://use.needt.app"
 NEXTAUTH_SECRET="random-32-plus-character-secret"
 CRON_SECRET="random-cron-secret"
+REDIS_URL="redis://default:password@redis:6379"
+WEBHOOK_BASE_URL="https://use.needt.app"
 ```
 
 Calendar OAuth:
@@ -67,12 +76,13 @@ Apple/iCloud CalDAV credentials are entered in the app at runtime and never stor
 
 ## 4. Domain
 
-1. Add `use.needt.app` in Vercel Project -> Domains. The separate marketing deployment owns `needt.app`.
-2. Point DNS to Vercel as instructed.
-3. Vercel provisions HTTPS automatically.
+1. Add `use.needt.app` to the Coolify web service. The separate marketing
+   deployment owns `needt.app`.
+2. Point DNS to the VPS/Coolify proxy target.
+3. Confirm Coolify provisions HTTPS and the worker has no public domain.
 
-If the domain is not owned yet, keep the generated `*.vercel.app` URL and update `NEXTAUTH_URL`,
-`NEXT_PUBLIC_APP_URL`, and `NEXT_PUBLIC_SITE_URL` to that URL.
+Set `NEXTAUTH_URL`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`, and
+`WEBHOOK_BASE_URL` to the exact public HTTPS origin.
 
 ## 5. OAuth Redirect URIs
 
@@ -94,9 +104,10 @@ https://use.needt.app/api/calendar/outlook/auth
 
 Keep local redirect URIs for development if needed.
 
-## 6. Cron
+## 6. Scheduled recovery jobs
 
-`vercel.json` schedules:
+Provider webhooks and the BullMQ worker handle realtime updates. Keep two Coolify
+scheduled tasks as recovery paths:
 
 - `/api/cron/sync-calendars` every 15 minutes.
 - `/api/cron/reschedule` every 30 minutes.
@@ -127,4 +138,5 @@ Expected result:
 - The app remains single-user in product behavior, but tables keep `userId` seams so future SaaS conversion does not require a database rewrite.
 - Prisma is configured with `directUrl`.
 - `@prisma/adapter-neon` and `@neondatabase/serverless` are installed. Runtime uses the Neon driver adapter automatically when `DATABASE_URL` is a Neon pooled URL containing `neon.tech` and `-pooler.`; local Postgres keeps the standard Prisma client path.
-- Deploy is triggered by pushing to `main` or by `vercel --prod`.
+- Production deploys are triggered from `main` in Coolify. Verify both web and
+  worker show the same SHA before a release smoke.
