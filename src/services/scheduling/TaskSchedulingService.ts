@@ -76,6 +76,7 @@ type DbTaskWithRelations = {
   isAutoScheduled: boolean;
   scheduledStart: Date | null;
   scheduledEnd: Date | null;
+  scheduleId: string | null;
   scheduleScore: number | null;
   lastScheduled: Date | null;
   scheduleLocked: boolean;
@@ -182,6 +183,9 @@ function toSchedulableTask(task: DbTaskWithRelations): SchedulableTask {
     autoScheduled: task.autoScheduled || task.isAutoScheduled,
     scheduledStart: task.scheduledStart,
     scheduledEnd: task.scheduledEnd,
+    scheduleId: task.scheduleId,
+    isRecurring: task.isRecurring,
+    recurrenceRule: task.recurrenceRule,
   };
 }
 
@@ -300,9 +304,33 @@ export async function scheduleAllTasksForUser(
       throw new Error("Auto-schedule settings not found for user");
     }
 
-    const smartPrefs = await prisma.schedulingPreferences.findUnique({
-      where: { userId },
-    });
+    const [smartPrefs, workSchedules, flexibleHoursOverrides] =
+      await Promise.all([
+        prisma.schedulingPreferences.findUnique({ where: { userId } }),
+        prisma.workSchedule.findMany({
+          where: { userId },
+          include: {
+            windows: {
+              orderBy: [{ dayOfWeek: "asc" }, { sortOrder: "asc" }],
+            },
+          },
+          orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+        }),
+        prisma.flexibleHoursOverride.findMany({
+          where: {
+            userId,
+            date: {
+              gte: new Date(
+                new Date().getFullYear(),
+                new Date().getMonth(),
+                new Date().getDate()
+              ),
+              lt: addDays(new Date(), DEFAULT_HORIZON_DAYS + 1),
+            },
+          },
+          orderBy: [{ date: "asc" }, { createdAt: "asc" }],
+        }),
+      ]);
     const calibration = await getCalibrationContext(userId);
     const energyWindows = await prisma.energyProfileWindow.findMany({
       where: { userId },
@@ -317,6 +345,10 @@ export async function scheduleAllTasksForUser(
         feedId: { in: selectedCalendarIds },
         start: { lt: addDays(now, DEFAULT_HORIZON_DAYS) },
         end: { gt: now },
+        OR: [
+          { description: null },
+          { NOT: { description: { startsWith: "[NEEDT_DAY_BLOCK]" } } },
+        ],
       },
     });
 
@@ -356,15 +388,13 @@ export async function scheduleAllTasksForUser(
 
     const result = scheduleTasks({
       tasks: dbTasks.map(toSchedulableTask),
-      busyBlocks: busyEvents.map(
-        (event): CalendarBusyBlock => ({
-          id: event.id,
-          title: event.title,
-          start: event.start,
-          end: event.end,
-          source: "calendar",
-        })
-      ),
+      busyBlocks: busyEvents.map((event): CalendarBusyBlock => ({
+        id: event.id,
+        title: event.title,
+        start: event.start,
+        end: event.end,
+        source: "calendar",
+      })),
       energyProfile:
         energyWindows.length > 0
           ? {
@@ -379,6 +409,31 @@ export async function scheduleAllTasksForUser(
       prefs: {
         ...buildPreferences(smartPrefs, legacySettings),
         calibrationFactors: calibration.factors,
+        defaultScheduleId:
+          workSchedules.find((schedule) => schedule.isDefault)?.id ??
+          workSchedules[0]?.id ??
+          null,
+        workHoursBySchedule: Object.fromEntries(
+          workSchedules.map((schedule) => [
+            schedule.id,
+            schedule.windows.reduce<
+              Record<string, Array<{ start: string; end: string }>>
+            >((days, window) => {
+              const day = String(window.dayOfWeek);
+              (days[day] ??= []).push({
+                start: window.startTime,
+                end: window.endTime,
+              });
+              return days;
+            }, {}),
+          ])
+        ),
+        flexibleHoursOverrides: flexibleHoursOverrides.map((override) => ({
+          date: override.date.toISOString().slice(0, 10),
+          kind: override.kind,
+          startTime: override.startTime,
+          endTime: override.endTime,
+        })),
       },
       now,
     });

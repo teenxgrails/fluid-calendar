@@ -22,18 +22,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { APP_NAME } from "@/lib/app-config";
-import { newDate } from "@/lib/date-utils";
-
-import { useCalendarStore } from "@/store/calendar";
 import { useSettingsStore } from "@/store/settings";
 import { useTaskStore } from "@/store/task";
 
-import { CalendarFeed } from "@/types/calendar";
-
 type ActionMode = "start-later" | "stop-early" | "block-hours";
-
-const DAY_BLOCK_MARKER = "[NEEDT_DAY_BLOCK]";
 
 const ACTIONS = [
   {
@@ -56,92 +48,51 @@ const ACTIONS = [
   },
 ] as const;
 
-function atTime(date: Date, value: string) {
-  const [hours, minutes] = value.split(":").map(Number);
-  const result = newDate(date);
-  result.setHours(hours, minutes, 0, 0);
-  return result;
-}
-
-function sameLocalDay(left: Date, right: Date) {
-  return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
-  );
+function dateKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
 }
 
 export function CalendarDayActions({ date }: { date: Date }) {
-  const { addEvent, events, feeds, removeEvent } = useCalendarStore();
-  const { autoSchedule, calendar, updateAutoScheduleSettings } =
-    useSettingsStore();
+  const { calendar } = useSettingsStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState<ActionMode | null>(null);
   const [startTime, setStartTime] = useState(calendar.workingHours.start);
   const [endTime, setEndTime] = useState(calendar.workingHours.end);
   const [submitting, setSubmitting] = useState(false);
 
-  const ensureLocalFeed = async () => {
-    let feed = feeds.find((candidate) => candidate.type === "LOCAL");
-    if (!feed) {
-      const response = await fetch("/api/feeds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: APP_NAME,
-          type: "LOCAL",
-          color: "#6366F1",
-          enabled: true,
-        }),
-      });
-      if (!response.ok) throw new Error("Could not create a local calendar");
-      feed = (await response.json()) as CalendarFeed;
-      await useCalendarStore.getState().loadFromDatabase();
-    }
-
-    let selected: string[] = [];
-    try {
-      selected = JSON.parse(autoSchedule.selectedCalendars || "[]");
-    } catch {
-      selected = [];
-    }
-    if (!selected.includes(feed.id)) {
-      updateAutoScheduleSettings({
-        selectedCalendars: JSON.stringify([...selected, feed.id]),
-      });
-    }
-    return feed;
-  };
-
-  const createBlock = async (start: Date, end: Date, allDay = false) => {
-    if (end <= start) throw new Error("End time must be after start time");
-    const feed = await ensureLocalFeed();
-    await addEvent({
-      title: "Unavailable",
-      description: DAY_BLOCK_MARKER,
-      start,
-      end,
-      feedId: feed.id,
-      allDay,
-      isRecurring: false,
-      isMaster: false,
+  const createOverride = async (payload: {
+    kind: "START_LATER" | "STOP_EARLY" | "BLOCK_HOURS" | "BLOCK_WHOLE_DAY";
+    startTime?: string;
+    endTime?: string;
+  }) => {
+    const response = await fetch("/api/flexible-hours", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: dateKey(date), ...payload }),
     });
+    if (!response.ok) {
+      const data = (await response.json()) as { error?: string };
+      throw new Error(data.error || "Could not update flexible hours");
+    }
     await useTaskStore.getState().triggerScheduleAllTasks();
+    window.dispatchEvent(new Event("needt:flexible-hours-changed"));
   };
 
   const applyTimedAction = async () => {
     if (!mode) return;
     setSubmitting(true);
     try {
-      const start =
+      await createOverride(
         mode === "start-later"
-          ? atTime(date, calendar.workingHours.start)
-          : atTime(date, startTime);
-      const end =
-        mode === "stop-early"
-          ? atTime(date, calendar.workingHours.end)
-          : atTime(date, mode === "start-later" ? endTime : endTime);
-      await createBlock(start, end);
+          ? { kind: "START_LATER", startTime: endTime }
+          : mode === "stop-early"
+            ? { kind: "STOP_EARLY", endTime: startTime }
+            : { kind: "BLOCK_HOURS", startTime, endTime }
+      );
       setMode(null);
       toast.success("Today's task hours updated");
     } catch (error) {
@@ -157,11 +108,7 @@ export function CalendarDayActions({ date }: { date: Date }) {
     setMenuOpen(false);
     setSubmitting(true);
     try {
-      const start = newDate(date);
-      start.setHours(0, 0, 0, 0);
-      const end = newDate(start);
-      end.setDate(end.getDate() + 1);
-      await createBlock(start, end, true);
+      await createOverride({ kind: "BLOCK_WHOLE_DAY" });
       toast.success("Whole day blocked");
     } catch (error) {
       toast.error(
@@ -176,13 +123,13 @@ export function CalendarDayActions({ date }: { date: Date }) {
     setMenuOpen(false);
     setSubmitting(true);
     try {
-      const blocks = events.filter(
-        (event) =>
-          event.description?.includes(DAY_BLOCK_MARKER) &&
-          sameLocalDay(newDate(event.start), date)
+      const response = await fetch(
+        `/api/flexible-hours?date=${dateKey(date)}`,
+        { method: "DELETE" }
       );
-      await Promise.all(blocks.map((event) => removeEvent(event.id)));
+      if (!response.ok) throw new Error("Could not reset hours");
       await useTaskStore.getState().triggerScheduleAllTasks();
+      window.dispatchEvent(new Event("needt:flexible-hours-changed"));
       toast.success("Task hours reset");
     } catch {
       toast.error("Could not reset task hours");
@@ -210,7 +157,7 @@ export function CalendarDayActions({ date }: { date: Date }) {
             type="button"
             onClick={(event) => event.stopPropagation()}
             aria-label="Adjust task hours"
-            className="absolute right-2.5 grid h-7 w-7 place-items-center rounded-md text-[var(--text-muted)] transition-colors duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+            className="absolute right-2.5 grid h-7 w-7 place-items-center rounded-md text-[var(--text-muted)] opacity-0 transition-[opacity,color,background-color] duration-150 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100"
           >
             <Clock3 className="h-3.5 w-3.5" />
           </button>

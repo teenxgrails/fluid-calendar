@@ -19,6 +19,9 @@ export interface SchedulableTask {
   autoScheduled?: boolean;
   scheduledStart?: Date | null;
   scheduledEnd?: Date | null;
+  scheduleId?: string | null;
+  isRecurring?: boolean;
+  recurrenceRule?: string | null;
 }
 
 export interface CalendarBusyBlock {
@@ -45,8 +48,20 @@ export interface WorkHoursWindow {
   end: string;
 }
 
+export interface FlexibleHoursOverride {
+  date: string;
+  kind: "START_LATER" | "STOP_EARLY" | "BLOCK_HOURS" | "BLOCK_WHOLE_DAY";
+  startTime?: string | null;
+  endTime?: string | null;
+}
+
+export type WorkHoursMap = Record<string, WorkHoursWindow | WorkHoursWindow[]>;
+
 export interface SchedulingPreferences {
-  workHours: Record<string, WorkHoursWindow>;
+  workHours: WorkHoursMap;
+  defaultScheduleId?: string | null;
+  workHoursBySchedule?: Record<string, WorkHoursMap>;
+  flexibleHoursOverrides?: FlexibleHoursOverride[];
   bufferMinutes: number;
   maxDeepWorkPerDay: number;
   minBreakMinutes: number;
@@ -145,21 +160,108 @@ function dayKey(date: Date): string {
   return String(date.getDay());
 }
 
-function getWorkWindow(
-  date: Date,
-  prefs: SchedulingPreferences
-): { start: Date; end: Date } | null {
-  const dayPrefs = prefs.workHours[dayKey(date)];
-  if (!dayPrefs) {
-    return null;
+function localDateKey(date: Date): string {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function normalizeWindows(
+  value: WorkHoursWindow | WorkHoursWindow[] | undefined
+): WorkHoursWindow[] {
+  if (!value) return [];
+  return (Array.isArray(value) ? value : [value])
+    .filter((window) => window.start < window.end)
+    .sort((a, b) => a.start.localeCompare(b.start));
+}
+
+export function applyFlexibleHoursOverrides(
+  windows: WorkHoursWindow[],
+  overrides: FlexibleHoursOverride[]
+): WorkHoursWindow[] {
+  let result = [...windows];
+
+  for (const override of overrides) {
+    if (override.kind === "BLOCK_WHOLE_DAY") return [];
+
+    if (override.kind === "START_LATER" && override.startTime) {
+      const startTime = override.startTime;
+      result = result
+        .map((window) => ({
+          ...window,
+          start: window.start > startTime ? window.start : startTime,
+        }))
+        .filter((window) => window.start < window.end);
+      continue;
+    }
+
+    if (override.kind === "STOP_EARLY" && override.endTime) {
+      const endTime = override.endTime;
+      result = result
+        .map((window) => ({
+          ...window,
+          end: window.end < endTime ? window.end : endTime,
+        }))
+        .filter((window) => window.start < window.end);
+      continue;
+    }
+
+    if (
+      override.kind === "BLOCK_HOURS" &&
+      override.startTime &&
+      override.endTime
+    ) {
+      result = result.flatMap((window) => {
+        if (
+          override.endTime! <= window.start ||
+          override.startTime! >= window.end
+        ) {
+          return [window];
+        }
+
+        const pieces: WorkHoursWindow[] = [];
+        if (window.start < override.startTime!) {
+          pieces.push({ start: window.start, end: override.startTime! });
+        }
+        if (window.end > override.endTime!) {
+          pieces.push({ start: override.endTime!, end: window.end });
+        }
+        return pieces;
+      });
+    }
   }
 
-  const start = setTime(date, dayPrefs.start);
-  const workEnd = setTime(date, dayPrefs.end);
-  const hardStop = setTime(date, prefs.hardStopTime);
-  const end = workEnd < hardStop ? workEnd : hardStop;
+  return result;
+}
 
-  return start < end ? { start, end } : null;
+function getWorkWindows(
+  date: Date,
+  prefs: SchedulingPreferences,
+  scheduleId?: string | null
+): Array<{ start: Date; end: Date }> {
+  const resolvedScheduleId = scheduleId ?? prefs.defaultScheduleId ?? null;
+  const scheduleHours =
+    (resolvedScheduleId
+      ? prefs.workHoursBySchedule?.[resolvedScheduleId]
+      : undefined) ?? prefs.workHours;
+  const overrides = (prefs.flexibleHoursOverrides ?? []).filter(
+    (override) => override.date === localDateKey(date)
+  );
+  const windows = applyFlexibleHoursOverrides(
+    normalizeWindows(scheduleHours[dayKey(date)]),
+    overrides
+  );
+  const hardStop = setTime(date, prefs.hardStopTime);
+
+  return windows
+    .map((window) => {
+      const start = setTime(date, window.start);
+      const windowEnd = setTime(date, window.end);
+      return { start, end: windowEnd < hardStop ? windowEnd : hardStop };
+    })
+    .filter((window) => window.start < window.end);
 }
 
 function getEnergyWindowsForDay(
@@ -337,8 +439,8 @@ function findSlot(
   let day = startOfDay(earliestStart);
 
   while (day <= searchEnd) {
-    const work = getWorkWindow(day, prefs);
-    if (work) {
+    const workWindows = getWorkWindows(day, prefs, chunk.task.scheduleId);
+    for (const work of workWindows) {
       let cursor = roundUpToStep(
         earliestStart > work.start ? earliestStart : work.start
       );

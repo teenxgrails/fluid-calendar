@@ -47,6 +47,26 @@ interface WeekViewProps {
   currentDate: Date;
 }
 
+interface FlexibleHoursOverrideResponse {
+  id: string;
+  date: string;
+  kind: "START_LATER" | "STOP_EARLY" | "BLOCK_HOURS" | "BLOCK_WHOLE_DAY";
+  startTime: string | null;
+  endTime: string | null;
+}
+
+function localDateKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function overrideDateTime(date: string, time: string) {
+  return newDate(`${date}T${time}:00`);
+}
+
 export function WeekView({ currentDate }: WeekViewProps) {
   const { feeds, getAllCalendarItems, isLoading, removeEvent } =
     useCalendarStore();
@@ -77,6 +97,17 @@ export function WeekView({ currentDate }: WeekViewProps) {
       startEditable: boolean;
       durationEditable: boolean;
       extendedProps?: ExtendedEventProps;
+    }>
+  >([]);
+  const [flexibleHourBackgrounds, setFlexibleHourBackgrounds] = useState<
+    Array<{
+      id: string;
+      title: string;
+      start: Date;
+      end: Date;
+      display: "background";
+      allDay: boolean;
+      classNames: string[];
     }>
   >([]);
   const calendarRef = useRef<FullCalendar>(null);
@@ -204,6 +235,49 @@ export function WeekView({ currentDate }: WeekViewProps) {
 
         return hasChanged ? formattedItems : current;
       });
+
+      try {
+        const inclusiveEnd = newDate(arg.end);
+        inclusiveEnd.setDate(inclusiveEnd.getDate() - 1);
+        const response = await fetch(
+          `/api/flexible-hours?from=${localDateKey(arg.start)}&to=${localDateKey(inclusiveEnd)}`
+        );
+        if (!response.ok) throw new Error("Failed to load flexible hours");
+        const data = (await response.json()) as {
+          overrides: FlexibleHoursOverrideResponse[];
+        };
+        setFlexibleHourBackgrounds(
+          data.overrides.map((override) => {
+            const date = override.date.slice(0, 10);
+            const startTime =
+              override.kind === "START_LATER"
+                ? "00:00"
+                : override.kind === "STOP_EARLY"
+                  ? override.endTime || "00:00"
+                  : override.kind === "BLOCK_WHOLE_DAY"
+                    ? "00:00"
+                    : override.startTime || "00:00";
+            const endTime =
+              override.kind === "START_LATER"
+                ? override.startTime || "00:00"
+                : override.kind === "STOP_EARLY" ||
+                    override.kind === "BLOCK_WHOLE_DAY"
+                  ? "23:59"
+                  : override.endTime || "23:59";
+            return {
+              id: `flexible-hours:${override.id}`,
+              title: "",
+              start: overrideDateTime(date, startTime),
+              end: overrideDateTime(date, endTime),
+              display: "background" as const,
+              allDay: false,
+              classNames: ["needt-flexible-hours-texture"],
+            };
+          })
+        );
+      } catch {
+        setFlexibleHourBackgrounds([]);
+      }
     },
     [feeds, getAllCalendarItems, showTasksOnCalendar]
   );
@@ -222,6 +296,24 @@ export function WeekView({ currentDate }: WeekViewProps) {
       });
     }
   }, [isLoading, feeds, userSettings.timeZone, handleDatesSet, tasks]);
+
+  useEffect(() => {
+    const refresh = () => {
+      const calendar = calendarRef.current?.getApi();
+      if (!calendar) return;
+      void handleDatesSet({
+        start: calendar.view.activeStart,
+        end: calendar.view.activeEnd,
+        startStr: calendar.view.activeStart.toISOString(),
+        endStr: calendar.view.activeEnd.toISOString(),
+        timeZone: userSettings.timeZone,
+        view: calendar.view,
+      });
+    };
+    window.addEventListener("needt:flexible-hours-changed", refresh);
+    return () =>
+      window.removeEventListener("needt:flexible-hours-changed", refresh);
+  }, [handleDatesSet, userSettings.timeZone]);
 
   // Update calendar date when currentDate changes
   useEffect(() => {
@@ -390,7 +482,7 @@ export function WeekView({ currentDate }: WeekViewProps) {
         initialView="timeGridWeek"
         headerToolbar={false}
         initialDate={currentDate}
-        events={events}
+        events={[...events, ...flexibleHourBackgrounds]}
         nowIndicator={true}
         allDaySlot={true}
         slotMinTime="00:00:00"
@@ -432,24 +524,22 @@ export function WeekView({ currentDate }: WeekViewProps) {
           }).format(arg.date);
           const day = arg.date.getDate();
           return (
-            <div className="relative flex w-full items-center justify-center gap-1.5">
+            <div className="group/day relative flex w-full items-center justify-center">
               <span
                 className={
                   arg.isToday
-                    ? "text-[13px] font-semibold text-[var(--text-primary)]"
-                    : "text-[13px] font-medium text-[var(--text-secondary)]"
+                    ? "inline-flex h-[28px] items-center justify-center gap-1.5 rounded-md border border-[var(--text-primary)] bg-transparent px-2 text-[13px] font-semibold text-[var(--text-primary)]"
+                    : "inline-flex items-center gap-1.5 text-[var(--text-secondary)]"
                 }
               >
-                {weekday}
-              </span>
-              <span
-                className={
-                  arg.isToday
-                    ? "flex h-[24px] min-w-[24px] items-center justify-center rounded-md border border-[var(--text-primary)] bg-transparent px-1 text-[13px] font-semibold text-[var(--text-primary)]"
-                    : "text-[14px] font-semibold text-[var(--text-secondary)]"
-                }
-              >
-                {day}
+                <span className={arg.isToday ? "" : "text-[13px] font-medium"}>
+                  {weekday}
+                </span>
+                <span
+                  className={arg.isToday ? "" : "text-[14px] font-semibold"}
+                >
+                  {day}
+                </span>
               </span>
               <CalendarDayActions date={arg.date} />
             </div>

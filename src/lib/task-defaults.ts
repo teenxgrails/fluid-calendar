@@ -25,6 +25,8 @@ export interface TaskDefaults {
   startPreset: TaskStartPreset;
   deadlinePreset: TaskDeadlinePreset;
   hardDeadline: boolean;
+  scheduleId: string | null;
+  /** @deprecated Retained while old local defaults migrate to scheduleId. */
   scheduleName: string;
 }
 
@@ -38,7 +40,8 @@ export const DEFAULT_TASK_DEFAULTS: TaskDefaults = {
   startPreset: "today",
   deadlinePreset: "7-days",
   hardDeadline: false,
-  scheduleName: "Work hours",
+  scheduleId: null,
+  scheduleName: "Work Hours",
 };
 
 export function readTaskDefaults(): TaskDefaults {

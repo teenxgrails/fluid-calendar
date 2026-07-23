@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
         feed: {
           userId,
         },
+        OR: [
+          { description: null },
+          { NOT: { description: { startsWith: "[NEEDT_DAY_BLOCK]" } } },
+        ],
       },
       include: {
         feed: {

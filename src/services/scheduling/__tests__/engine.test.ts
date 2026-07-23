@@ -233,4 +233,145 @@ describe("scheduleTasks", () => {
     expect(result.frozenBlocks[0].start.getHours()).toBe(9);
     expect(result.blocks[0].start.getHours()).toBe(10);
   });
+
+  it("uses each task's selected saved schedule", () => {
+    const result = scheduleTasks({
+      tasks: [
+        task({
+          id: "late-task",
+          title: "Late task",
+          scheduleId: "evenings",
+          estimatedMinutes: 30,
+        }),
+      ],
+      busyBlocks: [],
+      energyProfile,
+      prefs: {
+        ...prefs,
+        defaultScheduleId: "work",
+        workHoursBySchedule: {
+          work: { "1": [{ start: "09:00", end: "12:00" }] },
+          evenings: { "1": [{ start: "15:00", end: "17:00" }] },
+        },
+      },
+      now: mondayMorning,
+    });
+
+    expect(result.blocks[0].start.getHours()).toBe(15);
+  });
+
+  it("keeps the selected schedule for recurring tasks", () => {
+    const result = scheduleTasks({
+      tasks: [
+        task({
+          id: "recurring-evening",
+          title: "Recurring evening task",
+          scheduleId: "evenings",
+          isRecurring: true,
+          recurrenceRule: "FREQ=WEEKLY;BYDAY=MO",
+          estimatedMinutes: 30,
+        }),
+      ],
+      busyBlocks: [],
+      energyProfile,
+      prefs: {
+        ...prefs,
+        defaultScheduleId: "work",
+        workHoursBySchedule: {
+          work: { "1": [{ start: "09:00", end: "12:00" }] },
+          evenings: { "1": [{ start: "15:00", end: "17:00" }] },
+        },
+      },
+      now: mondayMorning,
+    });
+
+    expect(result.blocks[0]).toMatchObject({
+      taskId: "recurring-evening",
+    });
+    expect(result.blocks[0].start.getHours()).toBe(15);
+  });
+
+  it("supports multiple intervals on the same day", () => {
+    const result = scheduleTasks({
+      tasks: [
+        task({
+          id: "afternoon",
+          title: "Afternoon",
+          estimatedMinutes: 60,
+          energyRequired: "LOW",
+        }),
+      ],
+      busyBlocks: [
+        busy({
+          start: new Date(2026, 6, 6, 9, 0, 0),
+          end: new Date(2026, 6, 6, 12, 0, 0),
+        }),
+      ],
+      energyProfile,
+      prefs: {
+        ...prefs,
+        workHours: {
+          "1": [
+            { start: "09:00", end: "12:00" },
+            { start: "13:30", end: "17:00" },
+          ],
+        },
+      },
+      now: mondayMorning,
+    });
+
+    expect(result.blocks[0].start.getHours()).toBe(13);
+    expect(result.blocks[0].start.getMinutes()).toBe(30);
+  });
+
+  it("intersects one-off flexible-hours blocks with regular schedules", () => {
+    const result = scheduleTasks({
+      tasks: [
+        task({
+          id: "after-block",
+          title: "After block",
+          estimatedMinutes: 30,
+        }),
+      ],
+      busyBlocks: [],
+      energyProfile,
+      prefs: {
+        ...prefs,
+        flexibleHoursOverrides: [
+          {
+            date: "2026-07-06",
+            kind: "BLOCK_HOURS",
+            startTime: "09:00",
+            endTime: "11:15",
+          },
+        ],
+      },
+      now: mondayMorning,
+    });
+
+    expect(result.blocks[0].start.getHours()).toBe(11);
+    expect(result.blocks[0].start.getMinutes()).toBe(15);
+  });
+
+  it("moves work to the next valid day after a whole-day override", () => {
+    const result = scheduleTasks({
+      tasks: [task({ id: "tomorrow", title: "Tomorrow" })],
+      busyBlocks: [],
+      energyProfile,
+      prefs: {
+        ...prefs,
+        workHours: {
+          "1": { start: "09:00", end: "17:00" },
+          "2": { start: "09:00", end: "17:00" },
+        },
+        flexibleHoursOverrides: [
+          { date: "2026-07-06", kind: "BLOCK_WHOLE_DAY" },
+        ],
+      },
+      now: mondayMorning,
+    });
+
+    expect(result.blocks[0].start.getDay()).toBe(2);
+    expect(result.blocks[0].start.getHours()).toBe(9);
+  });
 });

@@ -35,13 +35,13 @@
 
 ## Second pass — P0 Schedules and flexible hours
 
-- [ ] Add additive WorkSchedule, schedule-window, task/recurring assignment and FlexibleHoursOverride persistence.
-- [ ] Materialize existing work hours as the default `Work Hours` schedule without rewriting migration history.
-- [ ] Resolve each task's selected/default schedule in the deterministic scheduler while preserving all other scheduling rules.
-- [ ] Build create/edit/delete/default schedule flows with multiple intervals, 15-minute move/resize, precise time input and selected-day copy.
-- [ ] Replace Task/Event day blocking with flexible-hours overrides and migrate/hide legacy `[NEEDT_DAY_BLOCK]` events.
-- [ ] Render one-off overrides as diagonal calendar availability texture.
-- [ ] Add unit and E2E coverage for schedule selection, recurring tasks, overrides, copy/resize and legacy migration.
+- [x] Add additive WorkSchedule, schedule-window, task/recurring assignment and FlexibleHoursOverride persistence.
+- [x] Materialize existing work hours as the default `Work Hours` schedule without rewriting migration history.
+- [x] Resolve each task's selected/default schedule in the deterministic scheduler while preserving all other scheduling rules.
+- [x] Build create/edit/delete/default schedule flows with multiple intervals, 15-minute move/resize, precise time input and selected-day copy.
+- [x] Replace Task/Event day blocking with flexible-hours overrides and migrate/hide legacy `[NEEDT_DAY_BLOCK]` events.
+- [x] Render one-off overrides as diagonal calendar availability texture.
+- [x] Add unit and E2E coverage for schedule selection, recurring tasks, overrides, copy/resize and legacy migration.
 
 ## Second pass — P0/P1 Pages
 

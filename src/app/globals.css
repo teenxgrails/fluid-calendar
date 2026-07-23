@@ -437,6 +437,18 @@
   }
 }
 
+.fc .fc-bg-event.needt-flexible-hours-texture {
+  background-color: transparent;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--text-secondary) 12%, transparent) 0,
+    color-mix(in srgb, var(--text-secondary) 12%, transparent) 7px,
+    transparent 7px,
+    transparent 14px
+  );
+  opacity: 1;
+}
+
 @layer base {
   * {
     @apply border-border;

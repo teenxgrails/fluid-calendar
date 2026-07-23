@@ -106,8 +106,17 @@ export async function POST(request: NextRequest) {
     const userId = auth.userId;
 
     const json = await request.json();
-    const { tagIds, recurrenceRule, ...taskData } = json;
+    const { tagIds, recurrenceRule, scheduleId, ...taskData } = json;
     const description = sanitizeTaskDescriptionForStorage(taskData.description);
+    if (scheduleId) {
+      const schedule = await prisma.workSchedule.findFirst({
+        where: { id: scheduleId, userId },
+        select: { id: true },
+      });
+      if (!schedule) {
+        return new NextResponse("Invalid work schedule", { status: 400 });
+      }
+    }
 
     // Normalize and validate recurrence rule if provided
     const standardizedRecurrenceRule = recurrenceRule
@@ -149,6 +158,7 @@ export async function POST(request: NextRequest) {
         description,
         // Associate the task with the current user
         userId,
+        scheduleId: scheduleId || null,
         isRecurring: !!recurrenceRule,
         recurrenceRule: standardizedRecurrenceRule,
         ...(tagIds && {

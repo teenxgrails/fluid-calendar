@@ -100,8 +100,18 @@ export async function PUT(
     const json = await request.json();
     logger.info(`Update payload for task ${id}`, { payload: json }, LOG_SOURCE);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { tagIds, project, projectId, userId: _, ...updates } = json;
+    const { tagIds, projectId, scheduleId, ...updates } = json;
+    delete updates.project;
+    delete updates.userId;
+    if (scheduleId) {
+      const schedule = await prisma.workSchedule.findFirst({
+        where: { id: scheduleId, userId },
+        select: { id: true },
+      });
+      if (!schedule) {
+        return new NextResponse("Invalid work schedule", { status: 400 });
+      }
+    }
     if ("description" in updates) {
       updates.description =
         sanitizeTaskDescriptionForStorage(updates.description) ?? null;
@@ -257,6 +267,7 @@ export async function PUT(
       },
       data: {
         ...updates,
+        ...(scheduleId !== undefined && { scheduleId: scheduleId || null }),
         ...(tagIds && {
           tags: {
             set: [], // First disconnect all tags

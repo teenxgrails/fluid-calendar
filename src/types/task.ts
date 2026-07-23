@@ -91,6 +91,7 @@ export interface Task {
   isAutoScheduled: boolean;
   scheduledStart?: Date | null;
   scheduledEnd?: Date | null;
+  scheduleId?: string | null;
   scheduleScore?: number | null;
   lastScheduled?: Date | null;
   scheduleLocked: boolean;

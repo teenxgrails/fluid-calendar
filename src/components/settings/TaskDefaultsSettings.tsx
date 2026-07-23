@@ -18,8 +18,8 @@ import {
 
 import { useAppSession } from "@/components/providers/app-session-context";
 import {
-  NeedtPicker,
   MotionSwitchRow,
+  NeedtPicker,
 } from "@/components/settings/MotionSettingsControls";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 
@@ -64,10 +64,19 @@ export function TaskDefaultsSettings() {
   const { projects, fetchProjects } = useProjectStore();
   const { data: session } = useAppSession();
   const [defaults, setDefaults] = useState<TaskDefaults>(DEFAULT_TASK_DEFAULTS);
+  const [workSchedules, setWorkSchedules] = useState<
+    Array<{ id: string; name: string; isDefault: boolean }>
+  >([]);
 
   useEffect(() => {
     setDefaults(readTaskDefaults());
     void fetchProjects();
+    fetch("/api/work-schedules")
+      .then((response) => response.json())
+      .then((data: { schedules?: typeof workSchedules }) =>
+        setWorkSchedules(data.schedules ?? [])
+      )
+      .catch(() => setWorkSchedules([]));
   }, [fetchProjects]);
 
   const updateDefaults = (updates: Partial<TaskDefaults>) => {
@@ -314,13 +323,33 @@ export function TaskDefaultsSettings() {
           />
           <NeedtPicker
             label="Schedule"
-            value={defaults.scheduleName}
-            valueLabel={defaults.scheduleName}
-            options={[
-              { value: "Work hours", label: "Work hours" },
-              { value: "Anytime (24/7)", label: "Anytime (24/7)" },
-            ]}
-            onValueChange={(scheduleName) => updateDefaults({ scheduleName })}
+            value={
+              defaults.scheduleId ??
+              workSchedules.find((schedule) => schedule.isDefault)?.id ??
+              ""
+            }
+            valueLabel={
+              workSchedules.find(
+                (schedule) =>
+                  schedule.id === defaults.scheduleId ||
+                  (!defaults.scheduleId && schedule.isDefault)
+              )?.name ?? defaults.scheduleName
+            }
+            options={workSchedules.map((schedule) => ({
+              value: schedule.id,
+              label: schedule.isDefault
+                ? `${schedule.name} (Default)`
+                : schedule.name,
+            }))}
+            onValueChange={(scheduleId) => {
+              const schedule = workSchedules.find(
+                (candidate) => candidate.id === scheduleId
+              );
+              updateDefaults({
+                scheduleId,
+                scheduleName: schedule?.name ?? defaults.scheduleName,
+              });
+            }}
             icon={
               <CalendarClock className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
             }

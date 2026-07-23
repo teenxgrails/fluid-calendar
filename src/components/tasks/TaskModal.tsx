@@ -89,6 +89,12 @@ interface TaskModalProps {
   onItemTypeChange?: (type: "task" | "event") => void;
 }
 
+interface WorkScheduleOption {
+  id: string;
+  name: string;
+  isDefault: boolean;
+}
+
 //TODO: move to utils
 const formatEnumValue = (value: string) => {
   return value
@@ -189,6 +195,10 @@ export function TaskModal({
     SchedulingEnergyLevel.MEDIUM
   );
   const [preferredTime, setPreferredTime] = useState<TimePreference | "">("");
+  const [scheduleId, setScheduleId] = useState<string | null>(
+    task?.scheduleId ?? null
+  );
+  const [workSchedules, setWorkSchedules] = useState<WorkScheduleOption[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("#E5E7EB");
@@ -245,6 +255,7 @@ export function TaskModal({
     setEnergyLevel("");
     setEnergyRequired(SchedulingEnergyLevel.MEDIUM);
     setPreferredTime("");
+    setScheduleId(defaults.scheduleId);
     setSelectedTagIds([]);
     setNewTagName("");
     setNewTagColor("#E5E7EB");
@@ -264,6 +275,33 @@ export function TaskModal({
     setIsDirty(false);
     setSaveState("idle");
   }, [initialProjectId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    fetch("/api/work-schedules")
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to load schedules");
+        return response.json();
+      })
+      .then((data: { schedules: WorkScheduleOption[] }) => {
+        if (cancelled) return;
+        setWorkSchedules(data.schedules);
+        if (!task?.scheduleId) {
+          setScheduleId(
+            data.schedules.find((schedule) => schedule.isDefault)?.id ??
+              data.schedules[0]?.id ??
+              null
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Could not load work schedules");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, task?.scheduleId]);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -333,6 +371,7 @@ export function TaskModal({
       setEnergyLevel(task.energyLevel || "");
       setEnergyRequired(task.energyRequired || SchedulingEnergyLevel.MEDIUM);
       setPreferredTime(task.preferredTime || "");
+      setScheduleId(task.scheduleId ?? null);
       setSelectedTagIds(task.tags.map((t) => t.id));
       setProjectId(task.projectId || null);
       setIsRecurring(task.isRecurring);
@@ -438,6 +477,7 @@ export function TaskModal({
       energyLevel: energyLevel || undefined,
       energyRequired,
       preferredTime: preferredTime || undefined,
+      scheduleId,
       priorityLevel,
       contextTag: contextTag.trim() || undefined,
       tagIds: selectedTagIds,
@@ -937,20 +977,30 @@ export function TaskModal({
                 </span>
                 <OptionPicker
                   ariaLabel="Choose schedule"
-                  value={preferredTime || "none"}
+                  value={
+                    scheduleId ||
+                    workSchedules.find((schedule) => schedule.isDefault)?.id ||
+                    "default"
+                  }
                   onChange={(value) =>
-                    setPreferredTime(
-                      value === "none" ? "" : (value as TimePreference)
-                    )
+                    setScheduleId(value === "default" ? null : value)
                   }
                   className="h-11 flex-1 border-0 bg-transparent px-0 text-[13px] shadow-none sm:h-[28px]"
-                  options={[
-                    { value: "none", label: "Work hours" },
-                    ...Object.values(TimePreference).map((value) => ({
-                      value,
-                      label: formatEnumValue(value),
-                    })),
-                  ]}
+                  options={
+                    workSchedules.length > 0
+                      ? workSchedules.map((schedule) => ({
+                          value: schedule.id,
+                          label: schedule.isDefault
+                            ? `${schedule.name} (Default)`
+                            : schedule.name,
+                        }))
+                      : [
+                          {
+                            value: "default",
+                            label: "Work Hours",
+                          },
+                        ]
+                  }
                 />
               </div>
             </div>

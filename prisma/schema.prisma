@@ -74,54 +74,56 @@ model Session {
 }
 
 model User {
-  id                    String                 @id @default(cuid())
-  name                  String?
-  email                 String?                @unique
-  emailVerified         DateTime?
-  image                 String?
-  role                  String                 @default("user") // Possible values: "user", "admin"
-  subscription          Subscription?
-  accounts              Account[]
-  sessions              Session[]
-  calendars             CalendarFeed[]
-  autoScheduleSettings  AutoScheduleSettings?
-  userSettings          UserSettings?
-  calendarSettings      CalendarSettings?
-  notificationSettings  NotificationSettings?
-  customizationSettings UserCustomization?
-  integrationSettings   IntegrationSettings?
-  dataSettings          DataSettings?
-  schedulingPreferences SchedulingPreferences?
-  energyProfileWindows  EnergyProfileWindow[]
-  aiSettings            AISettings?
-  aiOAuthConnections    AIOAuthConnection[]
-  aiOAuthStates         AIOAuthState[]
-  aiConversations       AiConversation[]
-  aiMessages            AiMessage[]
-  agentMemories         AgentMemory[]
-  aiUsage               AiUsage[]
-  connectorSettings     ConnectorSettings?
-  timeEntries           TimeEntry[]
-  scheduledBlocks       ScheduledBlock[]
-  focusSessions         FocusSession[]
-  focusStats            FocusStats?
-  tasks                 Task[]
-  projects              Project[]
-  connectedAccounts     ConnectedAccount[]
-  mailAccounts          MailAccount[]
-  tags                  Tag[]
-  JobRecord             JobRecord[]
-  taskProviders         TaskProvider[]
-  TaskChange            TaskChange[]
-  PasswordReset         PasswordReset[]
-  boards                Board[]
-  savedViews            SavedView[]
-  dailyAgendas          DailyAgenda[]
-  pages                 Page[]
-  pageRevisions         PageRevision[]
-  aiPageProposals       AiPageChangeProposal[]
-  bugReports            BugReport[]
-  externalIntegrations  ExternalIntegration[]
+  id                     String                  @id @default(cuid())
+  name                   String?
+  email                  String?                 @unique
+  emailVerified          DateTime?
+  image                  String?
+  role                   String                  @default("user") // Possible values: "user", "admin"
+  subscription           Subscription?
+  accounts               Account[]
+  sessions               Session[]
+  calendars              CalendarFeed[]
+  autoScheduleSettings   AutoScheduleSettings?
+  userSettings           UserSettings?
+  calendarSettings       CalendarSettings?
+  notificationSettings   NotificationSettings?
+  customizationSettings  UserCustomization?
+  integrationSettings    IntegrationSettings?
+  dataSettings           DataSettings?
+  schedulingPreferences  SchedulingPreferences?
+  workSchedules          WorkSchedule[]
+  flexibleHoursOverrides FlexibleHoursOverride[]
+  energyProfileWindows   EnergyProfileWindow[]
+  aiSettings             AISettings?
+  aiOAuthConnections     AIOAuthConnection[]
+  aiOAuthStates          AIOAuthState[]
+  aiConversations        AiConversation[]
+  aiMessages             AiMessage[]
+  agentMemories          AgentMemory[]
+  aiUsage                AiUsage[]
+  connectorSettings      ConnectorSettings?
+  timeEntries            TimeEntry[]
+  scheduledBlocks        ScheduledBlock[]
+  focusSessions          FocusSession[]
+  focusStats             FocusStats?
+  tasks                  Task[]
+  projects               Project[]
+  connectedAccounts      ConnectedAccount[]
+  mailAccounts           MailAccount[]
+  tags                   Tag[]
+  JobRecord              JobRecord[]
+  taskProviders          TaskProvider[]
+  TaskChange             TaskChange[]
+  PasswordReset          PasswordReset[]
+  boards                 Board[]
+  savedViews             SavedView[]
+  dailyAgendas           DailyAgenda[]
+  pages                  Page[]
+  pageRevisions          PageRevision[]
+  aiPageProposals        AiPageChangeProposal[]
+  bugReports             BugReport[]
+  externalIntegrations   ExternalIntegration[]
 }
 
 model VerificationToken {
@@ -343,10 +345,12 @@ model Task {
   autoScheduled        Boolean                @default(false)
 
   // Auto-scheduling
-  isAutoScheduled Boolean   @default(false)
-  scheduleLocked  Boolean   @default(false)
+  isAutoScheduled Boolean       @default(false)
+  scheduleLocked  Boolean       @default(false)
   scheduledStart  DateTime?
   scheduledEnd    DateTime?
+  scheduleId      String?
+  schedule        WorkSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   scheduleScore   Float?
   lastScheduled   DateTime?
   postponedUntil  DateTime? // New field for postponing tasks
@@ -417,6 +421,7 @@ model Task {
   @@index([isRecurring])
   @@index([isAutoScheduled])
   @@index([scheduledStart, scheduledEnd])
+  @@index([scheduleId])
   @@index([externalTaskId])
   @@index([source])
   @@index([postponedUntil])
@@ -806,6 +811,59 @@ model SchedulingPreferences {
   updatedAt            DateTime @updatedAt
 
   @@index([userId])
+}
+
+model WorkSchedule {
+  id        String               @id @default(cuid())
+  userId    String
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  timeZone  String
+  isDefault Boolean              @default(false)
+  windows   WorkScheduleWindow[]
+  tasks     Task[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId, isDefault])
+}
+
+model WorkScheduleWindow {
+  id         String       @id @default(cuid())
+  scheduleId String
+  schedule   WorkSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  dayOfWeek  Int
+  startTime  String
+  endTime    String
+  sortOrder  Int          @default(0)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([scheduleId, dayOfWeek, startTime, endTime])
+  @@index([scheduleId, dayOfWeek, sortOrder])
+}
+
+enum FlexibleHoursOverrideKind {
+  START_LATER
+  STOP_EARLY
+  BLOCK_HOURS
+  BLOCK_WHOLE_DAY
+}
+
+model FlexibleHoursOverride {
+  id                  String                    @id @default(cuid())
+  userId              String
+  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date                DateTime                  @db.Date
+  kind                FlexibleHoursOverrideKind
+  startTime           String?
+  endTime             String?
+  sourceLegacyEventId String?                   @unique
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  @@index([userId, date])
 }
 
 model AISettings {
