@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Replaced destructive single-HTML Page saves with stable-ID block reconciliation and revision snapshots, keeping retained blocks and AI provenance intact across edits.
 - Replaced synthetic `Unavailable` calendar events with date-specific flexible-hours overrides for start-later, stop-early, blocked ranges, and whole days. Overrides now intersect with task schedules, render as striped availability texture, and retain hidden legacy `[NEEDT_DAY_BLOCK]` events for compatibility.
 - Grouped desktop Settings into the same Planner, Preferences, Connections, and Account sections as mobile, pinned Report a bug below the scrolling navigation, and converted ordinary settings rows to the compact label-to-control rhythm.
 - Split the former graphite dark palette into an explicit Gray theme and a true Dark theme based on `#0E0E10`; existing Dark users and System dark now resolve to true Dark, while the retained legacy background-tint value no longer overrides global theme tokens.
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a Notion-like Page canvas with a borderless title, icon and cover controls, full-canvas focus, searchable keyboard slash commands, canonical text/list/checklist/quote/code/divider blocks, and extensible callout, toggle, link, bookmark, media, layout and mention blocks.
 - Added named work schedules with saved timezones, multiple daily intervals, default selection, task and recurring-task assignment, selected-day copy, precise time fields, and 15-minute create/move/resize editing. Existing work hours migrate additively into the first `Work Hours` schedule and the deterministic scheduler resolves each task against its selected schedule.
 - Added personal Pages as the product replacement for task Boards while preserving legacy board data. Pages include hierarchical/private documents, revision-backed blocks, six database views over shared records, typed properties, safe formulas, AI provenance, strict private-tree exclusion, and preview/approve/reject AI change proposals.
 - Added a searchable responsive integration catalog with native calendar connections and an isolated, optional Composio adapter; added database-backed bug reports with safe diagnostics, private attachments, admin review, and BullMQ-backed GitHub Issue retry.

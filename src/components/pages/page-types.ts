@@ -11,6 +11,7 @@ export type PageSummary = {
 
 export type PageBlock = {
   id: string;
+  parentBlockId: string | null;
   type: string;
   content: unknown;
   position: number;

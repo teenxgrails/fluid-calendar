@@ -65,7 +65,11 @@ export async function listPages(userId: string, options?: { search?: string }) {
       updatedAt: true,
       database: { select: { id: true } },
     },
-    orderBy: [{ isFavorite: "desc" }, { position: "asc" }, { updatedAt: "desc" }],
+    orderBy: [
+      { isFavorite: "desc" },
+      { position: "asc" },
+      { updatedAt: "desc" },
+    ],
   });
 }
 
@@ -139,7 +143,8 @@ export async function updatePage(
 ) {
   const existing = await getPage(userId, pageId);
   if (!existing) return null;
-  if (input.parentId === pageId) throw new Error("A page cannot contain itself");
+  if (input.parentId === pageId)
+    throw new Error("A page cannot contain itself");
   if (input.parentId !== undefined) {
     await assertOwnedParent(userId, input.parentId);
   }
@@ -149,11 +154,17 @@ export async function updatePage(
       ...(input.title !== undefined
         ? { title: input.title.trim().slice(0, 240) || "Untitled" }
         : {}),
-      ...(input.icon !== undefined ? { icon: input.icon?.slice(0, 32) || null } : {}),
-      ...(input.coverUrl !== undefined ? { coverUrl: input.coverUrl || null } : {}),
+      ...(input.icon !== undefined
+        ? { icon: input.icon?.slice(0, 32) || null }
+        : {}),
+      ...(input.coverUrl !== undefined
+        ? { coverUrl: input.coverUrl || null }
+        : {}),
       ...(input.parentId !== undefined ? { parentId: input.parentId } : {}),
       ...(input.isPrivate !== undefined ? { isPrivate: input.isPrivate } : {}),
-      ...(input.isFavorite !== undefined ? { isFavorite: input.isFavorite } : {}),
+      ...(input.isFavorite !== undefined
+        ? { isFavorite: input.isFavorite }
+        : {}),
       ...(Number.isFinite(input.position) ? { position: input.position } : {}),
       ...(input.trashed !== undefined
         ? { trashedAt: input.trashed ? new Date() : null }
@@ -175,9 +186,12 @@ export async function replacePageBlocks(
 
   const normalized = blocks.map((block, index) => ({
     id: block.id,
+    parentBlockId: block.parentBlockId ?? null,
     type: block.type,
     content: block.content,
-    position: Number.isFinite(block.position) ? block.position : (index + 1) * 1024,
+    position: Number.isFinite(block.position)
+      ? block.position
+      : (index + 1) * 1024,
     createdBy: block.createdBy ?? createdBy,
   }));
 
@@ -191,6 +205,8 @@ export async function replacePageBlocks(
           title: page.title,
           icon: page.icon,
           blocks: page.blocks.map((block) => ({
+            id: block.id,
+            parentBlockId: block.parentBlockId,
             type: block.type,
             content: block.content,
             position: block.position,
@@ -199,20 +215,96 @@ export async function replacePageBlocks(
         },
       },
     });
-    await tx.pageBlock.deleteMany({ where: { pageId } });
-    if (normalized.length > 0) {
-      await tx.pageBlock.createMany({
-        data: normalized.map((block) => ({
-          pageId,
-          type: block.type,
-          content: block.content,
-          position: block.position,
-          createdBy: block.createdBy,
-        })),
+
+    const requestedIds = normalized
+      .map((block) => block.id)
+      .filter((id): id is string => Boolean(id));
+    if (new Set(requestedIds).size !== requestedIds.length) {
+      throw new Error("Page block IDs must be unique");
+    }
+    const foreignBlocks = requestedIds.length
+      ? await tx.pageBlock.count({
+          where: { id: { in: requestedIds }, pageId: { not: pageId } },
+        })
+      : 0;
+    if (foreignBlocks > 0) {
+      throw new Error("A page block ID belongs to another page");
+    }
+
+    // Detach first so removing a parent never cascades into a retained child.
+    await tx.pageBlock.updateMany({
+      where: { pageId },
+      data: { parentBlockId: null },
+    });
+    await tx.pageBlock.deleteMany({
+      where: {
+        pageId,
+        ...(requestedIds.length > 0 ? { id: { notIn: requestedIds } } : {}),
+      },
+    });
+
+    const reconciledIds: string[] = [];
+    for (const block of normalized) {
+      if (block.id) {
+        await tx.pageBlock.upsert({
+          where: { id: block.id },
+          update: {
+            type: block.type,
+            content: block.content,
+            position: block.position,
+            createdBy: block.createdBy,
+          },
+          create: {
+            id: block.id,
+            pageId,
+            type: block.type,
+            content: block.content,
+            position: block.position,
+            createdBy: block.createdBy,
+          },
+        });
+        reconciledIds.push(block.id);
+      } else {
+        const created = await tx.pageBlock.create({
+          data: {
+            pageId,
+            type: block.type,
+            content: block.content,
+            position: block.position,
+            createdBy: block.createdBy,
+          },
+          select: { id: true },
+        });
+        reconciledIds.push(created.id);
+      }
+    }
+
+    const idByInput = normalized.map((block, index) => ({
+      id: reconciledIds[index],
+      parentBlockId: block.parentBlockId,
+    }));
+    const validIds = new Set(reconciledIds);
+    for (const block of idByInput) {
+      if (!block.parentBlockId) continue;
+      if (!validIds.has(block.parentBlockId)) {
+        throw new Error("Parent block must belong to the same page");
+      }
+      if (block.parentBlockId === block.id) {
+        throw new Error("A page block cannot contain itself");
+      }
+      await tx.pageBlock.update({
+        where: { id: block.id },
+        data: { parentBlockId: block.parentBlockId },
       });
     }
-    await tx.page.update({ where: { id: pageId }, data: { updatedAt: new Date() } });
-    return tx.page.findUnique({ where: { id: pageId }, include: pageDetailInclude });
+    await tx.page.update({
+      where: { id: pageId },
+      data: { updatedAt: new Date() },
+    });
+    return tx.page.findUnique({
+      where: { id: pageId },
+      include: pageDetailInclude,
+    });
   });
 }
 
@@ -228,8 +320,16 @@ export async function createDatabase(
         create: {
           properties: {
             create: [
-              { name: "Name", type: DatabasePropertyType.TITLE, position: 1024 },
-              { name: "Status", type: DatabasePropertyType.SELECT, position: 2048 },
+              {
+                name: "Name",
+                type: DatabasePropertyType.TITLE,
+                position: 1024,
+              },
+              {
+                name: "Status",
+                type: DatabasePropertyType.SELECT,
+                position: 2048,
+              },
               { name: "Date", type: DatabasePropertyType.DATE, position: 3072 },
             ],
           },
@@ -289,7 +389,11 @@ export async function createAiProposal(
     select: { id: true, parentId: true, isPrivate: true },
   });
   if (!page) throw new Error("Page is private or unavailable");
-  let cursor: { id: string; parentId: string | null; isPrivate: boolean } | null = page;
+  let cursor: {
+    id: string;
+    parentId: string | null;
+    isPrivate: boolean;
+  } | null = page;
   const visited = new Set<string>();
   while (cursor) {
     if (cursor.isPrivate) throw new Error("Page is private or unavailable");
@@ -346,7 +450,8 @@ export async function applyAiProposal(userId: string, proposalId: string) {
     : [];
   const blocks: PageBlockInput[] = [];
   for (const operation of operations) {
-    if (!operation || typeof operation !== "object" || Array.isArray(operation)) continue;
+    if (!operation || typeof operation !== "object" || Array.isArray(operation))
+      continue;
     const candidate = operation as Prisma.JsonObject;
     if (candidate.type !== "append_block") continue;
     const blockType = candidate.blockType;

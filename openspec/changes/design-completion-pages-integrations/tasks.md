@@ -45,8 +45,8 @@
 
 ## Second pass — P0/P1 Pages
 
-- [ ] Reconcile versioned PageBlocks by stable ID and revision snapshot instead of replacing one HTML paragraph.
-- [ ] Add borderless title, icon, cover, click-to-focus and searchable slash-menu editing.
+- [x] Reconcile versioned PageBlocks by stable ID and revision snapshot instead of replacing one HTML paragraph.
+- [x] Add borderless title, icon, cover, click-to-focus and searchable slash-menu editing.
 - [ ] Support text, H1–H3, lists, checklist, quote, callout, toggle, code, divider, links, bookmarks, files/images, tables, columns and page/date mentions.
 - [ ] Add private PageAsset uploads, resolvable comments, saved templates and authenticated forms.
 - [ ] Complete Table, Board, List, Calendar, Timeline and Gallery database views with record/property CRUD, filters, sort and grouping.
