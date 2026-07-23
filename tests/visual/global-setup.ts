@@ -6,9 +6,89 @@ import {
   VISUAL_TEST_BOARD_COLUMNS,
   VISUAL_TEST_BOARD_ID,
   VISUAL_TEST_EMAIL,
+  VISUAL_TEST_PAGE_ID,
   VISUAL_TEST_PASSWORD,
   VISUAL_TEST_TASK_IDS,
 } from "./fixtures";
+
+export async function resetVisualTaskData(userId: string) {
+  await prisma.task.deleteMany({
+    where: {
+      OR: [{ userId }, { id: { in: [...VISUAL_TEST_TASK_IDS] } }],
+    },
+  });
+  await prisma.task.createMany({
+    data: [
+      {
+        id: "visual-task-plan",
+        userId,
+        title: "Plan the launch",
+        description:
+          "<!--needt-rich-text:v1--><p>Review the brief and choose the <strong>next action</strong>.</p>",
+        status: "todo",
+        duration: 30,
+        estimatedMinutes: 30,
+        startDate: new Date("2026-07-16T00:00:00+02:00"),
+        dueDate: new Date("2026-07-16T08:30:00+02:00"),
+        isAutoScheduled: false,
+        boardId: VISUAL_TEST_BOARD_ID,
+        boardColumnId: VISUAL_TEST_BOARD_COLUMNS.next,
+        boardPosition: 0,
+      },
+      {
+        id: "visual-task-morning",
+        userId,
+        title: "Morning deep work",
+        description:
+          '<!--needt-rich-text:v1--><h2>Focus block</h2><ul data-type="taskList"><li data-checked="false"><p>Draft the first section</p></li></ul>',
+        status: "todo",
+        duration: 60,
+        estimatedMinutes: 60,
+        scheduledStart: new Date("2026-07-16T09:00:00+02:00"),
+        scheduledEnd: new Date("2026-07-16T10:00:00+02:00"),
+        startDate: new Date("2026-07-16T00:00:00+02:00"),
+        dueDate: new Date("2026-07-16T10:00:00+02:00"),
+        isAutoScheduled: true,
+        autoScheduled: true,
+        boardId: VISUAL_TEST_BOARD_ID,
+        boardColumnId: VISUAL_TEST_BOARD_COLUMNS.doing,
+        boardPosition: 0,
+      },
+      {
+        id: "visual-task-afternoon",
+        userId,
+        title: "Review calendar sync",
+        description: "Check the latest provider status.",
+        status: "todo",
+        duration: 45,
+        estimatedMinutes: 45,
+        scheduledStart: new Date("2026-07-16T14:00:00+02:00"),
+        scheduledEnd: new Date("2026-07-16T14:45:00+02:00"),
+        startDate: new Date("2026-07-16T00:00:00+02:00"),
+        dueDate: new Date("2026-07-16T14:45:00+02:00"),
+        isAutoScheduled: true,
+        autoScheduled: true,
+        boardId: VISUAL_TEST_BOARD_ID,
+        boardColumnId: VISUAL_TEST_BOARD_COLUMNS.next,
+        boardPosition: 1,
+      },
+      {
+        id: "visual-task-evening",
+        userId,
+        title: "Evening shutdown",
+        status: "todo",
+        duration: 20,
+        estimatedMinutes: 20,
+        scheduledStart: new Date("2026-07-16T18:30:00+02:00"),
+        scheduledEnd: new Date("2026-07-16T18:50:00+02:00"),
+        startDate: new Date("2026-07-16T00:00:00+02:00"),
+        dueDate: new Date("2026-07-16T18:50:00+02:00"),
+        isAutoScheduled: true,
+        autoScheduled: true,
+      },
+    ],
+  });
+}
 
 export default async function globalSetup() {
   const passwordHash = await hash(VISUAL_TEST_PASSWORD, 8);
@@ -109,6 +189,45 @@ export default async function globalSetup() {
 
   await prisma.focusSession.deleteMany({ where: { userId: user.id } });
 
+  await prisma.page.upsert({
+    where: { id: VISUAL_TEST_PAGE_ID },
+    update: {
+      userId: user.id,
+      title: "Visual design notes",
+      icon: "🎨",
+      isPrivate: false,
+      updatedAt: new Date("2026-07-16T10:00:00+02:00"),
+    },
+    create: {
+      id: VISUAL_TEST_PAGE_ID,
+      userId: user.id,
+      title: "Visual design notes",
+      icon: "🎨",
+      isPrivate: false,
+      createdAt: new Date("2026-07-16T09:00:00+02:00"),
+      updatedAt: new Date("2026-07-16T10:00:00+02:00"),
+    },
+  });
+  await prisma.pageBlock.upsert({
+    where: { id: "visual-page-design-notes-body" },
+    update: {
+      pageId: VISUAL_TEST_PAGE_ID,
+      content: {
+        html: "<p>Create your first page to start writing.</p>",
+      },
+      position: 1024,
+    },
+    create: {
+      id: "visual-page-design-notes-body",
+      pageId: VISUAL_TEST_PAGE_ID,
+      type: "PARAGRAPH",
+      content: {
+        html: "<p>Create your first page to start writing.</p>",
+      },
+      position: 1024,
+    },
+  });
+
   await prisma.board.upsert({
     where: { id: VISUAL_TEST_BOARD_ID },
     update: {
@@ -154,82 +273,7 @@ export default async function globalSetup() {
     ],
   });
 
-  await prisma.task.deleteMany({
-    where: {
-      OR: [{ userId: user.id }, { id: { in: [...VISUAL_TEST_TASK_IDS] } }],
-    },
-  });
-  await prisma.task.createMany({
-    data: [
-      {
-        id: "visual-task-plan",
-        userId: user.id,
-        title: "Plan the launch",
-        description:
-          "<!--needt-rich-text:v1--><p>Review the brief and choose the <strong>next action</strong>.</p>",
-        status: "todo",
-        duration: 30,
-        estimatedMinutes: 30,
-        startDate: new Date("2026-07-16T00:00:00+02:00"),
-        dueDate: new Date("2026-07-16T23:59:00+02:00"),
-        isAutoScheduled: false,
-        boardId: VISUAL_TEST_BOARD_ID,
-        boardColumnId: VISUAL_TEST_BOARD_COLUMNS.next,
-        boardPosition: 0,
-      },
-      {
-        id: "visual-task-morning",
-        userId: user.id,
-        title: "Morning deep work",
-        description:
-          '<!--needt-rich-text:v1--><h2>Focus block</h2><ul data-type="taskList"><li data-checked="false"><p>Draft the first section</p></li></ul>',
-        status: "todo",
-        duration: 60,
-        estimatedMinutes: 60,
-        scheduledStart: new Date("2026-07-16T09:00:00+02:00"),
-        scheduledEnd: new Date("2026-07-16T10:00:00+02:00"),
-        startDate: new Date("2026-07-16T00:00:00+02:00"),
-        dueDate: new Date("2026-07-16T23:59:00+02:00"),
-        isAutoScheduled: true,
-        autoScheduled: true,
-        boardId: VISUAL_TEST_BOARD_ID,
-        boardColumnId: VISUAL_TEST_BOARD_COLUMNS.doing,
-        boardPosition: 0,
-      },
-      {
-        id: "visual-task-afternoon",
-        userId: user.id,
-        title: "Review calendar sync",
-        description: "Check the latest provider status.",
-        status: "todo",
-        duration: 45,
-        estimatedMinutes: 45,
-        scheduledStart: new Date("2026-07-16T14:00:00+02:00"),
-        scheduledEnd: new Date("2026-07-16T14:45:00+02:00"),
-        startDate: new Date("2026-07-16T00:00:00+02:00"),
-        dueDate: new Date("2026-07-16T23:59:00+02:00"),
-        isAutoScheduled: true,
-        autoScheduled: true,
-        boardId: VISUAL_TEST_BOARD_ID,
-        boardColumnId: VISUAL_TEST_BOARD_COLUMNS.next,
-        boardPosition: 1,
-      },
-      {
-        id: "visual-task-evening",
-        userId: user.id,
-        title: "Evening shutdown",
-        status: "todo",
-        duration: 20,
-        estimatedMinutes: 20,
-        scheduledStart: new Date("2026-07-16T18:30:00+02:00"),
-        scheduledEnd: new Date("2026-07-16T18:50:00+02:00"),
-        startDate: new Date("2026-07-16T00:00:00+02:00"),
-        dueDate: new Date("2026-07-16T23:59:00+02:00"),
-        isAutoScheduled: true,
-        autoScheduled: true,
-      },
-    ],
-  });
+  await resetVisualTaskData(user.id);
 
   const mailAccount = await prisma.mailAccount.upsert({
     where: {

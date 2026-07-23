@@ -417,7 +417,7 @@ export function TodayView() {
                   </div>
                 )}
                 {activeCount >= 10 && <div className="rounded-[var(--panel-radius)] border border-[color-mix(in_srgb,var(--color-warning)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-warning)_8%,transparent)] p-4 text-sm"><strong>This day looks overloaded.</strong><span className="ml-2 text-[var(--text-secondary)]">Review priorities before asking the scheduler to move anything.</span></div>}
-                {viewingToday && now.getHours() >= 18 && activeCount > 0 && <div className="flex items-center justify-between rounded-[var(--panel-radius)] bg-[var(--surface-raised)] p-4"><div><strong className="text-sm">Evening review</strong><p className="text-xs text-[var(--text-muted)]">Choose what should move. Nothing changes automatically.</p></div><Button variant="secondary" onClick={() => { setReviewSelection(new Set()); setReviewOpen(true); }}>Review</Button></div>}
+                {viewingToday && now.getHours() >= 18 && activeCount > 0 && <div className="flex items-center justify-between rounded-[var(--panel-radius)] bg-[var(--surface-raised)] p-4"><div><strong className="text-sm">Evening review</strong><p className="text-xs text-[var(--text-muted)]">Choose what should move. Nothing changes automatically.</p></div><Button variant="secondary" className="relative z-40" onClick={() => { setReviewSelection(new Set()); setReviewOpen(true); }}>Review</Button></div>}
               </div>
             </div>}
           </div>

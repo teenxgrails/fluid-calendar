@@ -22,5 +22,5 @@
 - [x] Replace Docker Hub workflow with gated GHCR/Coolify workflow.
 - [x] Pass lint, type-check, unit tests, app build and worker build.
 - [x] Apply the full migration history to a clean PostgreSQL container.
-- [ ] Run/update authenticated Playwright and visual baselines for all states.
+- [x] Run/update authenticated Playwright and visual baselines for all states.
 - [x] Run Docker multi-stage build locally.

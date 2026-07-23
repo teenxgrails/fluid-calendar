@@ -47,12 +47,24 @@ test("Today is a persistent daily document with a balanced timeline", async ({
   }
 
   const editor = page.getByLabel("Daily agenda notes");
-  await editor.click();
-  await page.keyboard.press("End");
-  await page.keyboard.press("Enter");
+  const editable = editor;
+  await editable.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    range.collapse(false);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    (element as HTMLElement).focus();
+  });
+  await editable.press("Enter");
+  await editable.type("/");
+  const commands = page.getByRole("menu", { name: "Agenda commands" });
+  await expect(commands).toBeVisible();
+  await commands.getByRole("menuitem", { name: /New task/ }).click();
   const taskTitle = `Inline agenda task ${testInfo.project.name}`;
-  await page.keyboard.type(`/task ${taskTitle}`);
-  await page.keyboard.press("Enter");
+  await editable.type(taskTitle);
+  await editable.press("Enter");
   await expect(editor.getByText(taskTitle)).toBeVisible();
   await expect(page.getByText("Saved")).toBeVisible();
 

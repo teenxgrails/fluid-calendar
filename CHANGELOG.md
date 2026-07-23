@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Completed authenticated responsive regression coverage for the Pages, Today, Settings, integrations, and private bug-report states; stabilized their visual fixtures and replaced the bug report severity native select with the shared house-format picker.
+
 - Completed the design-system hardening pass: Calendar tasks use priority rails and soft selected tints without a black ring; Today uses a wide editable document with a narrow synchronized day timeline, mobile calendar sheet, offline drafts, undo, overload/empty/error states, and explicit evening rollover review; Settings navigation is immediate and Appearance autosaves with rollback.
 
 - Reduced Calendar hour and day grid lines to a Motion-measured 6% foreground wash, keeping the layout legible while making the structure substantially quieter in light, dark, and custom-tinted themes.

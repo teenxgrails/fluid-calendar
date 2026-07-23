@@ -79,11 +79,18 @@ export function useCommands() {
     const KEY_SEQUENCE_TIMEOUT = 1000; // 1 second timeout for key sequences
 
     const handleKeyDown = async (e: KeyboardEvent) => {
-      // Don't handle shortcuts when typing in input fields
+      // Don't handle shortcuts while the user is editing text. Tiptap and
+      // other rich-text editors expose a contenteditable element rather than
+      // a native input, so checking form controls alone lets title text such
+      // as "new" accidentally trigger global command sequences.
+      const target = e.target;
       if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        e.target instanceof HTMLSelectElement
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            Boolean(target.closest('[contenteditable="true"]'))))
       ) {
         return;
       }

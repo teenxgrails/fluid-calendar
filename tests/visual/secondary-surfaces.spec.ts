@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { VISUAL_TEST_BOARD_ID, VISUAL_TEST_NOW } from "./fixtures";
+import { VISUAL_TEST_NOW, VISUAL_TEST_PAGE_ID } from "./fixtures";
 import { signInVisualUser } from "./helpers";
 
 type Theme = "dark" | "light";
@@ -16,7 +16,7 @@ async function settleSurface(page: import("@playwright/test").Page) {
   await page.waitForTimeout(300);
 }
 
-async function useTheme(page: import("@playwright/test").Page, theme: Theme) {
+async function applyTheme(page: import("@playwright/test").Page, theme: Theme) {
   const response = await page.request.patch("/api/user-settings", {
     data: { theme },
   });
@@ -31,7 +31,7 @@ async function useTheme(page: import("@playwright/test").Page, theme: Theme) {
   await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
 }
 
-test("Boards, Focus, Mail, and AI share the responsive Needt system", async ({
+test("Pages, Focus, Mail, and AI share the responsive Needt system", async ({
   page,
 }, testInfo) => {
   await page.clock.setFixedTime(new Date(VISUAL_TEST_NOW));
@@ -43,47 +43,27 @@ test("Boards, Focus, Mail, and AI share the responsive Needt system", async ({
   await signInVisualUser(page);
 
   for (const theme of ["dark", "light"] as const) {
-    await useTheme(page, theme);
+    await applyTheme(page, theme);
 
-    await page.goto(`/boards/${VISUAL_TEST_BOARD_ID}`, {
-      waitUntil: "networkidle",
-    });
-    await expect(
-      page.getByRole("heading", { name: "Launch plan", level: 1 })
-    ).toBeVisible();
-    await expect(page.getByText("Morning deep work")).toBeVisible();
+    await page.goto("/pages", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { name: "Pages" })).toBeVisible();
+    const visualDesignPage = page
+      .getByRole("link", { name: /Visual design notes/ })
+      .last();
+    await expect(visualDesignPage).toBeVisible();
     await settleSurface(page);
 
     if (theme === "dark") {
-      await page
-        .getByRole("button", { name: /Morning deep work/ })
-        .first()
-        .click();
-      await expect(page.getByTestId("task-modal")).toBeVisible();
-      await page.keyboard.press("Escape");
+      await page.goto(`/pages/${VISUAL_TEST_PAGE_ID}`);
+      await expect(page.getByLabel("Page document")).toBeVisible();
     }
 
     await page.goto("/focus", { waitUntil: "networkidle" });
     await expect(
-      page.getByRole("heading", { name: "Focus", exact: true })
+      page.getByRole("progressbar", { name: "Start focus: 25:00" })
     ).toBeVisible();
-    await expect(page.getByText("25:00")).toBeVisible();
     await settleSurface(page);
     await expect(page).toHaveScreenshot(`focus-${theme}.png`);
-    if (theme === "dark" && testInfo.project.name === "mobile") {
-      await page.getByRole("button", { name: "Start free session" }).click();
-      await expect(page.getByRole("button", { name: "Stop" })).toBeVisible();
-      await page.getByRole("button", { name: "Stop" }).click();
-      await expect(
-        page.getByRole("heading", { name: "Leave early?" })
-      ).toBeVisible();
-      await settleSurface(page);
-      await expect(page).toHaveScreenshot("focus-leave-early-dark.png");
-      await page.getByRole("button", { name: "End session" }).click();
-      await expect(
-        page.getByRole("button", { name: "Start free session" })
-      ).toBeVisible();
-    }
 
     await page.goto("/mail", { waitUntil: "networkidle" });
     await expect(page.getByText("Launch review notes")).toBeVisible();

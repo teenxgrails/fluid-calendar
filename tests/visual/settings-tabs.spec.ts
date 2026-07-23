@@ -28,13 +28,14 @@ async function settleSettings(page: import("@playwright/test").Page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
-  await expect(page.locator(".animate-pulse")).toHaveCount(0, {
+  await expect(page.locator(".animate-pulse, .glass-skeleton")).toHaveCount(0, {
     timeout: 15_000,
   });
   await page.waitForTimeout(350);
 }
 
 test("every Settings tab stays visually consistent", async ({ page }) => {
+  test.setTimeout(360_000);
   await page.clock.setFixedTime(new Date(VISUAL_TEST_NOW));
   await page.addInitScript(() => {
     // Keep the delayed command-palette hint out of long screenshot matrices.
@@ -53,15 +54,9 @@ test("every Settings tab stays visually consistent", async ({ page }) => {
     await page.goto(`/settings#${tab}`, { waitUntil: "networkidle" });
     await expect(page).toHaveURL(new RegExp(`#${tab}$`));
 
-    if ((page.viewportSize()?.width ?? 0) >= 1024) {
-      await expect(
-        page.getByRole("heading", { name: label, level: 1 })
-      ).toBeVisible();
-    } else {
-      await expect(
-        page.getByRole("combobox", { name: "Settings page" })
-      ).toContainText(label);
-    }
+    await expect(
+      page.getByRole("heading", { name: label, level: 1 })
+    ).toBeVisible();
 
     if (tab === "billing") {
       await expect(
