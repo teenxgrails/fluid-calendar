@@ -28,10 +28,10 @@
 ## Second pass — P0 Settings and themes
 
 - [x] Group desktop Settings navigation into Planner, Preferences, Connections and Account and pin Report a bug in a fixed footer.
-- [ ] Normalize Notifications, API, Privacy, AI Assistant, Account and Billing into compact shared-control rows.
+- [x] Normalize Notifications, API, Privacy, AI Assistant, Account and Billing into compact shared-control rows.
 - [x] Add Gray for the existing graphite palette and make Dark/System dark use the `#0E0E10` palette.
 - [x] Stop applying `backgroundTint` as a global theme override while retaining the stored compatibility field.
-- [ ] Add focused settings/theme regression coverage and update Light, Gray and Dark visual baselines.
+- [x] Add focused settings/theme regression coverage and update Light, Gray and Dark visual baselines.
 
 ## Second pass — P0 Schedules and flexible hours
 
@@ -70,4 +70,4 @@
 - [x] Add open-source icons for Google Calendar, Outlook, Apple/iCloud, Needt API and Composio.
 - [x] Audit Settings and editor overlays, selects, comboboxes, date/time pickers and dialogs against house conventions.
 - [x] Update CHANGELOG and desktop/tablet/mobile visual baselines for Light, Gray and Dark.
-- [ ] Pass lint, type-check, unit, worker build, app build, clean ephemeral migration history, Playwright/visual and Docker checks.
+- [x] Pass lint, type-check, unit, worker build, app build, clean ephemeral migration history, Playwright/visual and Docker checks.

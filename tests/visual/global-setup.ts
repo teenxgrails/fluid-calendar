@@ -196,6 +196,7 @@ export default async function globalSetup() {
       title: "Visual design notes",
       icon: "🎨",
       isPrivate: false,
+      trashedAt: null,
       updatedAt: new Date("2026-07-16T10:00:00+02:00"),
     },
     create: {

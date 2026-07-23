@@ -14,29 +14,32 @@ test("Page blocks reconcile by stable ID and slash commands create canonical blo
   expect(created.ok()).toBeTruthy();
   const createdBody = (await created.json()) as { page: { id: string } };
   const pageId = createdBody.page.id;
+  const stableIntroId = `stable-intro-${pageId}`;
+  const stableHeadingId = `stable-heading-${pageId}`;
+  const stableQuoteId = `stable-quote-${pageId}`;
 
   const firstSave = await page.request.put(`/api/pages/${pageId}/blocks`, {
     data: {
       blocks: [
         {
-          id: "stable-intro",
+          id: stableIntroId,
           type: "PARAGRAPH",
           content: {
             json: {
               type: "paragraph",
-              attrs: { blockId: "stable-intro" },
+              attrs: { blockId: stableIntroId },
               content: [{ type: "text", text: "Persistent intro" }],
             },
           },
           position: 1024,
         },
         {
-          id: "stable-heading",
+          id: stableHeadingId,
           type: "HEADING_2",
           content: {
             json: {
               type: "heading",
-              attrs: { level: 2, blockId: "stable-heading" },
+              attrs: { level: 2, blockId: stableHeadingId },
               content: [{ type: "text", text: "Original heading" }],
             },
           },
@@ -51,24 +54,24 @@ test("Page blocks reconcile by stable ID and slash commands create canonical blo
     data: {
       blocks: [
         {
-          id: "stable-intro",
+          id: stableIntroId,
           type: "PARAGRAPH",
           content: {
             json: {
               type: "paragraph",
-              attrs: { blockId: "stable-intro" },
+              attrs: { blockId: stableIntroId },
               content: [{ type: "text", text: "Updated intro" }],
             },
           },
           position: 1024,
         },
         {
-          id: "stable-quote",
+          id: stableQuoteId,
           type: "QUOTE",
           content: {
             json: {
               type: "blockquote",
-              attrs: { blockId: "stable-quote" },
+              attrs: { blockId: stableQuoteId },
               content: [
                 {
                   type: "paragraph",
@@ -87,8 +90,8 @@ test("Page blocks reconcile by stable ID and slash commands create canonical blo
     page: { blocks: Array<{ id: string; type: string }> };
   };
   expect(reconciledBody.page.blocks).toMatchObject([
-    { id: "stable-intro", type: "PARAGRAPH" },
-    { id: "stable-quote", type: "QUOTE" },
+    { id: stableIntroId, type: "PARAGRAPH" },
+    { id: stableQuoteId, type: "QUOTE" },
   ]);
 
   const revision = await prisma.pageRevision.findFirst({
@@ -97,8 +100,8 @@ test("Page blocks reconcile by stable ID and slash commands create canonical blo
   });
   expect(revision?.snapshot).toMatchObject({
     blocks: [
-      { id: "stable-intro", type: "PARAGRAPH" },
-      { id: "stable-heading", type: "HEADING_2" },
+      { id: stableIntroId, type: "PARAGRAPH" },
+      { id: stableHeadingId, type: "HEADING_2" },
     ],
   });
 
@@ -140,7 +143,7 @@ test("Page blocks reconcile by stable ID and slash commands create canonical blo
     page: { blocks: Array<{ id: string }> };
   };
   expect(persistedBody.page.blocks.map((block) => block.id)).toContain(
-    "stable-intro"
+    stableIntroId
   );
 
   const assetUpload = await page.request.post(`/api/pages/${pageId}/assets`, {
@@ -254,7 +257,7 @@ test("Page blocks reconcile by stable ID and slash commands create canonical blo
     page: { blocks: Array<{ id: string; createdBy: string }> };
   };
   expect(afterAiBody.page.blocks.map((block) => block.id)).toContain(
-    "stable-intro"
+    stableIntroId
   );
   expect(
     afterAiBody.page.blocks.some((block) => block.createdBy === "AI")

@@ -66,6 +66,7 @@ test("task description formatting is rendered, not exposed as markup", async ({
 
   await expect(editor.locator("strong")).toHaveText("Rendered note");
   await expect(editor).not.toContainText("**Rendered note**");
+  await expect(modal.getByText("Unsaved changes")).toBeVisible();
 });
 
 test("task editor stays usable at every breakpoint", async ({ page }) => {
@@ -83,6 +84,10 @@ test("task editor stays usable at every breakpoint", async ({ page }) => {
     await expect(modal.getByLabel("Task name")).toHaveValue(
       "Morning deep work"
     );
+    await expect(
+      modal.getByRole("heading", { name: "Focus block" })
+    ).toBeVisible();
+    await expect(modal.getByText("All changes saved")).toBeVisible();
     await settleTaskEditor(page);
     await expect(page).toHaveScreenshot(
       theme === "dark" ? "task-editor.png" : "task-editor-light.png"

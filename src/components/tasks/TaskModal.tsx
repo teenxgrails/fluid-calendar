@@ -626,7 +626,11 @@ export function TaskModal({
               void save(status);
             }
           }}
-          onChangeCapture={() => setIsDirty(true)}
+          onChangeCapture={(event) => {
+            // Radix controls synchronize hidden form inputs after mount. Those
+            // synthetic change events must not make an untouched task dirty.
+            if (event.nativeEvent.isTrusted) setIsDirty(true);
+          }}
           className={CALENDAR_EDITOR_FORM_CLASS}
         >
           <DialogHeader className="space-y-0 px-6 py-4 lg:[grid-area:header] lg:px-10 lg:pt-4">
