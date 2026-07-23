@@ -163,7 +163,15 @@
     --switch-on-bg: var(--color-accent);
     --switch-thumb-bg: var(--primitive-white);
     --calendar-canvas-bg: var(--surface-canvas);
-    --calendar-grid-line: var(--border-subtle);
+    /* Motion keeps calendar structure visible without boxing every slot:
+       its measured light grid is roughly a 6% foreground wash over the
+       canvas. Keep this translucent so it adapts to both app themes and a
+       custom dark background tint. */
+    --calendar-grid-line: color-mix(
+      in srgb,
+      var(--text-primary) 6%,
+      transparent
+    );
     --calendar-toolbar-bg: var(--surface-control);
     --calendar-toolbar-bg-hover: var(--surface-control-hover);
     --calendar-toolbar-border: var(--border-control);
@@ -1874,8 +1882,8 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
   border-color: var(--line-strong);
 }
 
-/* Reset every internal cell border, then draw back only Motion's hourly
-   rows and day-column separators (#2B2F31, 1px). */
+/* Reset every internal cell border, then draw back only Motion's quiet hourly
+   rows and day-column separators using the shared translucent grid token. */
 .fc .fc-scrollgrid,
 .fc .fc-scrollgrid td,
 .fc .fc-scrollgrid th,
@@ -1961,7 +1969,8 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
   border-color: var(--calendar-grid-line) !important;
 }
 
-/* Unify all grid lines (hour rows + day separators) to Motion's #2B2F31 */
+/* Unify all grid lines (hour rows + day separators) to the measured Motion
+   contrast without making the cells look individually boxed. */
 .fc {
   --fc-border-color: var(--calendar-grid-line);
 }
