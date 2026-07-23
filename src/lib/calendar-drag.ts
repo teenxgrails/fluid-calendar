@@ -30,6 +30,26 @@ export type DropUpdate =
     }
   | { kind: "blocked"; reason: string };
 
+export function computeTaskPlacementUpdate(
+  newStart: Date,
+  newEnd: Date,
+  isResize: boolean
+): UpdateTask {
+  const updates: UpdateTask = {
+    scheduledStart: newStart,
+    scheduledEnd: newEnd,
+    scheduleLocked: true,
+    isAutoScheduled: true,
+  };
+  if (isResize) {
+    updates.duration = Math.round(
+      (newEnd.getTime() - newStart.getTime()) / 60000
+    );
+    updates.estimatedMinutes = updates.duration;
+  }
+  return updates;
+}
+
 export function getEventEditability(
   item: CalendarEvent,
   feeds: CalendarFeed[]
@@ -74,8 +94,7 @@ export function computeDropUpdate(
   // previous duration in that case
   const oldDurationMs =
     oldStart && oldEnd ? oldEnd.getTime() - oldStart.getTime() : 0;
-  const newEnd =
-    change.newEnd ?? new Date(newStart.getTime() + oldDurationMs);
+  const newEnd = change.newEnd ?? new Date(newStart.getTime() + oldDurationMs);
 
   const props = item.extendedProps as TaskDragProps | undefined;
   if (props?.isTask) {
@@ -85,19 +104,9 @@ export function computeDropUpdate(
         reason: "Only auto-scheduled tasks can be moved on the calendar",
       };
     }
-    const updates: UpdateTask = {
-      scheduledStart: newStart,
-      scheduledEnd: newEnd,
-      // A manual move pins the task; otherwise the next auto-schedule run
-      // (triggered by this very update) would immediately move it back
-      scheduleLocked: true,
-      isAutoScheduled: true,
-    };
-    if (isResize) {
-      updates.duration = Math.round(
-        (newEnd.getTime() - newStart.getTime()) / 60000
-      );
-    }
+    // A manual move pins the task; otherwise the next auto-schedule run
+    // (triggered by this very update) would immediately move it back.
+    const updates = computeTaskPlacementUpdate(newStart, newEnd, isResize);
     return { kind: "task", taskId: props.taskId, updates };
   }
 

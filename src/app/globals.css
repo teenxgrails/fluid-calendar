@@ -2520,35 +2520,35 @@ html[data-needt-motion="on"] .dialog-content-anim[data-state="closed"] {
 .agenda-rich-text {
   color: var(--text-primary);
   caret-color: var(--text-primary);
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.55;
   overflow-wrap: anywhere;
 }
 
 .agenda-rich-text > * + * {
-  margin-top: 0.55em;
+  margin-top: 0.42em;
 }
 
 .agenda-rich-text h1,
 .agenda-rich-text h2,
 .agenda-rich-text h3 {
-  margin-top: 1.35em;
+  margin-top: 1.1em;
   font-weight: 650;
   letter-spacing: -0.025em;
 }
 
 .agenda-rich-text h1 {
-  font-size: 1.75rem;
+  font-size: 1.45rem;
   line-height: 1.15;
 }
 
 .agenda-rich-text h2 {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   line-height: 1.2;
 }
 
 .agenda-rich-text h3 {
-  font-size: 1.12rem;
+  font-size: 1.05rem;
   line-height: 1.3;
 }
 

@@ -8,6 +8,8 @@ import { Editor, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
   CheckSquare,
+  Code2,
+  FilePlus2,
   Heading1,
   Heading2,
   Heading3,
@@ -15,13 +17,21 @@ import {
   ListOrdered,
   type LucideIcon,
   Minus,
-  Code2,
-  FilePlus2,
   Quote,
   SquareCheckBig,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  BlockIdentity,
+  ensureBlockIds,
+} from "@/components/documents/BlockIdentity";
+import {
+  decodeDocument,
+  encodeDocument,
+} from "@/components/documents/document-contract";
+import type { AgendaGroup } from "@/components/today/AgendaTaskSection";
+import { TaskGroupReference } from "@/components/today/TaskGroupReference";
 import { TaskReference } from "@/components/today/TaskReference";
 import { collectTaskReferenceIds } from "@/components/today/task-reference-utils";
 
@@ -31,6 +41,7 @@ import { Task } from "@/types/task";
 
 interface DailyAgendaEditorProps {
   dateKey: string;
+  groups: AgendaGroup[];
   onCreateTask: (title: string) => Promise<Task>;
   onOpenTask: (task: Task) => void;
   onCompleteTask: (task: Task) => Promise<void>;
@@ -149,8 +160,35 @@ function removeSlashText(editor: Editor) {
     .deleteRange({ from: $from.start(), to: $from.end() });
 }
 
+const AGENDA_GROUP_IDS = ["today", "overdue", "week", "completed"] as const;
+
+function ensureAgendaGroups(editor: Editor) {
+  const existing = new Set<string>();
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === "taskGroupReference" && node.attrs.groupId) {
+      existing.add(String(node.attrs.groupId));
+    }
+  });
+  const missing = AGENDA_GROUP_IDS.filter((groupId) => !existing.has(groupId));
+  if (missing.length === 0) return;
+
+  editor.commands.insertContentAt(editor.state.doc.content.size, [
+    ...missing.flatMap((groupId) => [
+      {
+        type: "taskGroupReference",
+        attrs: { groupId, blockId: crypto.randomUUID() },
+      },
+      {
+        type: "paragraph",
+        attrs: { blockId: crypto.randomUUID() },
+      },
+    ]),
+  ]);
+}
+
 export function DailyAgendaEditor({
   dateKey,
+  groups,
   onCreateTask,
   onOpenTask,
   onCompleteTask,
@@ -168,6 +206,7 @@ export function DailyAgendaEditor({
   const dateChangeRef = useRef(onDateChange);
   const durationChangeRef = useRef(onDurationChange);
   const referencedIdsChangeRef = useRef(onReferencedTaskIdsChange);
+  const groupsRef = useRef(groups);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSavesRef = useRef(new Map<string, string>());
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -188,6 +227,7 @@ export function DailyAgendaEditor({
   dateChangeRef.current = onDateChange;
   durationChangeRef.current = onDurationChange;
   referencedIdsChangeRef.current = onReferencedTaskIdsChange;
+  groupsRef.current = groups;
 
   const flushSave = (targetDate?: string) => {
     const pending = Array.from(pendingSavesRef.current.entries())
@@ -253,7 +293,17 @@ export function DailyAgendaEditor({
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      BlockIdentity,
       TaskReference.configure({
+        onOpenTask: (task) => openTaskRef.current(task),
+        onComplete: (task) => completeTaskRef.current(task),
+        onDateChange: (task, date) => dateChangeRef.current(task, date),
+        onDurationChange: (task, duration) =>
+          durationChangeRef.current(task, duration),
+      }),
+      TaskGroupReference.configure({
+        getGroup: (groupId) =>
+          groupsRef.current.find((group) => group.id === groupId),
         onOpenTask: (task) => openTaskRef.current(task),
         onComplete: (task) => completeTaskRef.current(task),
         onDateChange: (task, date) => dateChangeRef.current(task, date),
@@ -266,7 +316,7 @@ export function DailyAgendaEditor({
     editorProps: {
       attributes: {
         class:
-          "agenda-rich-text min-h-[clamp(220px,30vh,360px)] cursor-text outline-none xl:text-[18px] xl:leading-[1.7]",
+          "agenda-rich-text min-h-[clamp(180px,24vh,300px)] cursor-text outline-none",
         "aria-label": "Daily agenda notes",
       },
       handleKeyDown: (view, event) => {
@@ -277,7 +327,9 @@ export function DailyAgendaEditor({
           event.preventDefault();
           setSlashIndex((index) => {
             const count = Math.max(1, filteredItems.length);
-            return event.key === "ArrowDown" ? (index + 1) % count : (index - 1 + count) % count;
+            return event.key === "ArrowDown"
+              ? (index + 1) % count
+              : (index - 1 + count) % count;
           });
           return true;
         }
@@ -347,7 +399,8 @@ export function DailyAgendaEditor({
       },
     },
     onUpdate: ({ editor: currentEditor }) => {
-      scheduleSaveRef.current(currentEditor.getHTML());
+      if (ensureBlockIds(currentEditor)) return;
+      scheduleSaveRef.current(encodeDocument("today", currentEditor.getJSON()));
       referencedIdsChangeRef.current(
         dateKeyRef.current,
         collectTaskReferenceIds(currentEditor)
@@ -410,10 +463,14 @@ export function DailyAgendaEditor({
         if (!response.ok) throw new Error("Agenda load failed");
         const agenda = (await response.json()) as { content?: string };
         if (controller.signal.aborted) return;
-        const localDraft = localStorage.getItem(`needt-agenda-draft:${dateKey}`);
-        editor.commands.setContent(localDraft || agenda.content || "<p></p>", {
-          emitUpdate: false,
-        });
+        const localDraft = localStorage.getItem(
+          `needt-agenda-draft:${dateKey}`
+        );
+        const stored = localDraft || agenda.content || "";
+        const decoded = decodeDocument(stored, "today");
+        editor.commands.setContent(decoded, { emitUpdate: false });
+        ensureAgendaGroups(editor);
+        ensureBlockIds(editor);
         hydratedKeyRef.current = dateKey;
         editor.setEditable(true);
         referencedIdsChangeRef.current(
@@ -464,12 +521,21 @@ export function DailyAgendaEditor({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Untitled" }),
-      }).then(async (response) => {
-        if (!response.ok) throw new Error("Page creation failed");
-        const { page } = (await response.json()) as { page: { id: string } };
-        window.dispatchEvent(new Event("pages-changed"));
-        toast.success("Page created", { action: { label: "Open", onClick: () => { window.location.href = `/pages/${page.id}`; } } });
-      }).catch(() => toast.error("Could not create page"));
+      })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Page creation failed");
+          const { page } = (await response.json()) as { page: { id: string } };
+          window.dispatchEvent(new Event("pages-changed"));
+          toast.success("Page created", {
+            action: {
+              label: "Open",
+              onClick: () => {
+                window.location.href = `/pages/${page.id}`;
+              },
+            },
+          });
+        })
+        .catch(() => toast.error("Could not create page"));
     }
     setSlash(null);
   };
@@ -500,7 +566,10 @@ export function DailyAgendaEditor({
                 role="menuitem"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => applyCommand(item.id)}
-                className={cn("flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-[var(--menu-item-hover)]", index === slashIndex && "bg-[var(--menu-item-hover)]")}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-[var(--menu-item-hover)]",
+                  index === slashIndex && "bg-[var(--menu-item-hover)]"
+                )}
               >
                 <Icon className="h-4 w-4 flex-none text-[var(--text-muted)]" />
                 <span className="min-w-0 flex-1">

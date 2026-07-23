@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Reconciled Today through the same stable-ID, versioned document contract as Pages, placing live task groups inside the editable document so notes can sit between them. Today now uses denser Agenda proportions, independently scrolling desktop panes, and 15-minute timeline move/resize interactions that pin manual task placements while retaining drafts, save state, mobile sheet, and explicit evening review.
 - Replaced destructive single-HTML Page saves with stable-ID block reconciliation and revision snapshots, keeping retained blocks and AI provenance intact across edits.
 - Replaced synthetic `Unavailable` calendar events with date-specific flexible-hours overrides for start-later, stop-early, blocked ranges, and whole days. Overrides now intersect with task schedules, render as striped availability texture, and retain hidden legacy `[NEEDT_DAY_BLOCK]` events for compatibility.
 - Grouped desktop Settings into the same Planner, Preferences, Connections, and Account sections as mobile, pinned Report a bug below the scrolling navigation, and converted ordinary settings rows to the compact label-to-control rhythm.

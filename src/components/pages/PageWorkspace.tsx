@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { Extension, type JSONContent } from "@tiptap/core";
+import { type JSONContent } from "@tiptap/core";
 import ImageExtension from "@tiptap/extension-image";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -44,6 +44,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  BlockIdentity,
+  ensureBlockIds,
+} from "@/components/documents/BlockIdentity";
 import { DatabaseWorkspace } from "@/components/pages/DatabaseWorkspace";
 import { PageBlockNode } from "@/components/pages/PageBlockNode";
 import {
@@ -115,37 +119,6 @@ type PageProposal = {
   operations: unknown;
   status: "PENDING" | "APPLIED" | "REJECTED";
 };
-
-const BlockIdentity = Extension.create({
-  name: "blockIdentity",
-  addGlobalAttributes() {
-    return [
-      {
-        types: [
-          "paragraph",
-          "heading",
-          "bulletList",
-          "orderedList",
-          "taskList",
-          "blockquote",
-          "codeBlock",
-          "horizontalRule",
-          "image",
-        ],
-        attributes: {
-          blockId: {
-            default: null,
-            parseHTML: (element) => element.getAttribute("data-block-id"),
-            renderHTML: (attributes) =>
-              attributes.blockId
-                ? { "data-block-id": String(attributes.blockId) }
-                : {},
-          },
-        },
-      },
-    ];
-  },
-});
 
 const COMMANDS: Array<{
   id: PageCommand;
@@ -316,21 +289,6 @@ const SPECIAL_LABELS: Record<SpecialKind, string> = {
   DATE_MENTION: "Date",
   FORM: "Form title",
 };
-
-function ensureBlockIds(editor: Editor) {
-  let changed = false;
-  const transaction = editor.state.tr;
-  editor.state.doc.forEach((node, offset) => {
-    if (!node.type.spec.attrs?.blockId || node.attrs.blockId) return;
-    transaction.setNodeMarkup(offset, undefined, {
-      ...node.attrs,
-      blockId: crypto.randomUUID(),
-    });
-    changed = true;
-  });
-  if (changed) editor.view.dispatch(transaction);
-  return changed;
-}
 
 function removeSlashText(editor: Editor) {
   const { $from } = editor.state.selection;

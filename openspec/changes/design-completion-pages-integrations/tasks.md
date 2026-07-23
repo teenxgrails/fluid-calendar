@@ -55,11 +55,11 @@
 
 ## Second pass — P0/P1 Today and Calendar
 
-- [ ] Share the Pages document contract with Today-specific task and task-group nodes.
-- [ ] Allow document blocks between dynamic task groups and match Motion Agenda density.
-- [ ] Make center document and right timeline independently scrollable without desktop page scrolling.
-- [ ] Add 15-minute task drag/resize in Today using calendar-drag semantics and pin manual placements.
-- [ ] Preserve mobile sheet, drafts, save status and explicit evening review.
+- [x] Share the Pages document contract with Today-specific task and task-group nodes.
+- [x] Allow document blocks between dynamic task groups and match Motion Agenda density.
+- [x] Make center document and right timeline independently scrollable without desktop page scrolling.
+- [x] Add 15-minute task drag/resize in Today using calendar-drag semantics and pin manual placements.
+- [x] Preserve mobile sheet, drafts, save status and explicit evening review.
 - [ ] Span the current-day pill across weekday/date and show day actions only on hover/focus.
 - [ ] Open Create Task directly from calendar `+` and select Event within the shared editor.
 - [ ] Align Task editor grid/dividers and rebuild Event mode with the same shell, rich editor, pickers and footer.

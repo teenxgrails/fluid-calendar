@@ -22,4 +22,29 @@ describe("sanitizeDailyAgendaContent", () => {
     expect(result).not.toContain("data-secret");
     expect(result).toContain('data-task-id="task_123"');
   });
+
+  it("preserves the shared versioned document contract", () => {
+    const content = JSON.stringify({
+      version: 1,
+      kind: "today",
+      document: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            attrs: { blockId: "block_1" },
+            content: [{ type: "text", text: "<script>is text</script>" }],
+          },
+          {
+            type: "taskGroupReference",
+            attrs: { blockId: "block_2", groupId: "today" },
+          },
+        ],
+      },
+    });
+
+    expect(JSON.parse(sanitizeDailyAgendaContent(content))).toEqual(
+      JSON.parse(content)
+    );
+  });
 });

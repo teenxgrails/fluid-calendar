@@ -33,7 +33,7 @@ test("Today is a persistent daily document with a balanced timeline", async ({
     },
   });
 
-  await page.goto("/today", { waitUntil: "networkidle" });
+  await page.goto("/today", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", { name: "Thursday", level: 1 })
   ).toBeVisible();
@@ -68,7 +68,7 @@ test("Today is a persistent daily document with a balanced timeline", async ({
   await expect(editor.getByText(taskTitle)).toBeVisible();
   await expect(page.getByText("Saved")).toBeVisible();
 
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(
     page.getByLabel("Daily agenda notes").getByText(taskTitle)
   ).toBeVisible();
@@ -77,11 +77,121 @@ test("Today is a persistent daily document with a balanced timeline", async ({
   });
 
   await useTheme(page, "light");
-  await page.goto("/today", { waitUntil: "networkidle" });
+  await page.goto("/today", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByLabel("Daily agenda notes").getByText(taskTitle)
   ).toBeVisible();
   await expect(page).toHaveScreenshot("today-daily-document-light.png", {
     animations: "disabled",
   });
+});
+
+test("Today keeps both panes scrollable and pins 15-minute timeline edits", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "Desktop split-pane behavior");
+  await page.clock.setFixedTime(new Date(VISUAL_TEST_NOW));
+  await signInVisualUser(page);
+  const created = await page.request.post("/api/tasks", {
+    data: {
+      title: "Timeline drag target",
+      status: "todo",
+      duration: 60,
+      estimatedMinutes: 60,
+      startDate: "2026-07-16T00:00:00.000+02:00",
+      dueDate: "2026-07-16T12:00:00.000+02:00",
+      isAutoScheduled: true,
+      autoScheduled: true,
+      scheduleLocked: false,
+      tagIds: [],
+    },
+  });
+  expect(created.ok()).toBeTruthy();
+  const createdTask = (await created.json()) as { id: string };
+  const scheduledStart = "2026-07-16T11:00:00.000+02:00";
+  const scheduledEnd = "2026-07-16T12:00:00.000+02:00";
+  const update = await page.request.put(`/api/tasks/${createdTask.id}`, {
+    data: {
+      scheduledStart,
+      scheduledEnd,
+      scheduleLocked: true,
+      isAutoScheduled: true,
+    },
+  });
+  expect(update.ok()).toBeTruthy();
+
+  await page.goto("/today", { waitUntil: "domcontentloaded" });
+  const documentPane = page.locator("main.needt-native-scroll");
+  const timeline = page.getByLabel("One day timeline");
+  await expect(timeline).toBeVisible();
+  await expect(documentPane).toHaveCSS("overflow-y", "auto");
+  await expect(timeline.locator("xpath=..")).toHaveCSS("overflow-y", "auto");
+
+  const task = timeline.locator('[title^="Timeline drag target"]');
+  await expect(task).toBeVisible();
+  const box = await task.boundingBox();
+  expect(box).not.toBeNull();
+  const placementRequest = page.waitForResponse(
+    (response) =>
+      response.request().method() === "PUT" &&
+      response.url().endsWith(`/api/tasks/${createdTask.id}`)
+  );
+  const pointer = {
+    pointerId: 7,
+    clientX: box!.x + box!.width / 2,
+    clientY: box!.y + box!.height / 2,
+  };
+  await task.dispatchEvent("pointerdown", pointer);
+  await task.dispatchEvent("pointermove", {
+    ...pointer,
+    clientY: pointer.clientY + 18,
+  });
+  await task.dispatchEvent("pointerup", {
+    ...pointer,
+    clientY: pointer.clientY + 18,
+  });
+  await expect(page.getByText("Task pinned")).toBeVisible();
+
+  const moved = (await (await placementRequest).json()) as {
+    scheduledStart: string;
+    scheduleLocked: boolean;
+    scheduledBlocks: Array<{ isFrozen: boolean }>;
+  };
+  expect(moved.scheduleLocked).toBe(true);
+  expect(new Date(moved.scheduledStart).getMinutes()).toBe(15);
+  expect(moved.scheduledBlocks[0]?.isFrozen).toBe(true);
+
+  const resize = timeline.getByLabel("Resize Timeline drag target end");
+  const resizeBox = await resize.boundingBox();
+  expect(resizeBox).not.toBeNull();
+  const resizeRequest = page.waitForResponse(
+    (response) =>
+      response.request().method() === "PUT" &&
+      response.url().endsWith(`/api/tasks/${createdTask.id}`)
+  );
+  const resizePointer = {
+    pointerId: 8,
+    clientX: resizeBox!.x + resizeBox!.width / 2,
+    clientY: resizeBox!.y + resizeBox!.height / 2,
+  };
+  await resize.dispatchEvent("pointerdown", resizePointer);
+  await resize.dispatchEvent("pointermove", {
+    ...resizePointer,
+    clientY: resizePointer.clientY + 18,
+  });
+  await resize.dispatchEvent("pointerup", {
+    ...resizePointer,
+    clientY: resizePointer.clientY + 18,
+  });
+  await expect(page.getByText("Task duration updated")).toBeVisible();
+  const resized = (await (await resizeRequest).json()) as {
+    duration: number;
+    estimatedMinutes: number;
+    scheduledStart: string;
+    scheduledEnd: string;
+  };
+  expect(resized.duration).toBe(75);
+  expect(resized.estimatedMinutes).toBe(75);
+  expect(new Date(resized.scheduledStart).getMinutes()).toBe(15);
+  expect(new Date(resized.scheduledEnd).getMinutes()).toBe(30);
 });

@@ -1,5 +1,10 @@
-import { computeDropUpdate, DragChange } from "@/lib/calendar-drag";
+import {
+  DragChange,
+  computeDropUpdate,
+  computeTaskPlacementUpdate,
+} from "@/lib/calendar-drag";
 import { getEventEditability } from "@/lib/calendar-drag";
+
 import { CalendarEvent, CalendarFeed } from "@/types/calendar";
 
 const googleFeed: CalendarFeed = {
@@ -155,6 +160,24 @@ describe("computeDropUpdate", () => {
     if (result.kind !== "event") return;
     // old duration was 30 minutes
     expect(result.updates.end).toEqual(new Date("2026-06-12T16:30:00.000Z"));
+  });
+});
+
+describe("computeTaskPlacementUpdate", () => {
+  it("pins moves and updates duration on a 15-minute resize", () => {
+    const start = new Date("2026-07-23T09:15:00.000Z");
+    const end = new Date("2026-07-23T10:00:00.000Z");
+
+    expect(computeTaskPlacementUpdate(start, end, false)).toMatchObject({
+      scheduledStart: start,
+      scheduledEnd: end,
+      scheduleLocked: true,
+      isAutoScheduled: true,
+    });
+    expect(computeTaskPlacementUpdate(start, end, true)).toMatchObject({
+      duration: 45,
+      estimatedMinutes: 45,
+    });
   });
 });
 
