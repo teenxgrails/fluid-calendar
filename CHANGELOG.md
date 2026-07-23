@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Added recognizable open-source icons across Integrations, including native Google, Outlook, Apple/iCloud and Needt API marks plus Composio provider badges.
 - Made the Calendar `+` open Create Task directly on desktop and mobile, with Event selected inside the shared type switch. Task and Event now use one responsive grid shell with continuous dividers, the same rich-text editor, shared date/time pickers and controls, and a matching save footer; current-day headers span weekday/date, reveal flexible-hours actions only on hover/focus, and render override texture in both Week and Day.
 - Reconciled Today through the same stable-ID, versioned document contract as Pages, placing live task groups inside the editable document so notes can sit between them. Today now uses denser Agenda proportions, independently scrolling desktop panes, and 15-minute timeline move/resize interactions that pin manual task placements while retaining drafts, save state, mobile sheet, and explicit evening review.
 - Replaced destructive single-HTML Page saves with stable-ID block reconciliation and revision snapshots, keeping retained blocks and AI provenance intact across edits.

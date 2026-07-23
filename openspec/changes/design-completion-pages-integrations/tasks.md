@@ -67,7 +67,7 @@
 
 ## Second pass — P1/P2 Integrations and verification
 
-- [ ] Add open-source icons for Google Calendar, Outlook, Apple/iCloud, Needt API and Composio.
-- [ ] Audit Settings and editor overlays, selects, comboboxes, date/time pickers and dialogs against house conventions.
-- [ ] Update CHANGELOG and desktop/tablet/mobile visual baselines for Light, Gray and Dark.
+- [x] Add open-source icons for Google Calendar, Outlook, Apple/iCloud, Needt API and Composio.
+- [x] Audit Settings and editor overlays, selects, comboboxes, date/time pickers and dialogs against house conventions.
+- [x] Update CHANGELOG and desktop/tablet/mobile visual baselines for Light, Gray and Dark.
 - [ ] Pass lint, type-check, unit, worker build, app build, clean ephemeral migration history, Playwright/visual and Docker checks.
