@@ -13,6 +13,14 @@ const nextConfig = {
   // Disable all development indicators
   devIndicators: false,
 
+  // Lint and type-check are enforced pre-commit (husky/lint-staged) and in CI
+  // via `npm run lint` / `npm run type-check`. Running them again inside
+  // `next build` roughly doubles peak build memory and OOM-kills the Next build
+  // worker on memory-constrained deploy hosts (Coolify). Skip them here so the
+  // production image build only compiles.
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+
   // Standalone output is for Docker only. On Vercel it breaks the build
   // (missing route_client-reference-manifest.js for route-group API routes),
   // so skip it when building on Vercel.

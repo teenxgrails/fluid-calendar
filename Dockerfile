@@ -21,6 +21,9 @@ CMD ["npm", "run", "dev"]
 # Production builder stage
 FROM base AS builder
 WORKDIR /app
+# Next.js type checking can exceed Node's default ~2 GiB heap in Coolify's
+# source build. Match the dedicated production Dockerfile's build allowance.
+ENV NODE_OPTIONS=--max-old-space-size=4096
 COPY package*.json ./
 RUN npm ci --include=dev --legacy-peer-deps --ignore-scripts
 COPY . .
